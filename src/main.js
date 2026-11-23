@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { PointerLockControls } from './vendor/three/addons/controls/PointerLockControls.js?v=campaign-3';
-import { SourceMovement } from './physics.js?v=campaign-3';
-import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=campaign-3';
-import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=campaign-3';
-import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=campaign-3';
-import { STORY, OBJECTIVES } from './story.js?v=campaign-3';
+import { PointerLockControls } from './vendor/three/addons/controls/PointerLockControls.js?v=campaign-5';
+import { SourceMovement } from './physics.js?v=campaign-5';
+import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=campaign-5';
+import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=campaign-5';
+import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=campaign-5';
+import { STORY, OBJECTIVES } from './story.js?v=campaign-5';
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -134,6 +134,7 @@ function updatePrompt() {
   if(target.node.userData.kind==='pump') label=hasFuse?'Käynnistä jäähdytyspumput':'Tarvitset varasulakkeen';
   if(target.node.userData.kind==='valve') label=world.lower.pumpOn?'Sulje paineventtiili':'Käynnistä pumput ensin';
   if(target.node.userData.kind==='tram') label=world.lower.valveClosed?'Käynnistä huoltoraitiovaunu':'Paineventtiili on vielä auki';
+  if(target.node.userData.kind==='shaftRecording') label='Kuuntele hissikuilun tallenne';
   ui.promptLabel.textContent=label; ui.prompt.classList.add('visible');
 }
 
@@ -229,6 +230,9 @@ function interact() {
   }
   if(kind==='recording') {
     node.visible=false;toast('Huoltopäiväkirja tallennettu.',2.4);say(STORY.freightLog,10.5);return;
+  }
+  if(kind==='shaftRecording') {
+    node.visible=false;toast('Hissikuilun tallenne tallennettu.',2.4);say(STORY.shaftLog,10.5);return;
   }
   if(kind==='pump') {
     if(!hasFuse||stage<7){toast('Pumput tarvitsevat varasulakkeen.');return}

@@ -47,6 +47,10 @@ export const STORY = {
     speaker: 'AINO / RADIO',
     line: 'Löysit vartijan pistoolin. Pidä se valmiina. Täällä ei ole enää ketään, joka tulisi auttamaan.'
   },
+  shaftLog: {
+    speaker: 'HUOLTOPÄIVYSTYS / TALLENNE',
+    line: 'Hissi ei ole ollut käytössä kolmeen vuoteen. Silti joku kutsui sen tänään alhaalta. Lehto käski meitä poistumaan ennen kuin ovet avautuvat. Hän jäi itse koealueelle.'
+  },
   freightLog: {
     speaker: 'HUOLTOTEKNIKKO / TALLENNE',
     line: 'Rahtihalli suljettiin ennen koetta. Joku siirsi tänne kaikki näytteet, mutta luovutuslistassa ei ole vastaanottajaa. Älä vie mitään raitiovaunuun.'
@@ -71,5 +75,6 @@ export const OBJECTIVES = [
   ['Etsi varasulake', 'Tutki lastauslaiturin työkalukaappi.'],
   ['Käynnistä jäähdytyspumput', 'Asenna sulake pumppukeskuksen konsoliin.'],
   ['Sulje paineventtiili', 'Käännä käsiventtiili pumppugalleriassa.'],
-  ['Käynnistä huoltoraitiovaunu', 'Mene laiturin ohjauspaneelille.']
+  ['Käynnistä huoltoraitiovaunu', 'Mene laiturin ohjauspaneelille.'],
+  ['Pakene huoltotunnelin läpi', 'Pysy raitiovaunussa.']
 ];

@@ -214,6 +214,8 @@ export function buildChapterTwo(world,scene){
   for(const x of [-4.7,4.7])rod(g,[x,4.15,-116],[x,4.15,-151],.095,m.brick,7);
   sign(g,-7.04,3.25,-121,2.4,.85,Math.PI/2,"TRANSFER SHAFT","LOWER SERVICE / -2");
   sign(g,7.04,3.25,-145,2.4,.85,-Math.PI/2,"FREIGHT LEVEL","AUTHORIZED STAFF","#bd7e4c");
+  const shaftRecorder=terminal(world,5.65,-142.0,"shaftRecording","Toista hissikuilun tallenne");
+  shaftRecorder.userData.label="Kuuntele hissikuilun tallenne";
 
   // Freight receiving hall: overhead gantry, cargo stacks and a shallow coolant spill.
   room(world,scene,0,-174,34,44);
@@ -327,7 +329,7 @@ export function buildChapterTwo(world,scene){
   // Side emergency beacon and a dim maintenance sign.
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);
   const green=new THREE.PointLight(0x80c6a2,.2,8);green.position.set(0,2.6,-276);scene.add(green);
-  const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,steamClouds,steamZones,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
+  const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,shaftRecorder,steamClouds,steamZones,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
     pumpOn:false,valveClosed:false,tramRunning:false,red,green,elapsed:0};
   return lower;
 }

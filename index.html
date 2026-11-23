@@ -20,7 +20,7 @@
 <body>
   <main id="gameRoot">
     <section id="startScreen" class="screen start-screen" style="position:absolute;inset:0;z-index:20;display:block;overflow:hidden;background:#21142a">
-      <img class="menu-backdrop" src="assets/xen-menu.svg" alt="" aria-hidden="true" draggable="false" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
+      <img class="menu-backdrop" src="assets/xen-menu.webp" alt="" aria-hidden="true" draggable="false" onload="if(this.getAttribute('src').endsWith('.webp'))document.getElementById('startButton').classList.add('image-hit-area')" onerror="this.onerror=null;this.src='assets/xen-menu.svg'" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
       <div class="menu-brand">
         <img class="lambda-logo" src="assets/lambda.svg" alt="Lambda">
         <h1 class="menu-title">HALF-LIFE<sup>2</sup></h1>

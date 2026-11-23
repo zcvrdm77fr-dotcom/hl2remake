@@ -89,3 +89,7 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
   .menu-title { font-size:clamp(24px,7vw,38px); }
   .menu-start-button { top:74.5%; width:min(68vw,290px); height:52px; font-size:17px; }
 }
+
+/* The supplied screenshot has the START GAME label baked into the image. */
+.menu-start-button.image-hit-area{left:39%;top:71%;transform:none;width:21%;height:8%;padding:0;border:0;background:transparent;box-shadow:none;color:transparent;opacity:0;cursor:pointer}
+.menu-start-button.image-hit-area:hover,.menu-start-button.image-hit-area:active{filter:none;transform:none}

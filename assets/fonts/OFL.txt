@@ -1,0 +1,5 @@
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+
+Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com).
+
+The VT323 font software is licensed under the SIL Open Font License, Version 1.1. See https://openfontlicense.org/ for the full license text. This font may be bundled and embedded with software, provided this notice and license are included.

@@ -10,8 +10,8 @@ const ui = {
   start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'), hud: $('hud'),
   startButton: $('startButton'), resume: $('resumeButton'), retry: $('retryButton'),
   objective: $('objectiveTitle'), detail: $('objectiveDetail'), progress: $('progressFill'),
-  health: $('healthValue'), healthFill: $('healthFill'), speed: $('speedValue'), state: $('movementState'),
-  prompt: $('interactionPrompt'), subtitles: $('subtitles'), subtitleName: $('subtitleName'),
+  health: $('healthValue'), healthFill: $('healthFill'),
+  prompt: $('interactionPrompt'), promptLabel: $('promptLabel'), subtitles: $('subtitles'), subtitleName: $('subtitleName'),
   subtitleText: $('subtitleText'), toast: $('toast'), hit: $('hitFlash'), weaponLabel: $('weaponLabel')
 };
 
@@ -115,53 +115,53 @@ function updatePrompt() {
   const target=getLookedAtInteractable();
   if(!target){ui.prompt.classList.remove('visible');return}
   let label=target.node.userData.label||'KÄYTÄ';
-  if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'POIMI KULKUKORTTI';
-  if(target.node.userData.kind==='scanner') label=hasBadge?'SKANNAA KULKUKORTTI':'LUKIJA · VAATII KORTIN';
+  if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'OTA KULKUKORTTI';
+  if(target.node.userData.kind==='scanner') label=hasBadge?'KÄYTÄ LUKIJAA':'LUKIJA · VAATII KORTIN';
   if(target.node.userData.kind==='coil') label='OTA JÄÄHDYTYSKELA';
-  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'VARAVOIMA · KELA PUUTTUU';
-  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HUOLTOHISSI':'HISSI · EI VIRTOJA';
-  ui.prompt.textContent='[ E ]  '+label; ui.prompt.classList.add('visible');
+  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'TARVITSET KELAN';
+  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HISSI':'HISSISSÄ EI OLE VIRTOJA';
+  ui.promptLabel.textContent=label; ui.prompt.classList.add('visible');
 }
 
 function interact() {
   if(!running) return;
   const target=getLookedAtInteractable();
-  if(!target){toast('Tähtää kohteeseen ja paina E.');return}
+  if(!target){toast('Ei käyttökelpoista kohdetta.');return}
   const kind=target.node.userData.kind;
 
   if(kind==='badge') {
-    if(stage!==0){toast('Kulkukortti on jo otettu.');return}
+    if(stage!==0){toast('Kulkukortti on jo mukana.');return}
     hasBadge=true; world.badge.visible=false; stage=1; setObjective();
-    toast('KULKUKORTTI · TEKNIKKO 17'); say(STORY.warning,7.5); return;
+    toast('Kulkukortti: teknikko 17.'); say(STORY.warning,7.5); return;
   }
   if(kind==='scanner') {
-    if(!hasBadge){toast('Lukija vaatii sektorin 09 kulkukortin.');return}
-    if(stage>1){toast('Bulkhead on jo avattu.');return}
+    if(!hasBadge){toast('Lukija ei hyväksy ilman kulkukorttia.');return}
+    if(stage>1){toast('Huolto-ovi on jo auki.');return}
     stage=2; openDoor(world,'security'); setObjective();
-    toast('TUNNISTE HYVÄKSYTTY · BULKHEAD AVAUTUU'); say(STORY.card,6.7); return;
+    toast('Kulkukortti hyväksytty.'); say(STORY.card,6.7); return;
   }
   if(kind==='coil') {
-    if(stage<2){toast('Jäähdytyskela on lukitun alueen takana.');return}
+    if(stage<2){toast('Ovi on vielä lukossa.');return}
     if(hasCoil){toast('Jäähdytyskela on jo mukana.');return}
     hasCoil=true; world.coil.visible=false; stage=3; setObjective();
     world.redAlarm.visible=true; world.sideAlarm.visible=true;
     enemy=makeEchoStalker(scene,world.enemySpawn.x,world.enemySpawn.z); enemyMeshes.push(enemy.root);
-    toast('JÄÄHDYTYSKELA POIMITTU · POIKKEAMA AKTIVOITUI');
+    toast('Jäähdytyskela poimittu.');
     say(STORY.breach,7.1);
     window.setTimeout(()=>{if(running && enemy && enemy.alive) say(STORY.coil,7.1)},4300);
     return;
   }
   if(kind==='power') {
-    if(!hasCoil || stage<3){toast('Varavoima tarvitsee sinisen jäähdytyskelan.');return}
-    if(world.powerOn){toast('Varavoima on jo palautettu.');return}
+    if(!hasCoil || stage<3){toast('Tarvitset jäähdytyskelan.');return}
+    if(world.powerOn){toast('Virta on jo palautettu.');return}
     world.powerOn=true; stage=4; openDoor(world,'lift');
     world.reactorCore.material.emissiveIntensity=2.1; world.reactorLight.intensity=16;
-    setObjective(); toast('VARAVOIMA PALAUTETTU · HISSIN LUKKO AUKI'); say(STORY.power,7.2); return;
+    setObjective(); toast('Hissin virta palautettu.'); say(STORY.power,7.2); return;
   }
   if(kind==='lift') {
-    if(!world.powerOn || stage<4){toast('Hissi ei saa vielä virtaa.');return}
+    if(!world.powerOn || stage<4){toast('Hississä ei ole virtaa.');return}
     stage=5; setObjective(); openLiftCar(world); say(STORY.ending,6.8);
-    toast('HUOLTOHISSI KÄYNNISTYY'); liftEndingClock=3.3;
+    toast('Hissi käynnistyy.'); liftEndingClock=3.3;
   }
 }
 
@@ -171,12 +171,12 @@ function attack() {
   if(!enemy || !enemy.alive) return;
   raycaster.setFromCamera(screenCenter,camera);
   const hits=raycaster.intersectObjects(enemyMeshes,true);
-  if(!hits.length || hits[0].distance>2.75){toast('Crowbar osuu vain ilmaan.',0.8);return}
+  if(!hits.length || hits[0].distance>2.75){toast('Ohi.',0.8);return}
   const target=hits[0].object.userData.enemy;
   if(!target || !target.alive) return;
   target.health-=1; target.phase+=1; target.halo.intensity=4.5; target.root.scale.setScalar(1.07);
-  toast('OSUMA · OLENTO '+Math.max(0,target.health)+'/5',0.9); impactSound();
-  if(target.health<=0){target.alive=false;target.root.visible=false;toast('OLENTO PYSÄYTETTY',2.8)}
+  toast('Osumia jäljellä: '+Math.max(0,target.health)+'/5',0.9); impactSound();
+  if(target.health<=0){target.alive=false;target.root.visible=false;toast('Olento pysähtyi.',2.8)}
 }
 
 function blockedEnemy(x,z) {
@@ -212,13 +212,13 @@ function updateEnemy(dt) {
     setHealth(health-17); hitFlash=0.22;
     const shove=new THREE.Vector3(-dx,0,-dz).normalize();
     physics.velocity.addScaledVector(shove,3.0);
-    impactSound(); toast('OLENTO OSUI · SUOJAPUKU VAURIOITUI',1.2);
+    impactSound(); toast('Olento osui. Suojapuku vaurioitui.',1.2);
   }
 }
 
 function setHealth(value) {
   health=Math.max(0,Math.min(100,value));
-  ui.health.textContent=Math.round(health)+'%'; ui.healthFill.style.width=health+'%';
+  ui.health.textContent=Math.round(health); ui.healthFill.style.width=health+'%';
   if(health<=0 && running) finishGame(false);
 }
 
@@ -226,10 +226,10 @@ function finishGame(won) {
   running=false; finished=true; controls.unlock();
   ui.hud.classList.remove('active'); ui.weaponLabel.classList.remove('active');
   ui.end.classList.remove('hidden');
-  $('endTitle').textContent=won?'HUOLTOHISSI · YHTEYS KATKESI':'SUOJAPUKU PETTI';
+  $('endTitle').textContent=won?'POISTUIT SEKTORISTA 09':'SUOJAPUKU PETTI';
   $('endDescription').textContent=won
-    ? 'Hissi nousee tyhjää kuilua. Radiosta kuuluu vielä yksi viesti, mutta sen aikaleima on huomisaamulta. LUKU 01 PÄÄTTYI.'
-    : 'Resonanssikaiku täyttää käytävän. Et ehtinyt hissille. Kokeile uudelleen ja pidä vauhtisi yllä.';
+    ? 'Huoltohissi sulkeutuu. Radiosta kuuluu vielä yksi viesti.'
+    : 'Olento saavutti sinut ennen hissiä.';
   $('endTime').textContent='AIKA '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
 }
 function openPause() {
@@ -262,12 +262,12 @@ function startGame() {
     if (lockRequest && typeof lockRequest.catch === 'function') {
       lockRequest.catch(error => {
         console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
-        toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
+        toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
       });
     }
   } catch (error) {
     console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
-    toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
+    toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
   }
 }
 
@@ -306,8 +306,6 @@ function update(dt) {
   animateSector(world,dt,elapsed);
   if(liftEndingClock>0){liftEndingClock-=dt;if(liftEndingClock<=0 && running)finishGame(true)}
 
-  ui.speed.textContent=result.speed.toFixed(1);
-  ui.state.textContent=result.grounded?(result.speed>7?'GROUND / FAST':'GROUND'):'AIR / BHOP';
   ui.hit.classList.toggle('visible',hitFlash>0);
   ui.hud.classList.toggle('lowHealth',health<=35);
 }
@@ -351,7 +349,7 @@ controls.addEventListener('unlock', () => {
   if (pointerLockHasWorked && running) openPause();
 });
 document.addEventListener('pointerlockerror', () => {
-  if (running) toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
+  if (running) toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
 });
 
 ui.startButton.addEventListener('click', (event) => {
@@ -370,5 +368,5 @@ function resize() {
 window.addEventListener('resize',resize);
 
 setObjective();
-ui.health.textContent='100%'; ui.healthFill.style.width='100%'; ui.speed.textContent='0.0';
+ui.health.textContent='100'; ui.healthFill.style.width='100%';
 startLoop();

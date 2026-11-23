@@ -29,27 +29,50 @@
     </section>
 
     <section id="hud" class="hud">
-      <header class="hud-top">
-        <div class="objective-card"><div class="hud-kicker">SEKTORI 09 <span> / </span> HUOLTOTEHTÄVÄ</div><h2 id="objectiveTitle">TUNNISTAUDU</h2><p id="objectiveDetail">Etsi vartijan pöydältä sektorin yhdeksän kulkukortti.</p><div class="progress-track"><span id="progressFill"></span></div></div>
-        <div class="health-card"><span class="hud-kicker">HEV · SUOJAPUKU</span><strong id="healthValue">100%</strong><div class="health-track"><span id="healthFill"></span></div></div>
-      </header>
+      <div class="mission-readout">
+        <div class="readout-tag"><i></i> TEHTÄVÄ</div>
+        <h2 id="objectiveTitle">HAE KULKUKORTTI</h2>
+        <p id="objectiveDetail">Etsi vartijan pöydältä kulkukortti.</p>
+        <div class="progress-track"><span id="progressFill"></span></div>
+      </div>
       <div id="crosshair" class="crosshair"><i></i><i></i><i></i><i></i></div>
-      <div id="interactionPrompt" class="interaction-prompt"></div>
-      <div id="subtitles" class="subtitles"><div class="radio-mark"><span></span><b>INCOMING</b></div><div class="subtitle-copy"><strong id="subtitleName">KALLIO CONTROL</strong><p id="subtitleText"></p></div></div>
+      <div id="interactionPrompt" class="interaction-prompt"><kbd>E</kbd><span id="promptLabel"></span></div>
+      <div id="subtitles" class="subtitles">
+        <div class="radio-mark"><i></i><b>RADIO</b></div>
+        <div class="subtitle-copy"><strong id="subtitleName">VALVOMO</strong><p id="subtitleText"></p></div>
+      </div>
       <div class="hud-bottom">
-        <div id="weaponLabel" class="weapon-label"><span>VARUSTE</span><strong>CROWBAR · Mk.II</strong></div>
-        <div class="movement-card"><strong id="speedValue">0.0</strong><span>M/S</span><small id="movementState">GROUND</small></div>
-        <div class="control-hint"><kbd>SPACE</kbd> HYPPY / BHOP <kbd>SHIFT</kbd> JUOKSE <kbd>E</kbd> KÄYTÄ</div>
+        <div class="health-card">
+          <div class="health-symbol">+</div>
+          <div class="health-readout"><span>TERVEYS</span><div><strong id="healthValue">100</strong><small>%</small></div></div>
+          <div class="health-track"><span id="healthFill"></span></div>
+        </div>
+        <div id="weaponLabel" class="weapon-label"><span>ASE</span><strong>SORKKARAUTA</strong></div>
       </div>
       <div id="toast" class="toast"></div><div id="hitFlash" class="hit-flash"></div>
     </section>
 
     <section id="pauseScreen" class="screen modal-screen hidden">
-      <div class="modal-panel"><div class="eyebrow"><span class="status-dot"></span> SESSION SUSPENDED</div><h2>VUORO KESKEYTETTY</h2><p>Maailma odottaa. Resonanssipoikkeama ei.</p><button id="resumeButton" class="primary-button"><span>JATKA</span><b>↗</b></button><button id="pauseQuitButton" class="secondary-button">ALOITA ALUSTA</button><div class="modal-foot">ESC JATKAA / KESKEYTTÄÄ</div></div>
+      <div class="modal-panel">
+        <div class="menu-cap">HELIX PROTOCOL <span>/</span> SEKTORI 09</div>
+        <h2>KESKEYTETTY</h2>
+        <div class="menu-rule"></div>
+        <button id="resumeButton" class="primary-button">JATKA</button>
+        <button id="pauseQuitButton" class="secondary-button">ALOITA ALUSTA</button>
+        <div class="modal-foot">ESC — JATKA</div>
+      </div>
     </section>
 
     <section id="endScreen" class="screen modal-screen hidden">
-      <div class="modal-panel"><div class="eyebrow"><span class="status-dot"></span> CHAPTER REPORT</div><h2 id="endTitle">HUOLTOHISSI</h2><p id="endDescription"></p><strong id="endTime" class="end-time"></strong><button id="retryButton" class="primary-button"><span>ALOITA UUDELLEEN</span><b>↗</b></button><div class="modal-foot">HELIX PROTOCOL <b>·</b> CHAPTER 01</div></div>
+      <div class="modal-panel">
+        <div class="menu-cap">HELIX PROTOCOL <span>/</span> LUKU 01</div>
+        <h2 id="endTitle">SEKTORI 09</h2>
+        <div class="menu-rule"></div>
+        <p id="endDescription"></p>
+        <strong id="endTime" class="end-time"></strong>
+        <button id="retryButton" class="primary-button">PELAA UUDELLEEN</button>
+        <div class="modal-foot">KALLIO RESEARCH ANNEX</div>
+      </div>
     </section>
   </main>
   <script>

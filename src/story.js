@@ -1,27 +1,27 @@
 export const STORY = {
   intro: {
-    speaker: 'KALLIO CONTROL',
-    line: 'Vuoro 06:40. Huoltoteknikko, tarkista sektorin yhdeksän jäähdytysrele. Testi alkaa kymmenen minuutin kuluttua.'
+    speaker: 'VALVOMO',
+    line: 'Huoltoteknikko, tarkista sektorin 09 jäähdytysrele. Koe alkaa kymmenen minuutin kuluttua.'
   },
   warning: {
-    speaker: 'DR. LEHTO // TALLENNE',
-    line: 'Jos kuulet tämän, koe on jo käynnissä. Hae sininen jäähdytyskela ja vie se huoltohissille. Älä avaa testikammion ovea.'
+    speaker: 'DR. LEHTO',
+    line: 'Jos kuulet tämän, koe on jo käynnissä. Hae sininen jäähdytyskela. Älä avaa testikammion ovea.'
   },
   card: {
-    speaker: 'KALLIO CONTROL',
-    line: 'Tunniste hyväksytty. Bulkheadin lukitus vapautettu. Sektorissa yhdeksän ei ole enää henkilökuntaa.'
+    speaker: 'VALVOMO',
+    line: 'Tunniste hyväksytty. Huolto-ovi avautuu. Sektorissa 09 ei ole enää henkilökuntaa.'
   },
   breach: {
-    speaker: 'AUTOMAATTINEN KUULUTUS',
-    line: 'Varoitus. Resonanssipoikkeama havaittu. Biologinen näyte on poistunut säiliöstään. Kaikki työntekijät siirtyvät suojatilaan.'
+    speaker: 'KUULUTUS',
+    line: 'Varoitus. Säiliö on auennut. Kaikki työntekijät suojatilaan.'
   },
   coil: {
-    speaker: 'DR. LEHTO // TALLENNE',
-    line: 'Se kuulee liikkeen, ei ääntä. Älä jää nurkkaan. Hissin varavoima on reaktorin oikealla puolella.'
+    speaker: 'DR. LEHTO',
+    line: 'Se kuulee liikkeen. Älä jää nurkkaan. Hissin varavoima on reaktorin oikealla puolella.'
   },
   power: {
-    speaker: 'KALLIO CONTROL',
-    line: 'Varavoima palautettu. Hissin lukko aukeaa. Tämä viesti lähetettiin seitsemäntoista sekuntia sitten.'
+    speaker: 'VALVOMO',
+    line: 'Varavoima palautettu. Huoltohissi on käytettävissä.'
   },
   ending: {
     speaker: 'TUNTEMATON',
@@ -30,9 +30,9 @@ export const STORY = {
 };
 
 export const OBJECTIVES = [
-  ['TUNNISTAUDU', 'Etsi vartijan pöydältä sektorin yhdeksän kulkukortti.'],
-  ['AVAA HUOLTOPORTTI', 'Käytä kulkukorttia bulkheadin lukijaan.'],
+  ['HAE KULKUKORTTI', 'Etsi vartijan pöydältä kulkukortti.'],
+  ['AVAA HUOLTO-OVI', 'Käytä kulkukorttia lukijaan.'],
   ['HAE JÄÄHDYTYSKELA', 'Etsi sininen kela testikammion huoltotasolta.'],
-  ['PALAUTA VARAVOIMA', 'Käynnistä hissin varavoima reaktorin ohjauspaneelista.'],
-  ['PAKENE', 'Pääse huoltohissiin. Älä anna olennon saavuttaa sinua.']
+  ['PALAUTA VIRTA', 'Käynnistä hissin varavoima.'],
+  ['POISTU HISSILLÄ', 'Pääse huoltohissiin.']
 ];

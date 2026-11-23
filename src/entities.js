@@ -113,3 +113,33 @@ export function makeResonanceCrawler(scene,x,z){
   root.traverse(o=>{if(o.isMesh)o.userData.enemy=enemy});
   return enemy;
 }
+
+
+export function makePistol(camera){
+  const root=new THREE.Group();
+  root.position.set(.39,-.32,-.62);
+  root.rotation.set(-.045,-.055,-.06);
+  camera.add(root);
+  const slide=material(0x4b5654,.48,.6);
+  const dark=material(0x202724,.86,.08);
+  const grip=material(0x493b2c,.94,.02);
+  const steel=material(0x8a907f,.42,.52);
+  const box=(size,pos,mat)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);o.position.set(...pos);o.castShadow=true;root.add(o);return o};
+  // Compact late-90s service pistol, built from simple low-poly parts.
+  box([.19,.16,.51],[0,.045,-.28],slide);
+  box([.195,.075,.34],[0,.151,-.31],steel);
+  box([.15,.24,.17],[0,-.13,-.14],grip).rotation.x=-.22;
+  box([.105,.11,.18],[0,-.205,-.13],dark).rotation.x=-.22;
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.32,8),dark);
+  barrel.rotation.x=Math.PI/2;barrel.position.set(0,.045,-.62);root.add(barrel);
+  box([.22,.035,.07],[0,.15,-.5],dark);
+  box([.045,.065,.045],[0,.19,-.49],steel);
+  box([.06,.04,.045],[0,.185,-.06],steel);
+  const trigger=new THREE.Mesh(new THREE.TorusGeometry(.065,.012,4,8,Math.PI),steel);
+  trigger.position.set(0,-.06,-.19);trigger.rotation.x=Math.PI/2;root.add(trigger);
+  const hand=new THREE.Mesh(new THREE.IcosahedronGeometry(.12,1),material(0x745642,.95,0));
+  hand.position.set(0,-.22,.03);hand.scale.set(1.1,.78,1.2);root.add(hand);
+  const muzzle=new THREE.PointLight(0xffc878,0,3);
+  muzzle.position.set(0,.05,-.82);root.add(muzzle);
+  return {root,basePosition:root.position.clone(),baseRotation:root.rotation.clone(),muzzle,recoil:0};
+}

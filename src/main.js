@@ -313,18 +313,7 @@ function update(dt) {
   ui.hud.classList.toggle('lowHealth',health<=35);
 }
 
-function updatePrompt() {
-  if(!running){ui.prompt.classList.remove('visible');return}
-  const target=getLookedAtInteractable();
-  if(!target){ui.prompt.classList.remove('visible');return}
-  let label=target.node.userData.label||'KÄYTÄ';
-  if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'POIMI KULKUKORTTI';
-  if(target.node.userData.kind==='scanner') label=hasBadge?'SKANNAA KULKUKORTTI':'LUKIJA · VAATII KORTIN';
-  if(target.node.userData.kind==='coil') label='OTA JÄÄHDYTYSKELA';
-  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'VARAVOIMA · KELA PUUTTUU';
-  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HUOLTOHISSI':'HISSI · EI VIRTOJA';
-  ui.prompt.textContent='[ E ]  '+label; ui.prompt.classList.add('visible');
-}
+
 
 function startLoop() {
   function frame(time) {

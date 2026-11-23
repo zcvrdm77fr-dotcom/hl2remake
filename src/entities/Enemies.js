@@ -1,0 +1,11 @@
+import * as THREE from 'three';
+export class Metrocop{
+ constructor({scene,assets,audio,position,player,damagePlayer}){this.scene=scene;this.audio=audio;this.player=player;this.damagePlayer=damagePlayer;this.group=assets.createMetrocop();this.group.position.copy(position);scene.add(this.group);this.health=100;this.state='patrol';this.origin=position.clone();this.velocity=new THREE.Vector3();this.fireTimer=1+Math.random()*2;this.dead=false;this.mesh=this.group}
+ damage(amount,impulse=new THREE.Vector3()){if(this.dead)return;this.health-=amount;this.velocity.add(impulse);if(this.health<=0){this.dead=true;this.state='dead';this.group.rotation.z=(Math.random()-.5)*1.4;this.audio.play('hit')}}
+ update(dt){if(this.dead){this.group.position.addScaledVector(this.velocity,dt);this.velocity.multiplyScalar(Math.max(0,1-dt*2));return}const delta=this.player.position.clone().sub(this.group.position);delta.y=0;const distance=delta.length();if(distance<16)this.state=distance<9?'chase':'alert';else this.state='patrol';if(this.state==='patrol'){const t=performance.now()*.00035;this.group.position.x=this.origin.x+Math.sin(t)*1.8;this.group.position.z=this.origin.z+Math.cos(t)*1.8}else if(this.state==='chase'&&distance>2){delta.normalize();this.group.position.addScaledVector(delta,dt*2.5);this.group.rotation.y=Math.atan2(-delta.x,-delta.z)}if(this.state==='alert'||this.state==='chase'){this.fireTimer-=dt;if(this.fireTimer<=0&&distance<18){this.fireTimer=.85+Math.random()*.35;this.audio.play('smg');this.damagePlayer(5)}}}
+}
+export class PhysicsProp{
+ constructor({scene,mesh,position,explosive=false,onExplode=()=>{}}){this.scene=scene;this.mesh=mesh;this.mesh.position.copy(position);scene.add(mesh);this.position=this.mesh.position;this.velocity=new THREE.Vector3();this.pushable=true;this.explosive=explosive;this.onExplode=onExplode;this.health=explosive?35:Infinity;this.box=new THREE.Box3()}
+ damage(n,impulse){this.health-=n;if(impulse)this.velocity.add(impulse);if(this.health<=0&&this.explosive)this.onExplode(this.position.clone())}
+ update(dt,colliders=[]){this.velocity.y-=18*dt;this.position.addScaledVector(this.velocity,dt);this.velocity.multiplyScalar(Math.max(0,1-dt*1.8));this.box.setFromObject(this.mesh);for(const c of colliders)if(this.box.intersectsBox(c.box)){this.position.y+=.08;this.velocity.y=Math.max(0,this.velocity.y)}}
+}

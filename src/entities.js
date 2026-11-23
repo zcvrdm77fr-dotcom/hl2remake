@@ -78,3 +78,38 @@ export function makeEchoStalker(scene, x, z) {
   root.traverse(object => { if (object.isMesh) object.userData.enemy = enemy; });
   return enemy;
 }
+
+
+export function makeResonanceCrawler(scene,x,z){
+  const root=new THREE.Group();root.position.set(x,0,z);scene.add(root);
+  const shell=material(0x46443a,.96,.02),shellEdge=material(0x74634a,.91,.02);
+  const bone=material(0x9f9274,.95,0),dark=material(0x1c2420,.4,.12);
+  const eyeMat=new THREE.MeshLambertMaterial({color:0xb6cf7e,emissive:0x617d29,emissiveIntensity:1.7});
+  const body=new THREE.Mesh(new THREE.IcosahedronGeometry(.48,1),shell);
+  body.position.set(0,.72,.02);body.scale.set(1.05,.62,1.3);body.castShadow=true;root.add(body);
+  const carapace=new THREE.Mesh(new THREE.IcosahedronGeometry(.38,0),shellEdge);
+  carapace.position.set(0,.95,.18);carapace.scale.set(.96,.54,1.08);root.add(carapace);
+  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.29,1),bone);
+  head.position.set(0,.69,-.53);head.scale.set(.9,.72,.9);root.add(head);
+  for(const side of [-1,1]){
+    const eye=new THREE.Mesh(new THREE.SphereGeometry(.075,6,5),eyeMat);
+    eye.position.set(side*.16,.78,-.77);root.add(eye);
+    for(const i of [0,1,2]){
+      const z=.4-i*.42,outer=side*(.55+i*.06);
+      rod(root,[side*.28,.68,z],[outer,.5,z-.22],.095,shellEdge,5);
+      rod(root,[outer,.5,z-.22],[side*(.83+i*.05),.13,z-.4],.065,dark,5);
+      const claw=new THREE.Mesh(new THREE.ConeGeometry(.075,.22,5),bone);
+      claw.position.set(side*(.83+i*.05),.09,z-.5);claw.rotation.x=Math.PI/2;root.add(claw);
+    }
+  }
+  for(let i=0;i<4;i++){
+    const spike=new THREE.Mesh(new THREE.ConeGeometry(.075,.36,5),shellEdge);
+    spike.position.set(-.22+i*.145,1.12,.18+i*.08);spike.rotation.x=.4;root.add(spike);
+  }
+  const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,0),eyeMat);
+  core.position.set(0,.73,.5);root.add(core);
+  const halo=new THREE.PointLight(0xa8ce6d,.8,3.5);halo.position.set(0,.9,.42);root.add(halo);
+  const enemy={root,health:4,alive:true,attackCooldown:1.1,speed:3.35,damage:12,halo,phase:0};
+  root.traverse(o=>{if(o.isMesh)o.userData.enemy=enemy});
+  return enemy;
+}

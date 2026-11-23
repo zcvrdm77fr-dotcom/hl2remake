@@ -287,7 +287,7 @@ export function buildSector(scene) {
   // Area 04: service lift bay and the lift car's inner door.
   shell(0,-96,15,32);
   wallSign(worldGroup,-7.18,3.2,-97,2.5,0.96,Math.PI/2,"MAINTENANCE","LIFT BAY 01");
-  wallSign(worldGroup,7.18,3.2,-91,2.5,0.96,-Math.PI/2,"HEV ROUTE","KEEP MOVING","#c36e48"); wall(-7.5,-96,0.6,32); wall(7.5,-96,0.6,32); wall(0,-112,15,0.6);
+  wallSign(worldGroup,7.18,3.2,-91,2.5,0.96,-Math.PI/2,"HEV ROUTE","KEEP MOVING","#c36e48"); wall(-7.5,-96,0.6,32); wall(7.5,-96,0.6,32);
   const liftFrame=new THREE.Group(); liftFrame.position.set(0,0,-108); worldGroup.add(liftFrame);
   box(liftFrame,-3.2,2.35,0,0.4,4.7,0.65,mats.lightSteel);
   box(liftFrame,3.2,2.35,0,0.4,4.7,0.65,mats.lightSteel);
@@ -349,7 +349,7 @@ export function buildSector(scene) {
     mats,colliders,interactables,doors:[bulkhead,liftGate],lights,worldGroup,
     badge,coil,scanner,powerConsole,liftConsole,reactorCore,reactorLight,
     redAlarm,sideAlarm,enemySpawn:new THREE.Vector3(0,0,-47),powerOn:false,
-    liftDoor,liftDoorCollider,liftDoorOpening:false,liftDoorProgress:0
+    liftDoor,liftDoorCollider,liftDoorOpening:false,liftDoorProgress:0,physicsProps:[]
   };
 }
 

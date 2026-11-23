@@ -46,6 +46,15 @@ function rod(parent, a, b, radius, mat, sides = 7, endRadius = radius) {
   return mesh;
 }
 
+function lightViewmodel(camera, root) {
+  camera.layers.enable(1);
+  root.traverse(object => { if (object.isMesh) object.layers.enable(1); });
+  const light = new THREE.PointLight(0xf1e2c3, 2.5, 3.4, 2);
+  light.position.set(.12, .34, -1.05);
+  light.layers.set(1);
+  camera.add(light);
+}
+
 function curvedRib(parent, points, radius, mat) {
   const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));
   const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 8, radius, 5, false), mat);
@@ -67,17 +76,16 @@ function makeClawedHand(parent, x, y, z, direction = -1) {
 
 export function makeCrowbar(camera) {
   const root = new THREE.Group();
-  root.position.set(.43, -.34, -.64);
+  root.position.set(.39, -.38, -.64);
   root.rotation.set(-.16, -.12, -.19);
   camera.add(root);
 
   // A worn, painted steel bar with a flattened split claw at the business end.
-  rod(root, [.02, -.29, .12], [-.025, .02, -.12], .037, redPaint, 8);
-  rod(root, [-.025, .02, -.12], [-.13, .31, -.32], .038, redPaint, 8);
-  rod(root, [-.13, .31, -.32], [-.28, .43, -.39], .034, wornSteel, 8);
-  rod(root, [-.28, .43, -.39], [-.39, .36, -.41], .03, wornSteel, 7, .018);
-  rod(root, [-.28, .43, -.39], [-.23, .53, -.45], .03, wornSteel, 7, .018);
+  rod(root, [.02, -.29, .12], [-.055, .04, -.12], .039, redPaint, 8);
+  rod(root, [-.055, .04, -.12], [-.17, .34, -.31], .039, redPaint, 8);
+  curvedRib(root, [[-.17,.34,-.31],[-.26,.42,-.34],[-.38,.40,-.36],[-.43,.32,-.36],[-.38,.25,-.36],[-.31,.25,-.35]], .035, wornSteel);
   rod(root, [.02, -.24, .06], [.02, -.1, -.02], .047, glove, 8);
+  for (const y of [-.19,-.13]) rod(root, [.0,y,.015], [.025,y+.006,-.035], .009, wornSteel, 5);
 
   // A visible HEV sleeve, wrist cuff and wrapped glove keep the weapon grounded.
   const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .32, 3, 8), sleeve);
@@ -95,6 +103,7 @@ export function makeCrowbar(camera) {
     root.add(finger);
   }
   sphere(root, [-.11, -.22, .09], [.055, .09, .09], glove, 7, 5);
+  lightViewmodel(camera, root);
   return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), swing: 0 };
 }
 
@@ -149,6 +158,7 @@ export function makePistol(camera) {
   const muzzle = new THREE.PointLight(0xffbd75, 0, 2.6);
   muzzle.position.set(0, .05, -.84);
   root.add(muzzle);
+  lightViewmodel(camera, root);
   return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), muzzle, recoil: 0 };
 }
 

@@ -39,7 +39,7 @@ function addCeilingLamp(parent,scene,x,z,mats,lights,phase=0) {
   box(parent,x,4.48,z,2.3,0.12,0.48,mats.dark,false);
   const diffuser=box(parent,x,4.4,z,1.92,0.035,0.31,mats.lightGlow,false,false);
   diffuser.material.emissiveIntensity=1.8;
-  lights.push({light:addPoint(scene,0xffdca9,8.5,8.6,x,4.13,z),base:8.5,phase});
+  lights.push({light:addPoint(scene,0xffdca9,11.5,10.8,x,4.13,z),base:11.5,phase});
 }
 function addPipe(parent,x,y,z,length,radius,mat,horizontal=true) {
   const mesh=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,length,7),mat);
@@ -144,19 +144,19 @@ function addWallVent(parent,x,y,z,w,h,rotationY,mats) {
 }
 
 export function buildSector(scene) {
-  scene.background=new THREE.Color(0x343b36);
-  scene.fog=new THREE.Fog(0x343b36,34,172);
+  scene.background=new THREE.Color(0x41453c);
+  scene.fog=new THREE.Fog(0x41453c,38,182);
   const tex={
-    concrete:pixelTexture('concrete',3,3),tile:pixelTexture('tile',14,16),
+    concrete:pixelTexture('concrete',3,3),tile:pixelTexture('tile',8,9),
     steel:pixelTexture('steel',2,2),brick:pixelTexture('brick',3,3),
     hazard:pixelTexture('hazard',3,1),rubber:pixelTexture('rubber',5,6),
     wood:pixelTexture('wood',2,2),bone:pixelTexture('bone',1,1),cloth:pixelTexture('cloth',2,2)
   };
   const mats={
-    concrete:new THREE.MeshLambertMaterial({map:tex.concrete,color:0xb4b5a1}),
-    tile:new THREE.MeshLambertMaterial({map:tex.tile,color:0xaaa58f}),
-    steel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xa0a38f}),
-    brick:new THREE.MeshLambertMaterial({map:tex.brick,color:0xa38a70}),
+    concrete:new THREE.MeshLambertMaterial({map:tex.concrete,color:0xc6c4ad}),
+    tile:new THREE.MeshLambertMaterial({map:tex.tile,color:0xc4bea5}),
+    steel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xb5b9a8}),
+    brick:new THREE.MeshLambertMaterial({map:tex.brick,color:0xb79b7d}),
     dark:new THREE.MeshLambertMaterial({map:tex.rubber,color:0x8a8e7c}),
     wood:new THREE.MeshLambertMaterial({map:tex.wood,color:0xb49a75}),
     ivory:new THREE.MeshLambertMaterial({map:tex.bone,color:0xc5c0a9}),
@@ -173,14 +173,14 @@ export function buildSector(scene) {
   };
   const worldGroup=new THREE.Group(); scene.add(worldGroup);
   const colliders=[],interactables=[],lights=[],doors=[];
-  scene.add(new THREE.HemisphereLight(0xa7b4a3,0x25251b,0.58));
-  const keyLight=new THREE.DirectionalLight(0xdcc9a0,0.92);
+  scene.add(new THREE.HemisphereLight(0xc2c7b3,0x353126,0.98));
+  const keyLight=new THREE.DirectionalLight(0xe4d5b2,1.32);
   keyLight.position.set(-12,28,18); keyLight.castShadow=true;
   keyLight.shadow.mapSize.set(2048,2048); keyLight.shadow.camera.left=-28; keyLight.shadow.camera.right=28;
   keyLight.shadow.camera.top=36; keyLight.shadow.camera.bottom=-335; keyLight.shadow.bias=-0.00025;
   keyLight.shadow.camera.updateProjectionMatrix();
   scene.add(keyLight);
-  const coolFill=new THREE.DirectionalLight(0x718c78,0.2); coolFill.position.set(18,12,-58); scene.add(coolFill);
+  const coolFill=new THREE.DirectionalLight(0x819c89,0.46); coolFill.position.set(18,12,-58); scene.add(coolFill);
 
   function wall(x,z,w,d,height=4.8,mat=mats.concrete){
     box(worldGroup,x,height/2,z,w,height,d,mat);

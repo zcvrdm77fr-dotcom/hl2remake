@@ -1,28 +1,25 @@
-@font-face{
-  font-family:HL1;
-  src:url("assets/fonts/VT323-Regular.ttf") format("truetype");
-  font-style:normal;font-weight:400;font-display:swap
-}
+/* A restrained in-game HUD. No cards, panels, badges or novelty typefaces. */
 :root{
   color-scheme:dark;
-  --ink:#090d08;--paper:#e0dfc4;--muted:#a7ad92;
-  --green:#a8c486;--amber:#dfad62;--red:#d56b55;
-  font-family:HL1,"Courier New",monospace;background:#090d09;color:var(--paper)
+  --hud-white:#e6e5d8;
+  --hud-muted:#c3c6b6;
+  --hud-green:#b5cc91;
+  --hud-amber:#e2bb73;
+  --hud-red:#dd7560;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#090d09;
+  color:var(--hud-white)
 }
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#090d09}
 body{user-select:none}
 button{font:inherit;color:inherit;cursor:pointer}
 #gameRoot{position:relative;width:100vw;height:100vh;overflow:hidden;background:#171f21}
-#gameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;outline:none}
-#gameRoot:after{
-  content:"";position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.045;
-  background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.2) 3px)
-}
+#gameCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;outline:none;image-rendering:pixelated}
 .hidden{display:none!important}
 .screen{position:absolute;inset:0;z-index:10}
 
-/* Title screen: Xen image carries the design. */
+/* Title screen */
 .start-screen{display:block;overflow:hidden;background:#21142a}
 .menu-backdrop{position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none;user-select:none}
 .start-screen:before,.start-screen:after{content:none}
@@ -32,15 +29,15 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .lambda-logo{display:block;width:clamp(42px,5vw,66px);height:clamp(42px,5vw,66px);object-fit:contain;filter:drop-shadow(2px 2px 0 #130c17)}
 .menu-title{
-  margin:0;color:#e78b32;font-family:HL1,monospace;font-size:clamp(28px,3.3vw,48px);
-  font-weight:400;line-height:1;letter-spacing:.03em;text-shadow:2px 2px 0 #261727,4px 4px 0 #0b080b;white-space:nowrap
+  margin:0;color:#e78b32;font-family:Arial,Helvetica,sans-serif;font-size:clamp(27px,3.2vw,44px);
+  font-weight:700;line-height:1;letter-spacing:.025em;text-shadow:2px 2px 0 #261727,3px 3px 0 #0b080b;white-space:nowrap
 }
-.menu-title sup{position:relative;top:-.18em;margin-left:.06em;font-size:.48em}
+.menu-title sup{position:relative;top:-.2em;margin-left:.05em;font-size:.45em}
 .menu-start-button{
   position:absolute;z-index:3;left:50%;top:74.5%;transform:translate(-50%,-50%);
   width:clamp(220px,20.2vw,410px);height:clamp(48px,7.2vh,82px);
   border:2px solid #b97832;border-radius:0;background:rgba(16,10,21,.94);color:#ff982e;
-  font-family:HL1,monospace;font-size:clamp(18px,2vw,30px);font-weight:400;letter-spacing:.08em;
+  font-family:Arial,Helvetica,sans-serif;font-size:clamp(18px,1.8vw,25px);font-weight:700;letter-spacing:.08em;
   text-shadow:1px 2px 0 #713713;box-shadow:0 4px 0 #09060b;cursor:pointer;touch-action:manipulation
 }
 .menu-start-button:hover{filter:brightness(1.13)}
@@ -49,122 +46,126 @@ button{font:inherit;color:inherit;cursor:pointer}
 .menu-start-button.image-hit-area:hover,.menu-start-button.image-hit-area:active{filter:none;transform:none}
 .menu-start-button:focus-visible{outline:2px solid #eee3bd;outline-offset:3px}
 
-/* The in-game interface is typography over the 3D image, not a set of cards. */
+/* In-game overlay: only a few small labels, anchored to screen edges. */
 .hud{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;transition:opacity .12s}
 .hud.active{opacity:1}
 .mission-readout{
-  position:absolute;top:19px;left:22px;width:min(320px,44vw);
-  padding:0;color:var(--paper);text-shadow:1px 1px 1px #000,0 0 5px #000,0 0 10px #000
+  position:absolute;top:19px;left:22px;width:min(300px,44vw);
+  padding:0;color:var(--hud-white);
+  text-shadow:1px 1px 2px #000,0 0 5px rgba(0,0,0,.9)
 }
-.readout-tag{font-size:17px;color:var(--green);letter-spacing:.04em;line-height:1}
-.readout-tag span{color:#777c67;padding:0 3px}
-.mission-readout h2{margin:1px 0 0;font-size:25px;font-weight:400;line-height:1;color:#f0ebcf;letter-spacing:.01em}
-.mission-readout p{margin:0;color:#d0d0b3;font-size:18px;line-height:1}
-.progress-track{width:76px;height:3px;margin-top:5px;background:rgba(0,0,0,.28)}
-.progress-track span{display:block;width:0;height:100%;background:#a9c488;box-shadow:0 0 4px #7b9e64;transition:width .28s}
+.mission-readout h2{
+  margin:0 0 2px;font-family:Arial,Helvetica,sans-serif;
+  font-size:16px;font-weight:600;line-height:1.15;letter-spacing:0;color:#f0eee2
+}
+.mission-readout p{
+  margin:0;color:var(--hud-muted);font-size:12px;font-weight:400;line-height:1.2
+}
+.progress-track{width:54px;height:2px;margin-top:5px;background:rgba(0,0,0,.45)}
+.progress-track span{display:block;width:0;height:100%;background:var(--hud-green);transition:width .25s}
 
-/* Small, unobtrusive centre reticle. */
-.crosshair{position:absolute;left:50%;top:50%;width:12px;height:12px;transform:translate(-50%,-50%);opacity:.85}
-.crosshair i{position:absolute;display:block;background:#e5e5cc;box-shadow:1px 1px 1px #000}
-.crosshair i:nth-child(1){width:2px;height:3px;left:5px;top:0}
-.crosshair i:nth-child(2){width:2px;height:3px;left:5px;bottom:0}
-.crosshair i:nth-child(3){height:2px;width:3px;left:0;top:5px}
-.crosshair i:nth-child(4){height:2px;width:3px;right:0;top:5px}
+/* Crosshair */
+.crosshair{position:absolute;left:50%;top:50%;width:10px;height:10px;transform:translate(-50%,-50%);opacity:.8}
+.crosshair i{position:absolute;display:block;background:#eeeee2;box-shadow:1px 1px 1px #000}
+.crosshair i:nth-child(1){width:1px;height:3px;left:4px;top:0}
+.crosshair i:nth-child(2){width:1px;height:3px;left:4px;bottom:0}
+.crosshair i:nth-child(3){height:1px;width:3px;left:0;top:4px}
+.crosshair i:nth-child(4){height:1px;width:3px;right:0;top:4px}
 
-/* Context prompt floats just below the reticle. */
+/* Context interaction prompt, directly over the world. */
 .interaction-prompt{
-  position:absolute;left:50%;bottom:19%;transform:translateX(-50%);
-  display:flex;align-items:center;gap:7px;padding:0;
-  color:#f0edcf;font:400 22px/1 HL1,monospace;text-shadow:1px 1px 1px #000,0 0 5px #000;
-  opacity:0;transition:opacity .1s
+  position:absolute;left:50%;bottom:18%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:6px;padding:0;
+  color:#f2f0e5;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:500;line-height:1.2;
+  text-shadow:1px 1px 2px #000,0 0 6px #000;opacity:0;transition:opacity .1s
 }
 .interaction-prompt.visible{opacity:1}
 .interaction-prompt kbd{
-  display:inline;min-width:0;height:auto;padding:0;border:0;background:none;
-  color:#f2d18c;font:400 17px/1 HL1,monospace;box-shadow:none
+  display:inline;color:var(--hud-amber);min-width:0;height:auto;padding:0;
+  border:0;background:none;font:700 13px Arial,Helvetica,sans-serif;box-shadow:none
 }
 
-/* Radio dialogue: subtitles only, no tray, logo, or panel. */
+/* Dialogue captions, with no tray. */
 .subtitles{
-  position:absolute;left:50%;bottom:27px;transform:translateX(-50%);
-  width:min(650px,82vw);padding:0;text-align:center;
-  opacity:0;transition:opacity .12s;text-shadow:1px 1px 1px #000,0 0 5px #000,0 0 10px #000
+  position:absolute;left:50%;bottom:25px;transform:translateX(-50%);
+  width:min(620px,82vw);padding:0;text-align:center;opacity:0;transition:opacity .12s;
+  text-shadow:1px 1px 2px #000,0 0 5px #000
 }
 .subtitles.visible{opacity:1}
-.subtitle-copy strong{display:block;margin:0 0 1px;color:#c6d49d;font-size:16px;font-weight:400;letter-spacing:.04em}
-.subtitle-copy p{margin:0;color:#f0ecd4;font:400 20px/1.05 HL1,monospace}
+.subtitle-copy strong{
+  display:block;margin:0 0 3px;color:var(--hud-green);
+  font:700 10px/1.2 Arial,Helvetica,sans-serif;letter-spacing:.12em
+}
+.subtitle-copy p{
+  margin:0;color:#f3f0e5;
+  font:400 14px/1.25 Arial,Helvetica,sans-serif
+}
 
-/* Health and weapon are free-floating readouts at screen edges. */
-.hud-bottom{position:absolute;left:22px;right:22px;bottom:15px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+/* Health and weapon: no background, no frame. */
+.hud-bottom{position:absolute;left:22px;right:22px;bottom:16px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
 .health-card{
-  display:grid;grid-template-columns:19px auto;grid-template-rows:auto 3px;
-  align-items:center;column-gap:4px;row-gap:2px;padding:0;
-  background:none;border:0;box-shadow:none
+  display:grid;grid-template-columns:16px auto;grid-template-rows:auto 2px;
+  align-items:center;column-gap:4px;row-gap:3px;padding:0;background:none;border:0;box-shadow:none
 }
-.health-symbol{grid-row:1/3;color:#a9c888;font:400 31px/.8 HL1,monospace;text-shadow:1px 1px 2px #000,0 0 6px #000}
-.health-readout{display:flex;align-items:baseline;gap:2px;text-shadow:1px 1px 2px #000,0 0 6px #000}
-.health-readout strong{font:400 29px/.8 HL1,monospace;color:#f1edcf}
-.health-readout small{font:400 17px HL1,monospace;color:#c6c7a9}
-.health-track{grid-column:2;width:65px;height:3px;background:rgba(0,0,0,.45)}
-.health-track span{display:block;width:100%;height:100%;background:#a8c486;box-shadow:0 0 4px #78965e;transition:width .16s}
-.hud.lowHealth .health-symbol,.hud.lowHealth .health-readout strong{color:var(--red)}
-.hud.lowHealth .health-track span{background:var(--red)}
-.weapon-label{
-  display:block;padding:0;background:none;border:0;box-shadow:none;
-  text-shadow:1px 1px 2px #000,0 0 6px #000
-}
-.weapon-label strong{font:400 22px/1 HL1,monospace;letter-spacing:.02em;color:#e6e1c6}
+.health-symbol{grid-row:1/3;color:var(--hud-green);font:700 20px/1 Arial,Helvetica,sans-serif;text-shadow:1px 1px 2px #000}
+.health-readout{display:flex;align-items:baseline;gap:3px;text-shadow:1px 1px 2px #000}
+.health-readout strong{font:600 17px/1 Arial,Helvetica,sans-serif;color:#f0eee2}
+.health-readout small{font:400 9px Arial,Helvetica,sans-serif;color:var(--hud-muted)}
+.health-track{grid-column:2;width:48px;height:2px;background:rgba(0,0,0,.5)}
+.health-track span{display:block;width:100%;height:100%;background:var(--hud-green);transition:width .16s}
+.hud.lowHealth .health-symbol,.hud.lowHealth .health-readout strong{color:var(--hud-red)}
+.hud.lowHealth .health-track span{background:var(--hud-red)}
+.weapon-label{display:block;padding:0;background:none;border:0;box-shadow:none;text-shadow:1px 1px 2px #000}
+.weapon-label strong{font:500 13px/1 Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#e7e5d9}
 
-/* Gameplay feedback is text only; no toast rectangle. */
+/* Feedback is just a line of text, not an alert card. */
 .toast{
-  position:absolute;left:50%;top:16%;transform:translate(-50%,-4px);
-  padding:0;background:none;border:0;box-shadow:none;
-  color:#f0dca9;font:400 22px/1.1 HL1,monospace;text-align:center;
-  text-shadow:1px 1px 1px #000,0 0 6px #000,0 0 12px #000;
-  opacity:0;transition:opacity .1s,transform .1s
+  position:absolute;left:50%;top:16%;transform:translate(-50%,-4px);padding:0;
+  background:none;border:0;box-shadow:none;color:#f0dca9;
+  font:500 14px/1.2 Arial,Helvetica,sans-serif;text-align:center;
+  text-shadow:1px 1px 2px #000,0 0 7px #000;opacity:0;transition:opacity .1s,transform .1s
 }
 .toast.visible{opacity:1;transform:translate(-50%,0)}
 .hit-flash{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .08s}
 .hit-flash.visible{opacity:1;box-shadow:inset 0 0 65px 15px rgba(190,50,36,.3)}
 
-/* Pause/end text sits directly on the darkened game world. No modal card. */
+/* Pause and end: typography over a dimmed game scene. */
 .modal-screen{display:grid;place-items:center;background:rgba(0,0,0,.58);backdrop-filter:none}
 .modal-panel{
-  width:auto;max-width:min(540px,90vw);padding:0;
-  background:transparent;border:0;outline:0;box-shadow:none;
-  color:var(--paper);text-align:center;text-shadow:1px 1px 2px #000,0 0 10px #000
+  width:auto;max-width:min(540px,90vw);padding:0;background:transparent;
+  border:0;outline:0;box-shadow:none;color:var(--hud-white);text-align:center;
+  text-shadow:1px 1px 2px #000,0 0 10px #000
 }
-.menu-cap{font:400 17px/1 HL1,monospace;color:#a8be88;letter-spacing:.05em}
-.menu-cap span{color:#cf9b53;padding:0 3px}
-.modal-panel h2{margin:8px 0 12px;font:400 42px/1 HL1,monospace;letter-spacing:.02em;color:#f1ebcf}
+.menu-cap{font:600 10px/1.2 Arial,Helvetica,sans-serif;color:var(--hud-green);letter-spacing:.12em}
+.menu-cap span{color:var(--hud-amber);padding:0 3px}
+.modal-panel h2{margin:8px 0 12px;font:600 23px/1.1 Arial,Helvetica,sans-serif;letter-spacing:.04em;color:#f1ebcf}
 .menu-rule{display:none}
-.modal-panel p{margin:0 0 10px;color:#e3dfc5;font:400 21px/1.1 HL1,monospace}
+.modal-panel p{margin:0 0 10px;color:#e3dfc5;font:400 14px/1.35 Arial,Helvetica,sans-serif}
 .primary-button,.secondary-button{
-  display:block;width:auto;min-height:0;margin:7px auto 0;padding:0;
-  border:0;border-radius:0;background:none;color:#e3dfc5;text-align:center;
-  font:400 25px/1.05 HL1,monospace;box-shadow:none;text-shadow:1px 1px 2px #000;
+  display:block;width:auto;min-height:0;margin:8px auto 0;padding:2px 0;
+  border:0;border-radius:0;background:none;color:#e3e2d8;text-align:center;
+  font:600 14px/1.2 Arial,Helvetica,sans-serif;box-shadow:none;text-shadow:1px 1px 2px #000;
   pointer-events:auto
 }
 .primary-button{color:#e5bb76}
 .primary-button:hover,.secondary-button:hover{background:none;color:#fff2cf;text-decoration:underline}
 .primary-button:active,.secondary-button:active{background:none}
-.modal-foot{margin-top:17px;padding:0;border:0;color:#a9b18d;font:400 16px/1 HL1,monospace;letter-spacing:.04em}
-.end-time{display:block;margin:8px 0;color:#b6ce91;font:400 23px/1 HL1,monospace}
+.modal-foot{margin-top:15px;padding:0;border:0;color:#a9b18d;font:500 10px/1 Arial,Helvetica,sans-serif;letter-spacing:.12em}
+.end-time{display:block;margin:8px 0;color:#b6ce91;font:500 13px/1 Arial,Helvetica,sans-serif}
 
 @media(max-width:760px){
   .menu-brand{top:18px;left:14px;gap:8px}
   .lambda-logo{width:42px;height:42px}
-  .menu-title{font-size:clamp(24px,7vw,38px)}
-  .mission-readout{top:12px;left:12px;width:min(290px,64vw)}
-  .readout-tag{font-size:15px}
-  .mission-readout h2{font-size:22px}
-  .mission-readout p{font-size:16px}
+  .menu-title{font-size:clamp(24px,7vw,36px)}
+  .mission-readout{top:12px;left:12px;width:min(270px,64vw)}
+  .mission-readout h2{font-size:15px}
+  .mission-readout p{font-size:11px}
   .hud-bottom{left:12px;right:12px;bottom:10px}
   .subtitles{width:calc(100% - 22px);bottom:69px}
-  .subtitle-copy p{font-size:18px}
-  .interaction-prompt{bottom:23%;font-size:20px}
-  .toast{top:19%;font-size:19px;max-width:90vw}
-  .modal-panel h2{font-size:36px}
+  .subtitle-copy p{font-size:13px}
+  .interaction-prompt{bottom:23%;font-size:12px}
+  .toast{top:19%;font-size:12px;max-width:90vw}
+  .modal-panel h2{font-size:21px}
 }
 @media(max-height:560px){
   .mission-readout{top:8px}

@@ -30,9 +30,9 @@ export const STORY = {
 };
 
 export const OBJECTIVES = [
-  ['HAE KULKUKORTTI', 'Etsi vartijan pöydältä kulkukortti.'],
-  ['AVAA HUOLTO-OVI', 'Käytä kulkukorttia lukijaan.'],
-  ['HAE JÄÄHDYTYSKELA', 'Etsi sininen kela testikammion huoltotasolta.'],
-  ['PALAUTA VIRTA', 'Käynnistä hissin varavoima.'],
-  ['POISTU HISSILLÄ', 'Pääse huoltohissiin.']
+  ['Etsi kulkukortti', 'Vartijan pöydältä.'],
+  ['Avaa huolto-ovi', 'Käytä korttia lukijaan.'],
+  ['Hae jäähdytyskela', 'Testikammion huoltotasolta.'],
+  ['Palauta virta', 'Käynnistä hissin varavoima.'],
+  ['Poistu hissillä', 'Mene huoltohissiin.']
 ];

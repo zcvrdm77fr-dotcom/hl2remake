@@ -114,12 +114,12 @@ function updatePrompt() {
   if(!running){ui.prompt.classList.remove('visible');return}
   const target=getLookedAtInteractable();
   if(!target){ui.prompt.classList.remove('visible');return}
-  let label=target.node.userData.label||'KÄYTÄ';
+  let label=target.node.userData.label||'Käytä';
   if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'OTA KULKUKORTTI';
   if(target.node.userData.kind==='scanner') label=hasBadge?'KÄYTÄ LUKIJAA':'LUKIJA · VAATII KORTIN';
-  if(target.node.userData.kind==='coil') label='OTA JÄÄHDYTYSKELA';
-  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'TARVITSET KELAN';
-  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HISSI':'HISSISSÄ EI OLE VIRTOJA';
+  if(target.node.userData.kind==='coil') label='Ota jäähdytyskela';
+  if(target.node.userData.kind==='power') label=hasCoil?'Käynnistä varavoima':'Tarvitset jäähdytyskelan';
+  if(target.node.userData.kind==='lift') label=world.powerOn?'Käynnistä hissi':'Hississä ei ole virtaa';
   ui.promptLabel.textContent=label; ui.prompt.classList.add('visible');
 }
 
@@ -226,11 +226,11 @@ function finishGame(won) {
   running=false; finished=true; controls.unlock();
   ui.hud.classList.remove('active'); ui.weaponLabel.classList.remove('active');
   ui.end.classList.remove('hidden');
-  $('endTitle').textContent=won?'POISTUIT SEKTORISTA 09':'SUOJAPUKU PETTI';
+  $('endTitle').textContent=won?'Pääsit pois sektorista 09':'Suojapuku petti';
   $('endDescription').textContent=won
     ? 'Huoltohissi sulkeutuu. Radiosta kuuluu vielä yksi viesti.'
     : 'Olento saavutti sinut ennen hissiä.';
-  $('endTime').textContent='AIKA '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
+  $('endTime').textContent='Aika '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
 }
 function openPause() {
   if(!running) return;

@@ -7,7 +7,7 @@
   <meta name="description" content="HALF-LIFE² — A low-poly first-person fan campaign.">
   <title>HALF-LIFE²</title>
   <link rel="icon" href="assets/lambda.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=hl1-flat-3">
   <script type="importmap">
     {
       "imports": {
@@ -30,9 +30,8 @@
 
     <section id="hud" class="hud">
       <div class="mission-readout">
-        <div class="readout-tag">SEKTORI 09 <span>—</span> TAVOITE</div>
-        <h2 id="objectiveTitle">HAE KULKUKORTTI</h2>
-        <p id="objectiveDetail">Etsi vartijan pöydältä kulkukortti.</p>
+        <h2 id="objectiveTitle">Etsi kulkukortti</h2>
+        <p id="objectiveDetail">Vartijan pöydältä.</p>
         <div class="progress-track"><span id="progressFill"></span></div>
       </div>
       <div id="crosshair" class="crosshair"><i></i><i></i><i></i><i></i></div>
@@ -42,11 +41,11 @@
       </div>
       <div class="hud-bottom">
         <div class="health-card">
-          <div class="health-symbol">+</div>
-          <div class="health-readout"><strong id="healthValue">100</strong><small>%</small></div>
+          <span class="health-symbol">+</span>
+          <div class="health-readout"><strong id="healthValue">100</strong><small>HP</small></div>
           <div class="health-track"><span id="healthFill"></span></div>
         </div>
-        <div id="weaponLabel" class="weapon-label"><strong>SORKKARAUTA</strong></div>
+        <div id="weaponLabel" class="weapon-label"><strong>Sorkkarauta</strong></div>
       </div>
       <div id="toast" class="toast"></div><div id="hitFlash" class="hit-flash"></div>
     </section>

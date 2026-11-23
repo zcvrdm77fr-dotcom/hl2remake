@@ -20,12 +20,12 @@
 <body>
   <main id="gameRoot">
     <section id="startScreen" class="screen start-screen" style="position:absolute;inset:0;z-index:20;display:block;overflow:hidden;background:#21142a">
-      <img class="menu-backdrop" src="assets/xen-menu.webp" alt="" aria-hidden="true" draggable="false" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
+      <img class="menu-backdrop" src="assets/xen-menu.svg" alt="" aria-hidden="true" draggable="false" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
       <div class="menu-brand">
         <img class="lambda-logo" src="assets/lambda.svg" alt="Lambda">
         <h1 class="menu-title">HALF-LIFE<sup>2</sup></h1>
       </div>
-      <button id="startButton" class="menu-start-button" type="button" aria-label="Start game" onclick="if(window.__startGame){window.__startGame()}else{window.__showBootError(this)}" style="position:absolute;z-index:3;left:39%;top:71%;width:21%;height:8%;padding:0;border:0;background:transparent;box-shadow:none;color:transparent;opacity:0;cursor:pointer;pointer-events:auto;touch-action:manipulation">START GAME</button>
+      <button id="startButton" class="menu-start-button" type="button" aria-label="Start game" onclick="if(window.__startGame){window.__startGame()}else{window.__showBootError(this)}" style="position:absolute;z-index:3;left:50%;top:74.5%;transform:translate(-50%,-50%);width:min(410px,82vw);height:64px;left:50%;top:74.5%;transform:translate(-50%,-50%);padding:0;border:2px solid #b97832;background:rgba(16,10,21,.94);box-shadow:0 7px 28px rgba(0,0,0,.42);color:#ff982e;opacity:1;cursor:pointer;pointer-events:auto;touch-action:manipulation">START GAME</button>
     </section>
 
     <section id="hud" class="hud">

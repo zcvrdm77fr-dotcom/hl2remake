@@ -15,6 +15,12 @@ function rod(parent,a,b,r,material,sides=7){
   mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());
   mesh.castShadow=true;mesh.receiveShadow=true;parent.add(mesh);return mesh;
 }
+function addPoint(parent,color,intensity,distance,x,y,z){
+  const light=new THREE.PointLight(color,intensity,distance,2);
+  light.position.set(x,y,z);
+  parent.add(light);
+  return light;
+}
 function boundsCollider(x,z,w,d,minY=0,maxY=4.8){
   return {minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2,minY,maxY};
 }

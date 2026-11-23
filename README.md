@@ -1,6 +1,6 @@
 # HELIX PROTOCOL — Chapter 01: Sector 09
 
-An unofficial, original browser FPS fan campaign inspired by late-1990s PC shooters and Source-style movement. This branch replaces the old raycaster game with a real Three.js/WebGL 3D scene.
+An unofficial, original browser FPS fan campaign inspired by late-1990s PC shooters and Source-style movement. This branch uses a real Three.js/WebGL 3D scene.
 
 ## What this build contains
 
@@ -9,8 +9,8 @@ An unofficial, original browser FPS fan campaign inspired by late-1990s PC shoot
 - A complete first chapter objective chain: find a security card, open the bulkhead, retrieve the coolant coil, restore lift power and escape.
 - One original hostile creature with pursuit and melee damage.
 - A first-person crowbar and hit detection.
-- Written radio/subtitle dialogue and original procedural radio/impact tones. No mismatched old voice recording or forced text-to-speech.
-- Source-inspired ground acceleration, friction, air acceleration, gravity, jump height and hold-to-bunnyhop behaviour.
+- Written radio/subtitle dialogue and original procedural radio/impact tones.
+- Source-inspired ground acceleration, friction, air acceleration, gravity, jump arc and hold-to-bunnyhop behaviour.
 
 ## Run locally
 
@@ -20,9 +20,7 @@ From the repository root:
 
     python3 -m http.server 8000
 
-Open http://localhost:8000 in a modern browser with WebGL support.
-
-Do not open index.html directly with file://; ES modules and the Three.js import map should be served over HTTP.
+Open http://localhost:8000 in a modern browser with WebGL support. Do not open index.html directly with file://.
 
 ## Controls
 
@@ -41,10 +39,14 @@ Click the start button to capture the mouse. Press Esc to release it and pause.
 
 ## Movement notes
 
-The controller is Source-inspired, not a copy of Valve's engine. It uses separate ground and air acceleration, ground friction, gravity, a buffered held-jump for bunnyhopping, sub-stepped horizontal collision and a speed cap chosen for this small level. Momentum can be built by turning into an air-strafe while airborne.
+The controller is Source-inspired, not a copy of Valve's engine. It uses separate ground and air acceleration, ground friction, gravity, a held-jump bunnyhop, sub-stepped horizontal collision and a speed cap. On the ground, WASD controls movement. In the air, only A/D applies directional acceleration; W/S do not steer you. Turn the mouse smoothly while holding A or D to curve the air-strafe and build momentum.
 
 ## Story premise
 
 Your shift at Kallio Research Annex begins as routine maintenance. A recorded message from Dr. Lehto carries a timestamp from the future. The Helix experiment has already breached containment, and the only working route out is the service lift in Sector 09.
 
 This is an original fan-made scenario. Half-Life and Valve are trademarks of their respective owners; this project is not affiliated with or endorsed by Valve.
+
+## GitHub Pages
+
+The `feature/my-change` branch deploys automatically to GitHub Pages whenever a commit is pushed. In the repository, open **Settings → Pages** and set **Build and deployment → Source** to **GitHub Actions** if it is not already selected. The workflow publishes the static project from the repository root; no npm build is needed.

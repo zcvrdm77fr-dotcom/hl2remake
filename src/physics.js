@@ -103,8 +103,17 @@ export class SourceMovement {
     this.right.crossVectors(this.forward, this.up).normalize();
 
     this.wish.set(0, 0, 0);
-    this.wish.addScaledVector(this.forward, input.forward);
-    this.wish.addScaledVector(this.right, input.right);
+    if (this.grounded) {
+      // Ground movement uses the full WASD input.
+      this.wish.addScaledVector(this.forward, input.forward);
+      this.wish.addScaledVector(this.right, input.right);
+    } else {
+      // Air control is deliberately strafe-only: W/S cannot steer in mid-air.
+      // Turning the view while holding A or D changes the strafe acceleration
+      // direction, allowing Source-style curved air-strafes to build momentum.
+      this.wish.addScaledVector(this.right, input.right);
+    }
+
     const inputLength = Math.min(1, this.wish.length());
     if (this.wish.lengthSq() > 0.0001) this.wish.normalize();
     const wishSpeed = (sprintHeld ? this.sprintSpeed : this.groundSpeed) * inputLength;

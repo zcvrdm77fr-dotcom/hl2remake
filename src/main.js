@@ -7,7 +7,7 @@ import { makeCombine, makeWeapon, makeEnemyBolt } from './entities.js';
 const $ = (id) => document.getElementById(id);
 const ui = {
   start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'),
-  startButton: $('startButton'), resume: $('resumeButton'), restart: $('restartButton'),
+  startButton: $('startButton'), resume: $('resumeButton'), restart: $('restartButton'), use: $('useButton'),
   hud: $('hud'), objective: $('objective'), detail: $('objectiveDetail'),
   progress: $('progressFill'), prompt: $('interactionPrompt'), subtitles: $('subtitles'),
   health: $('healthValue'), healthFill: $('healthFill'), ammo: $('ammoValue'),
@@ -168,6 +168,7 @@ function startGame() {
   ui.start.classList.add('hidden');
   ui.pause.classList.add('hidden');
   ui.end.classList.add('hidden');
+  ui.hud.classList.add('active');
   controls.lock();
   previousTime = performance.now();
   showSubtitle('arrival', 4.4);
@@ -186,12 +187,17 @@ function pauseGame() {
 function resumeGame() {
   if (!started || gameWon || health <= 0) return;
   ui.pause.classList.add('hidden');
+  paused = false;
+  running = true;
+  previousTime = performance.now();
+  if ('speechSynthesis' in window) speechSynthesis.resume();
   controls.lock();
 }
 
 function finishGame(won) {
   running = false;
   gameWon = won;
+  ui.hud.classList.remove('active');
   controls.unlock();
   ui.end.classList.remove('hidden');
   $('endTitle').textContent = won ? 'Aika liikkuu taas.' : 'Yhteys katkesi.';
@@ -220,10 +226,9 @@ function updateObjective() {
 }
 
 function currentColliders() {
-  if (!sceneBundle.unlocked && objectiveStep !== 'cells') {
-    return sceneBundle.colliders.concat(sceneBundle.gateCollider);
-  }
-  return sceneBundle.colliders;
+  return sceneBundle.unlocked
+    ? sceneBundle.colliders
+    : sceneBundle.colliders.concat(sceneBundle.gateCollider);
 }
 
 function spawnWave() {
@@ -311,7 +316,6 @@ function shoot() {
     if (enemy && !enemy.dead) {
       enemy.health--;
       enemy.flash = 0.12;
-      hit.object.material = hit.object.material;
       if (enemy.health <= 0) {
         enemy.dead = true;
         scene.remove(enemy.root);
@@ -425,13 +429,14 @@ ui.quality.addEventListener('change', () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, scale));
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
-ui.jump.addEventListener('pointerdown', event => { event.preventDefault(); keyboard.add('Space'); });
+ui.jump.addEventListener('pointerdown', event => { event.preventDefault(); ui.jump.setPointerCapture(event.pointerId); keyboard.add('Space'); });
 for (const name of ['pointerup','pointercancel','lostpointercapture']) ui.jump.addEventListener(name, () => keyboard.delete('Space'));
 ui.fire.addEventListener('pointerdown', event => { event.preventDefault(); shoot(); });
+ui.use.addEventListener('pointerdown', event => { event.preventDefault(); interact(); });
 
 for (const button of document.querySelectorAll('[data-key]')) {
   const code = button.dataset.key;
-  button.addEventListener('pointerdown', event => { event.preventDefault(); keyboard.add(code); button.classList.add('pressed'); });
+  button.addEventListener('pointerdown', event => { event.preventDefault(); button.setPointerCapture(event.pointerId); keyboard.add(code); button.classList.add('pressed'); });
   for (const name of ['pointerup','pointercancel','lostpointercapture']) button.addEventListener(name, () => { keyboard.delete(code); button.classList.remove('pressed'); });
 }
 

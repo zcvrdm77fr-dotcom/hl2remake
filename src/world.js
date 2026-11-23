@@ -240,8 +240,10 @@ export function buildCity(THREERef) {
   addBuilding(THREERef, worldGroup, 20, -91, 18, 27, 31, mats.concrete, windows, colliders);
 
   // The railway station facade, columns and overhead canopy.
-  box(THREERef, worldGroup, 0, 7, -23.5, 33, 14, 2.6, mats.concrete);
-  colliders.push(collider(0, -23.5, 33, 2.6));
+  box(THREERef, worldGroup, -10.6, 7, -23.5, 11.8, 14, 2.6, mats.concrete);
+  box(THREERef, worldGroup, 10.6, 7, -23.5, 11.8, 14, 2.6, mats.concrete);
+  box(THREERef, worldGroup, 0, 13.25, -23.5, 9.4, 1.5, 2.6, mats.concrete);
+  colliders.push(collider(-10.6, -23.5, 11.8, 2.6), collider(10.6, -23.5, 11.8, 2.6));
   for (const x of [-14, -9, 9, 14]) {
     const column = new THREERef.Mesh(new THREERef.BoxGeometry(1.1, 12, 1.2), mats.brick);
     column.position.set(x, 6, -21.2); column.castShadow = true; worldGroup.add(column);

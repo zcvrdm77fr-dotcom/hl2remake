@@ -23,7 +23,7 @@ Open <http://localhost:8000>. The first load requires an internet connection to 
 | Sprint | Shift |
 | Jump / auto-bunnyhop | Hold Space |
 | Air-strafe | A / D while moving the mouse |
-| Interact / pick up cells / use relay | E |
+| Interact / pick up cells / use relay | E or right mouse button |
 | Fire pulse tool | Left mouse button or F |
 | Reload | R |
 | Pause | Esc |
@@ -42,7 +42,7 @@ Bunnyhop is automatic while Space is held. Preserve speed across landings, build
 - Three waves of Combine units with basic pursuit and attack behaviour.
 - A pulse weapon with hit detection, reloads and tracer effects.
 - Finnish subtitles and optional native Finnish speech synthesis if the browser has a Finnish voice installed. The old mismatched radio recording is not used.
-- Touch-friendly movement, jump, fire and look controls.
+- Touch-friendly movement, jump, fire, use and look controls.
 
 ## Project layout
 

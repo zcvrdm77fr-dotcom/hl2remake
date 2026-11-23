@@ -28,6 +28,9 @@ h1 em{font-size:.56em;color:var(--orange);font-style:normal;vertical-align:top;m
 .intro{max-width:420px;font-size:17px;line-height:1.6;color:#c3c7c1;margin:0 0 32px}
 .primaryButton{display:flex;align-items:center;justify-content:space-between;gap:40px;min-width:280px;padding:17px 20px;border:1px solid #f0b47c;background:linear-gradient(135deg,#d37c40,#8f4c2d);box-shadow:0 7px 35px #0007;color:#fff4e5;font:700 12px var(--mono);letter-spacing:.14em;text-align:left}
 .primaryButton:hover{filter:brightness(1.14);transform:translateY(-1px)}
+.menuOptions{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px}
+.menuOptions label{display:grid;gap:7px;color:#aeb8b0;font:9px var(--mono);letter-spacing:.1em}
+.menuOptions select{min-width:145px;padding:8px 9px;border:1px solid #7d898066;background:#0e191d;color:#e7e2d4;font:10px var(--mono)}
 .primaryButton span{font-size:17px}
 .secondaryButton{display:block;margin-top:10px;padding:13px 18px;width:100%;border:1px solid var(--line);background:#1b272b;color:var(--muted);font:700 11px var(--mono);letter-spacing:.12em}
 .quickControls{display:flex;gap:23px;flex-wrap:wrap;margin-top:28px;color:#9ca6a1;font:10px var(--mono);letter-spacing:.06em}
@@ -81,10 +84,11 @@ kbd{padding:4px 6px;border:1px solid #a5b2a344;background:#131e21;color:#ece8db;
 #mobileControls.visible{display:block}
 .mobileLeft,.mobileRight{position:absolute;bottom:28px;pointer-events:auto;display:flex;flex-direction:column;gap:7px}
 .mobileLeft{left:20px}.mobileLeft>div{display:flex;gap:6px}
-.mobileRight{right:20px}
+.mobileRight{right:20px;gap:8px}
 .mobileLeft button,.mobileRight button{width:48px;height:48px;border:1px solid #e9e2cf77;border-radius:50%;background:#111c20b9;color:#f0e9d9;font:700 12px var(--mono);touch-action:none}
 .mobileLeft>button{align-self:center}
 .mobileRight button{width:61px;height:61px}
+#useButton{border-color:#83d4c4aa;color:#a9e5d7}
 .mobileLeft .pressed,.mobileRight button:active{background:#a95b36}
 #lookArea{position:absolute;left:34%;right:32%;top:14%;bottom:15%;pointer-events:auto;touch-action:none}
 @media(pointer:coarse){

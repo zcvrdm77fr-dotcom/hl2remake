@@ -102,6 +102,16 @@ function staticCrate(world,x,z,w=1.35,h=1.25){
   }
   world.colliders.push(boundsCollider(x,z,w+.1,w+.1,0,h));
 }
+function pickupToken(world,x,z,kind,label,color=0xd59b4e){
+  const root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
+  const m=world.mats;
+  box(root,0,.14,0,.46,.22,.3,m.dark,false);
+  const token=box(root,0,.31,0,.32,.28,.2,m.amber);
+  token.material=new THREE.MeshLambertMaterial({color,emissive:color,emissiveIntensity:.22});
+  box(root,0,.48,0,.12,.08,.12,m.lightSteel,false,false);
+  const halo=new THREE.PointLight(color,.4,2.6);halo.position.set(0,.55,0);root.add(halo);
+  root.userData.kind=kind;root.userData.label=label;world.interactables.push(root);return root;
+}
 function movableDrum(world,x,z){
   const m=world.mats,root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
   cylinder(root,0,.56,0,.43,.43,1.12,m.brick,10);
@@ -197,6 +207,11 @@ export function buildChapterTwo(world,scene){
   }
   for(const z of [-158,-173,-189])lamp(world,scene,0,z,0xe0bc7d);
   const fuse=fusePickup(world,12.6,-178.5);
+  const pistolPickup=pickupToken(world,-12.6,-174.2,"pistol","Ota 9 mm pistooli",0x87908a);
+  const ammoPickups=[
+    pickupToken(world,-9.2,-185.7,"ammo","Ota 9 mm ammuksia",0xd8c078),
+    pickupToken(world,13.7,-190.1,"ammo","Ota 9 mm ammuksia",0xd8c078)
+  ];
   // A half-open tool locker tells the player where the replacement fuse came from.
   box(g,13.5,.95,-179.5,1.15,1.9,.82,m.steel);
   box(g,13.5,1.82,-179.05,1.0,.12,.12,m.amber);
@@ -247,7 +262,7 @@ export function buildChapterTwo(world,scene){
   // Side emergency beacon and a dim maintenance sign.
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);
   const green=new THREE.PointLight(0x80c6a2,.2,8);green.position.set(0,2.6,-276);scene.add(green);
-  const lower={fuse,pumpConsole,valve,tramConsole,tram,sluice,sluiceCollider,exitGate,exitCollider,
+  const lower={fuse,pistolPickup,ammoPickups,pumpConsole,valve,tramConsole,tram,sluice,sluiceCollider,exitGate,exitCollider,
     pumpOn:false,valveClosed:false,tramRunning:false,red,green,elapsed:0};
   return lower;
 }

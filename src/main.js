@@ -220,6 +220,13 @@ function interact() {
     node.visible=false;pistolAmmo=Math.min(60,pistolAmmo+12);updateAmmo();
     toast('+12 patruunaa');return;
   }
+  if(kind==='medkit') {
+    if(health>=100){toast('Ensiapupakkaus kannattaa säästää.');return}
+    node.visible=false;setHealth(Math.min(100,health+35));toast('Terveys palautui.');impactSound();return;
+  }
+  if(kind==='recording') {
+    node.visible=false;toast('Huoltopäiväkirja tallennettu.',2.4);say(STORY.freightLog,10.5);return;
+  }
   if(kind==='pump') {
     if(!hasFuse||stage<7){toast('Pumput tarvitsevat varasulakkeen.');return}
     if(world.lower.pumpOn){toast('Pumput ovat jo käynnissä.');return}

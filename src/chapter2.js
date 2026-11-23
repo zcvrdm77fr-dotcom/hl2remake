@@ -64,6 +64,17 @@ function terminal(world,x,z,kind,title){
   world.colliders.push(boundsCollider(x,z,1.05,.78,0,2.15));
   return root;
 }
+function medkitPickup(world,x,z){
+  const root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
+  const m=world.mats;
+  box(root,0,.16,0,.62,.3,.42,m.dark,false);
+  box(root,0,.34,-.02,.55,.1,.37,m.lightSteel,false,false);
+  box(root,0,.43,-.215,.17,.035,.035,m.redGlow,false,false);
+  box(root,0,.43,.215,.17,.035,.035,m.redGlow,false,false);
+  box(root,0,.43,0,.055,.035,.37,m.redGlow,false,false);
+  const glow=new THREE.PointLight(0xc95e49,.32,2.8);glow.position.set(0,.65,0);root.add(glow);
+  root.userData.kind="medkit";root.userData.label="Käytä ensiapupakkaus";world.interactables.push(root);return root;
+}
 function fusePickup(world,x,z){
   const root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
   const m=world.mats;
@@ -213,6 +224,9 @@ export function buildChapterTwo(world,scene){
     pickupToken(world,-9.2,-185.7,"ammo","Ota 9 mm ammuksia",0xd8c078),
     pickupToken(world,13.7,-190.1,"ammo","Ota 9 mm ammuksia",0xd8c078)
   ];
+  const medkit=medkitPickup(world,5.3,-190.8);
+  const recorder=terminal(world,-14.8,-162.2,"recording","Toista huoltopäiväkirja");
+  recorder.userData.label="Kuuntele tallenne";
   // A half-open tool locker tells the player where the replacement fuse came from.
   box(g,13.5,.95,-179.5,1.15,1.9,.82,m.steel);
   box(g,13.5,1.82,-179.05,1.0,.12,.12,m.amber);
@@ -228,6 +242,7 @@ export function buildChapterTwo(world,scene){
     cylinder(g,x,1.45,z,.68,.68,2.9,m.dark,12);
     cylinder(g,x,2.95,z,.75,.75,.18,m.lightSteel,12);
     cylinder(g,x,.18,z,.78,.78,.18,m.lightSteel,12);
+    world.colliders.push(boundsCollider(x,z,1.55,1.55,0,3.1));
     for(let i=0;i<6;i++){
       const a=i*Math.PI/3;
       cylinder(g,x+Math.cos(a)*.58,1.45,z+Math.sin(a)*.58,.045,.045,2.55,m.amber,6);
@@ -263,7 +278,8 @@ export function buildChapterTwo(world,scene){
   // Side emergency beacon and a dim maintenance sign.
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);
   const green=new THREE.PointLight(0x80c6a2,.2,8);green.position.set(0,2.6,-276);scene.add(green);
-  const lower={fuse,pistolPickup,ammoPickups,pumpConsole,valve,tramConsole,tram,sluice,sluiceCollider,exitGate,exitCollider,
+  const tramCollider=boundsCollider(0,-273,9.1,15.2,0,3.35);world.colliders.push(tramCollider);
+  const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
     pumpOn:false,valveClosed:false,tramRunning:false,red,green,elapsed:0};
   return lower;
 }
@@ -295,5 +311,7 @@ export function animateChapterTwo(lower,dt,elapsed){
   if(lower.tramRunning){
     lower.tram.position.z-=dt*3.8;
     lower.tram.rotation.y=Math.sin(elapsed*1.2)*.012;
+    const c=lower.tramCollider,z=lower.tram.position.z;
+    c.minZ=z-7.6;c.maxZ=z+7.6;
   }
 }

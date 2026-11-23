@@ -47,6 +47,10 @@ export const STORY = {
     speaker: 'AINO / RADIO',
     line: 'Löysit vartijan pistoolin. Pidä se valmiina. Täällä ei ole enää ketään, joka tulisi auttamaan.'
   },
+  freightLog: {
+    speaker: 'HUOLTOTEKNIKKO / TALLENNE',
+    line: 'Rahtihalli suljettiin ennen koetta. Joku siirsi tänne kaikki näytteet, mutta luovutuslistassa ei ole vastaanottajaa. Älä vie mitään raitiovaunuun.'
+  },
   tramStarted: {
     speaker: 'TUNTEMATON',
     line: 'Sinä et ole ensimmäinen, joka yrittää lähteä. Mutta olet ensimmäinen, joka avasi oven oikealta puolelta.'

@@ -80,8 +80,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 }
 .interaction-prompt.visible{opacity:1}
 .interaction-prompt kbd{
-  display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;
-  padding:0 3px;border:1px solid #b59b61;background:rgba(15,18,10,.34);
+  display:inline;min-width:0;height:auto;padding:0;border:0;background:none;
   color:#f2d18c;font:400 17px/1 HL1,monospace;box-shadow:none
 }
 

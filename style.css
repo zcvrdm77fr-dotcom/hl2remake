@@ -123,3 +123,16 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
 .objective-card h2,.health-card strong,.weapon-label strong,.movement-card strong{font-family:var(--mono);text-shadow:1px 1px #070907}
 .objective-card p{letter-spacing:.01em}
 .modal-panel .eyebrow{font-family:var(--mono);color:#a7b68c}
+
+/* Keep the Xen title image dominant; brand is a simple game logo, not a UI card. */
+.menu-brand{
+  background:transparent;border:0;border-left:0;box-shadow:none;
+  padding:0;gap:14px;backdrop-filter:none
+}
+.lambda-logo{filter:drop-shadow(2px 3px 0 #151016)}
+.menu-title{
+  color:#e78b32;font-family:"Lucida Console","Courier New",monospace;
+  font-size:clamp(26px,3.8vw,54px);letter-spacing:.04em;
+  text-shadow:3px 3px 0 #261727,5px 5px 0 #0b080b
+}
+.menu-title sup{font-size:.46em}

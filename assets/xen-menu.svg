@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#281037"/><stop offset=".48" stop-color="#59236f"/><stop offset=".78" stop-color="#9a438f"/><stop offset="1" stop-color="#30143f"/></linearGradient>
+ <radialGradient id="planet"><stop stop-color="#df9bd4"/><stop offset=".58" stop-color="#a65aa8"/><stop offset=".88" stop-color="#713a80"/><stop offset="1" stop-color="#492651"/></radialGradient>
+ <linearGradient id="planetShade" x2=".8" y2="1"><stop stop-color="#f4b7df" stop-opacity=".12"/><stop offset=".52" stop-color="#4f225e" stop-opacity=".1"/><stop offset="1" stop-color="#24102e" stop-opacity=".8"/></linearGradient>
+ <linearGradient id="rock" x2=".7" y2="1"><stop stop-color="#514052"/><stop offset=".45" stop-color="#302735"/><stop offset="1" stop-color="#171722"/></linearGradient>
+ <linearGradient id="rockLit" x2=".8" y2="1"><stop stop-color="#756078"/><stop offset="1" stop-color="#29212e"/></linearGradient>
+ <linearGradient id="lava" x2="0" y2="1"><stop stop-color="#ffdb54"/><stop offset=".22" stop-color="#ff8a27"/><stop offset=".7" stop-color="#e53b17"/><stop offset="1" stop-color="#61241f"/></linearGradient>
+ <linearGradient id="crystal" x2="1" y2="1"><stop stop-color="#b3ffff"/><stop offset=".45" stop-color="#28d7e1"/><stop offset="1" stop-color="#087caa"/></linearGradient>
+ <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#dc8dde" stop-opacity="0"/><stop offset=".5" stop-color="#c15cbd" stop-opacity=".46"/><stop offset="1" stop-color="#461750" stop-opacity=".1"/></linearGradient>
+ <filter id="soft"><feGaussianBlur stdDeviation="24"/></filter>
+ <filter id="glow"><feGaussianBlur stdDeviation="9"/></filter>
+ <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".55" numOctaves="2" seed="12"/><feColorMatrix values=".7 0 0 0 0 .7 0 0 0 0 .7 0 0 0 0 .2 0 0 .08 0"/></filter>
+ <pattern id="rockPixels" width="42" height="36" patternUnits="userSpaceOnUse"><path d="M3 2l16-1 7 9-15 8zM29 19l11-7 2 15-13 7z" fill="#a88aa0" opacity=".1"/><path d="M0 26l8-8 14 8-5 10z" fill="#080811" opacity=".2"/></pattern>
+</defs>
+<rect width="1672" height="941" fill="url(#sky)"/>
+<circle cx="1120" cy="250" r="375" fill="#b65bc5" opacity=".3" filter="url(#soft)"/>
+<circle cx="1120" cy="250" r="350" fill="url(#planet)"/>
+<circle cx="1120" cy="250" r="350" fill="url(#planetShade)"/>
+<g fill="none" stroke="#f1b4e6" opacity=".12"><path d="M785 153q220-196 585-31"/><path d="M782 210q244-166 668-17"/><path d="M791 318q295-131 664 5"/><path d="M843 420q215-82 522-12"/></g>
+<g fill="#e5a5de" opacity=".15"><path d="M905 28l90-42 47 44-82 37zM1176 109l123-37 67 64-139 34zM1358 256l82-24 53 62-107 36zM1047 357l93-44 86 48-110 41zM869 265l52-42 88 30-70 60z"/></g>
+<path d="M0 350q190-110 362-43t332 15q174-70 342-5t310 15q178-50 326 40v255H0z" fill="url(#mist)" filter="url(#soft)"/>
+<g fill="#21172b" opacity=".72">
+ <path d="M400 460l44-93 21 48 28-120 24 111 35-68 22 129z"/>
+ <path d="M1434 458l54-141 24 91 28-120 33 126 39-70 44 136z"/>
+ <path d="M702 410l57-164 28 92 37-118 29 166z"/>
+ <path d="M102 457l62-148 24 105 39-71 27 112z"/>
+</g>
+<g opacity=".38" fill="#c46ac1" filter="url(#soft)"><ellipse cx="835" cy="520" rx="680" ry="65"/><ellipse cx="1110" cy="590" rx="510" ry="54"/></g>
+<!-- distant levitating rocks -->
+<g>
+ <path d="M430 425l25-52 88-18 70 24 19 48-74 25-88-7z" fill="url(#rockLit)"/><path d="M455 448l44-3 42 17-8 66-37 22-22-72z" fill="#241a2c"/>
+ <path d="M1138 423l27-53 80-17 74 27 10 41-70 28-87-7z" fill="url(#rockLit)"/><path d="M1165 447l55 4 48 17-20 59-39 30-27-69z" fill="#271a30"/>
+ <path d="M990 541l13-34 51-9 46 20 2 34-51 16-48-5z" fill="#403047"/><path d="M1000 560l36 2 23 11-21 43-33 7-22-28z" fill="#211827"/>
+ <path d="M530 551l19-42 49-12 39 18 5 36-57 17-43-7z" fill="#503750"/><path d="M554 564l39 3 25 12-15 43-34 19-24-44z" fill="#241b2a"/>
+</g>
+<!-- central giant floating mesa -->
+<path d="M575 405l48-62 103-31 115-6 105 24 90 57-21 53-88 31-96 11-114-9-111-22z" fill="#66506b"/>
+<path d="M575 405l48-62 103-31 115-6 105 24 90 57-21 53-88 31-96 11-114-9-111-22z" fill="url(#rockLit)" opacity=".65"/>
+<path d="M575 405l83 6 112 12 149-10 108-25 109 25-21 53-88 31-96 11-114-9-111-22z" fill="#372a40"/>
+<path d="M660 423l54 47 27 64-14 90-45 113-55-90 20-113z" fill="#33243b"/>
+<path d="M737 427l95 22 43 90-16 117-38 105-60-95-13-116z" fill="#2a2133"/>
+<path d="M856 432l97-27 71 33 12 103-44 124-77 84-24-115 16-100z" fill="#322439"/>
+<path d="M987 421l63-12 73 15-28 74-45 115-74 63 28-117z" fill="#241d2d"/>
+<path d="M606 407l67-67 16 42 92-49 32 29 88-34 68 46 72-4 77 41-93 25-135 6-129-7-111-11z" fill="url(#rockPixels)"/>
+<!-- left cliff and lava -->
+<path d="M0 160l146-18 78 41 84 109 56 63-8 103-66 78-128-8-162-34z" fill="url(#rockLit)"/>
+<path d="M0 166l160-18 78 43 74 105-62 53-76-24-49-73-88-6-37 45z" fill="#514054"/>
+<path d="M220 267l85 20 58 64-9 135-77 52-91-27 58-69z" fill="#29202f"/>
+<path d="M255 275l30 12 11 275-26 3-17-269z" fill="url(#lava)"/>
+<path d="M269 280l9 1 7 180-9 27-7-28z" fill="#fff0a2" opacity=".8" filter="url(#glow)"/>
+<path d="M0 501l185-28 130 48 151 76-35 109-174 57L0 697z" fill="url(#rock)"/>
+<path d="M0 507l179-27 135 54-31 67-177 20L0 598z" fill="#4a3b4d"/>
+<path d="M0 571l155 3 120 33-50 68-225 18z" fill="url(#rockPixels)"/>
+<!-- right island -->
+<path d="M1245 493l77-36 117-8 112 33 121-4v176l-130 33-183-37-93-68z" fill="url(#rockLit)"/>
+<path d="M1245 493l77-36 117-8 112 33 121-4v33l-145 17-147-12-135 20z" fill="#5b485f"/>
+<path d="M1250 545l100 26 90 42-16 83-100 83-62-62z" fill="#302536"/>
+<path d="M1440 548l93-38 139 5v126l-102 41-80-46z" fill="#241b2b"/>
+<path d="M1430 573l40 18-4 135-36 39-5-118z" fill="#392a40"/>
+<!-- foreground platform -->
+<path d="M0 731l164-36 155 18 148-20 147 27 171-40 133 40 142 9 117-34 145 26 250-15v235H0z" fill="url(#rock)"/>
+<path d="M0 731l164-36 155 18 148-20 147 27 171-40 133 40 142 9 117-34 145 26 250-15v55l-258 16-154-12-162 28-165-9-175 10-181-19L0 813z" fill="#554357" opacity=".52"/>
+<path d="M0 824l160-13 139 30 135-23 166 20 187-14 174 22 151-30 174 21 186-35v139H0z" fill="#161821"/>
+<path d="M0 730l164-35 155 18 148-20 147 27 171-40 133 40 142 9 117-34 145 26 250-15" fill="none" stroke="#7c637b" stroke-width="8" opacity=".36"/>
+<g fill="url(#rockPixels)"><path d="M0 640l460 0v301H0z"/><path d="M1190 690h482v251h-482z"/></g>
+<!-- crystals at the left edge -->
+<g stroke="#64f5f7" stroke-width="2">
+ <path d="M82 569l14-52 13 52z" fill="url(#crystal)"/><path d="M112 572l20-88 19 88z" fill="url(#crystal)"/><path d="M146 576l13-67 14 67z" fill="url(#crystal)"/><path d="M175 578l10-40 12 40z" fill="url(#crystal)"/><path d="M207 582l17-54 16 54z" fill="url(#crystal)"/><path d="M242 583l10-32 11 32z" fill="url(#crystal)"/>
+</g>
+<g fill="#32d9e7" opacity=".3" filter="url(#glow)"><ellipse cx="153" cy="555" rx="83" ry="16"/><ellipse cx="1490" cy="671" rx="92" ry="18"/></g>
+<!-- crystals on the right foreground -->
+<g stroke="#6affff" stroke-width="2">
+ <path d="M1380 678l12-55 12 55z" fill="url(#crystal)"/><path d="M1409 679l18-86 18 86z" fill="url(#crystal)"/><path d="M1447 677l11-63 12 63z" fill="url(#crystal)"/><path d="M1482 685l17-77 18 77z" fill="url(#crystal)"/><path d="M1520 689l9-47 11 47z" fill="url(#crystal)"/><path d="M1552 690l13-59 14 59z" fill="url(#crystal)"/>
+</g>
+<g fill="#45204f" opacity=".2"><path d="M0 0h1672v941H0z" filter="url(#grain)"/></g>
+<rect width="1672" height="941" fill="none" stroke="#170d21" stroke-width="34" opacity=".22"/>
+</svg>

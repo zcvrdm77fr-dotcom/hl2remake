@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { SourceMovement } from './physics.js?v=campaign-6';
-import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=art-1';
-import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=art-1';
-import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=art-1';
-import { STORY, OBJECTIVES } from './story.js?v=art-1';
-import { RetroAudio } from './audio/RetroAudio.js?v=art-1';
+import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=art-2';
+import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=art-2';
+import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=art-2';
+import { STORY, OBJECTIVES } from './story.js?v=art-2';
+import { RetroAudio } from './audio/RetroAudio.js?v=art-2';
 
 const audio = new RetroAudio();
 

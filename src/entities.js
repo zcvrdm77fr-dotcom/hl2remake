@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { makeGoldSrcTexture, makeOrganicMaterial } from './graphics/GoldSrcSurface.js?v=art-1';
+import { makeGoldSrcTexture, makeOrganicMaterial } from './graphics/GoldSrcSurface.js?v=art-2';
 
 const flesh = makeOrganicMaterial('flesh', 0xb18a75);
 const paleFlesh = makeOrganicMaterial('flesh', 0xc19b80);
@@ -13,8 +13,8 @@ const darkWet = new THREE.MeshLambertMaterial({ color: 0x171916, flatShading: tr
 const steel = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('steel', 1, 1, 5), color: 0xa1a294 });
 const wornSteel = new THREE.MeshLambertMaterial({ color: 0x868a7f });
 const redPaint = new THREE.MeshLambertMaterial({ color: 0x763c2d });
-const glove = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('leather', 1, 1, 4), color: 0x7a7667 });
-const sleeve = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('cloth', 1, 1, 8), color: 0x8c9470 });
+const glove = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('leather', 1, 1, 4), color: 0xa69b7e });
+const sleeve = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('cloth', 1, 1, 8), color: 0xb18a54 });
 const gunmetal = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('steel', 1, 1, 13), color: 0x515b59 });
 const blackMetal = new THREE.MeshLambertMaterial({ color: 0x202723 });
 const pistolGrip = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('rubber', 1, 1, 3), color: 0x555346 });

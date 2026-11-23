@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { makeGoldSrcTexture } from './graphics/GoldSrcSurface.js?v=art-1';
+import { makeGoldSrcTexture } from './graphics/GoldSrcSurface.js?v=art-2';
 
 function pixelTexture(kind, repeatX, repeatY) {
   return makeGoldSrcTexture(kind, repeatX, repeatY, 31);

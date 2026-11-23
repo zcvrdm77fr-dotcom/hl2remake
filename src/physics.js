@@ -12,19 +12,24 @@ export class SourceMovement {
     this.height = 1.82;
     this.eyeHeight = 1.66;
     this.gravity = 19.6;
-    this.jumpSpeed = 7.35;
-    this.groundAcceleration = 10.8;
-    this.airAcceleration = 12.0;
-    this.groundFriction = 4.15;
+    this.jumpSpeed = 7.25;
+    this.jumpBufferDuration = 0.14;
+    this.coyoteDuration = 0.10;
+    this.jumpBufferTimer = 0;
+    this.coyoteTimer = this.coyoteDuration;
+    this.groundAcceleration = 12.5;
+    this.airAcceleration = 14.0;
+    this.groundFriction = 4.35;
     this.stopSpeed = 3.4;
-    this.groundSpeed = 6.8;
-    this.sprintSpeed = 7.7;
-    this.airWishSpeed = 6.8;
-    this.maxSpeed = 15.8;
+    this.groundSpeed = 7.0;
+    this.sprintSpeed = 8.6;
+    this.airWishSpeed = 7.2;
+    this.maxSpeed = 17.0;
     this.grounded = true;
     this.bobTime = 0;
     this.viewBob = 0;
     this.landPunch = 0;
+    this.lastLandingSpeed = 0;
     this.forward = new THREE.Vector3();
     this.right = new THREE.Vector3();
     this.wish = new THREE.Vector3();
@@ -39,6 +44,9 @@ export class SourceMovement {
     this.bobTime = 0;
     this.viewBob = 0;
     this.landPunch = 0;
+    this.jumpBufferTimer = 0;
+    this.coyoteTimer = this.coyoteDuration;
+    this.lastLandingSpeed = 0;
     this.syncCamera();
   }
 
@@ -67,7 +75,7 @@ export class SourceMovement {
   }
 
   blocked(x, z) {
-    if (x < -18.2 || x > 18.2 || z < -116 || z > 39) return true;
+    if (x < -18.2 || x > 18.2 || z < -296 || z > 39) return true;
     for (const c of this.colliders) {
       const minY = c.minY ?? 0;
       const maxY = c.maxY ?? 4.8;
@@ -118,15 +126,24 @@ export class SourceMovement {
     if (this.wish.lengthSq() > 0.0001) this.wish.normalize();
     const wishSpeed = (sprintHeld ? this.sprintSpeed : this.groundSpeed) * inputLength;
 
-    // No landing-frame friction while jump is held: this preserves bhop speed.
-    if (this.grounded) {
-      if (jumpHeld) {
-        this.grounded = false;
-        this.velocity.y = this.jumpSpeed;
-        this.landPunch = 0;
-      } else {
-        this.applyFriction(dt);
-      }
+    // A short jump buffer makes a landing-frame bunnyhop reliable, while
+    // coyote time forgives the tiny gap between a ledge and the next physics tick.
+    this.jumpBufferTimer = jumpHeld
+      ? this.jumpBufferDuration
+      : Math.max(0, this.jumpBufferTimer - dt);
+    if (this.grounded) this.coyoteTimer = this.coyoteDuration;
+    else this.coyoteTimer = Math.max(0, this.coyoteTimer - dt);
+
+    // No landing-frame friction when a buffered jump fires: bhop speed survives.
+    const canJump = this.jumpBufferTimer > 0 && (this.grounded || this.coyoteTimer > 0);
+    if (canJump) {
+      this.grounded = false;
+      this.velocity.y = this.jumpSpeed;
+      this.jumpBufferTimer = 0;
+      this.coyoteTimer = 0;
+      this.landPunch = 0;
+    } else if (this.grounded) {
+      this.applyFriction(dt);
     }
 
     if (inputLength > 0.001) {
@@ -143,7 +160,8 @@ export class SourceMovement {
 
     if (!this.grounded) {
       const previousY = this.feet.y;
-      this.velocity.y -= this.gravity * dt;
+      const gravityScale = jumpHeld && this.velocity.y > 0 ? 0.76 : 1.0;
+      this.velocity.y -= this.gravity * gravityScale * dt;
       const nextY = this.feet.y + this.velocity.y * dt;
       let ceiling = Infinity;
       if (this.velocity.y > 0) {
@@ -159,7 +177,9 @@ export class SourceMovement {
       } else if (nextY <= 0) {
         this.feet.y = 0;
         this.grounded = true;
-        this.landPunch = Math.min(1, Math.abs(this.velocity.y) / this.jumpSpeed);
+        this.coyoteTimer = this.coyoteDuration;
+        this.lastLandingSpeed = Math.abs(this.velocity.y);
+        this.landPunch = Math.min(1, this.lastLandingSpeed / this.jumpSpeed);
         this.velocity.y = 0;
       } else {
         this.feet.y = nextY;

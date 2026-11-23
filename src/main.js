@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import { SourceMovement } from './physics.js';
-import { buildSector, openDoor, openLiftCar, animateSector } from './world.js';
-import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js';
-import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js';
-import { STORY, OBJECTIVES } from './story.js';
+import { PointerLockControls } from './vendor/three/addons/controls/PointerLockControls.js?v=campaign-3';
+import { SourceMovement } from './physics.js?v=campaign-3';
+import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=campaign-3';
+import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=campaign-3';
+import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=campaign-3';
+import { STORY, OBJECTIVES } from './story.js?v=campaign-3';
 
 const $ = (id) => document.getElementById(id);
 const ui = {

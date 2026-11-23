@@ -1,17 +1,45 @@
-# HELIX PROTOCOL — Chapter 01: Sector 09
+# HELIX PROTOCOL — Kallio Research Annex
 
-An original browser FPS fan chapter inspired by the chunky geometry, low-resolution textures and industrial atmosphere of late-1990s shooters, with Source-inspired movement. This is a real Three.js/WebGL 3D scene.
+An original browser FPS fan campaign inspired by late-1990s PC shooters, with GoldSrc-style low-resolution geometry and Source-inspired movement. The project is a real Three.js/WebGL first-person game.
 
-## What this build contains
+## Campaign
 
-- Real-time 3D rendering through Three.js WebGLRenderer (not a 2.5D raycaster).
-- A low-poly research facility with gritty 64×64 nearest-filtered textures, flat lightmapped-style materials, hard shadows, distance fog, steel pipes, wall vents, warning signs, drums and shipping crates.
-- A deliberately restrained late-90s presentation: no glossy PBR materials, filmic colour grade, blur-heavy glass panels or modern dashboard-style HUD.
-- A complete first chapter objective chain: find a security card, open the bulkhead, retrieve the coolant coil, restore lift power and escape.
-- One original hostile creature with pursuit and melee damage.
-- A first-person crowbar and hit detection.
-- Written radio/subtitle dialogue and original procedural radio/impact tones.
-- Source-inspired ground acceleration, friction, air acceleration, gravity, jump arc and hold-to-bunnyhop behaviour.
+**Chapter 01 — Sector 09:** a routine maintenance shift turns into a containment breach. Find a security card, open the bulkhead, recover the coolant coil, restore backup power and call the maintenance lift.
+
+**Chapter 02 — Freight Level:** ride the lift into the abandoned lower station. Search the cargo hall for a replacement fuse and a 9 mm service pistol, restart the coolant pumps, close the pressure valve and escape on the old service tram. The freight hall also contains an optional maintenance recording. The pump gallery has live steam vents, so keep moving.
+
+The campaign now contains four additional connected environments: the lift transfer shaft, freight receiving hall, pump gallery and service-tram platform. The lower chapter adds two more hostile creature types/encounters, optional supplies, movable drums and a second escape sequence.
+
+## Visual direction
+
+- Real-time Three.js WebGL rendering; not a 2.5D raycaster.
+- Low-poly industrial brushwork, 64×64 nearest-filtered textures, matte Lambert materials, hard shadows and distance fog.
+- A freight gantry, cargo stacks, coolant spill, pressure tanks, large pipes, steam vents, valve wheel and a detailed low-poly service tram.
+- Minimal in-game HUD text over the world. No floating dashboard cards or glassmorphism.
+
+## Movement and combat
+
+- Separate ground friction, ground acceleration and air acceleration.
+- Buffered jumps, coyote-time tolerance, variable jump height and held-jump bunnyhopping.
+- A/D air-strafing; turn the mouse while holding a strafe key to curve the jump.
+- Crowbar melee on **F** or left mouse button.
+- Find the 9 mm pistol in the freight hall. Switch between crowbar and pistol with **1** and **2**. Pistol ammunition is limited; collect spare magazines in the hall.
+- Barrels can be pushed and knocked around. Steam vents damage the player while active.
+
+## Controls
+
+| Action | Control |
+|---|---|
+| Move | W / A / S / D |
+| Look | Mouse |
+| Jump / bunnyhop | Space |
+| Sprint | Shift |
+| Interact | E |
+| Crowbar / fire pistol | F or left mouse |
+| Interact with secondary mouse button | Right mouse |
+| Select crowbar | 1 |
+| Select pistol | 2 |
+| Pause / resume | Esc |
 
 ## Run locally
 
@@ -23,32 +51,9 @@ From the repository root:
 
 Open http://localhost:8000 in a modern browser with WebGL support. Do not open index.html directly with file://.
 
-## Controls
-
-| Action | Control |
-|---|---|
-| Move | W / A / S / D |
-| Look | Mouse |
-| Jump | Space |
-| Bunnyhop | Hold Space while moving; air-strafe with A/D and mouse |
-| Sprint | Shift |
-| Interact | E |
-| Crowbar | Left mouse button or F |
-| Pause / resume | Esc |
-
-Click the baked-in START GAME label on the Xen title image to capture the mouse. Press Esc to release it and pause.
-
-## Movement notes
-
-The controller is Source-inspired, not a copy of Valve's engine. It uses separate ground and air acceleration, ground friction, gravity, a held-jump bunnyhop, sub-stepped horizontal collision and a speed cap. On the ground, WASD controls movement. In the air, only A/D applies directional acceleration; W/S do not steer you. Turn the mouse smoothly while holding A or D to curve the air-strafe and build momentum.
-
-## Visual direction
-
-The target is a deliberately old-school GoldSrc-era look: low-poly brush-like architecture, low-resolution pixel textures, matte Lambert lighting, restrained green-grey industrial colours, sharp shadows and atmospheric distance fog. The title screen uses the supplied purple Xen image; the button label is part of that image and its click target is transparent.
-
 ## Story premise
 
-Your shift at Kallio Research Annex begins as routine maintenance. A recorded message from Dr. Lehto carries a timestamp from the future. The Helix experiment has already breached containment, and the only working route out is the service lift in Sector 09.
+Your shift at Kallio Research Annex begins as routine maintenance. A recorded message from Dr. Lehto carries a timestamp from the future. The Helix experiment has breached containment, and the only working route out appears to be the service lift. The lower freight station reveals that the incident was planned long before the alarm sounded.
 
 This is an original fan-made scenario. Half-Life and Valve are trademarks of their respective owners; this project is not affiliated with or endorsed by Valve.
 

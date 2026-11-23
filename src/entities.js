@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 function material(color, roughness = 0.82, metalness = 0.04, emissive = 0x000000) {
-  return new THREE.MeshStandardMaterial({ color, roughness, metalness, emissive, emissiveIntensity: emissive ? 0.8 : 0 });
+  return new THREE.MeshLambertMaterial({ color, roughness, metalness, emissive, emissiveIntensity: emissive ? 0.8 : 0 });
 }
 
 function rod(parent, a, b, radius, mat, sides = 6) {
@@ -42,7 +42,7 @@ export function makeEchoStalker(scene, x, z) {
   const hide = material(0x34332f, 0.94, 0.02);
   const hideLight = material(0x554b3d, 0.9, 0.02);
   const bone = material(0x9b8969, 0.9, 0.0);
-  const eye = new THREE.MeshStandardMaterial({ color: 0xe88c45, emissive: 0xff5117, emissiveIntensity: 2.1, roughness: 0.4 });
+  const eye = new THREE.MeshLambertMaterial({ color: 0xe88c45, emissive: 0xff5117, emissiveIntensity: 2.1, roughness: 0.4 });
   const wet = material(0x20272a, 0.3, 0.3);
 
   const torso = new THREE.Mesh(new THREE.IcosahedronGeometry(0.57, 1), hide);

@@ -93,3 +93,26 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
 /* The supplied screenshot has the START GAME label baked into the image. */
 .menu-start-button.image-hit-area{left:39%;top:71%;transform:none;width:21%;height:8%;padding:0;border:0;background:transparent;box-shadow:none;color:transparent;opacity:0;cursor:pointer}
 .menu-start-button.image-hit-area:hover,.menu-start-button.image-hit-area:active{filter:none;transform:none}
+
+/* 1998-era Half-Life HUD: flat panels, square edges, no glassmorphism. */
+:root{--ink:#10140f;--panel:rgba(15,20,14,.9);--line:rgba(166,177,134,.48);--paper:#d6d6b8;--muted:#a5aa8c;--orange:#d99b42;--cyan:#a2c17b;--mono:"Lucida Console","Courier New",monospace;--serif:Arial,Helvetica,sans-serif;font-family:Arial,Helvetica,sans-serif;background:#171b15;color:var(--paper)}
+#gameCanvas{image-rendering:pixelated}
+.objective-card,.health-card,.weapon-label,.movement-card{background:rgba(18,23,17,.84);border:1px solid #65715a;border-radius:0;backdrop-filter:none;box-shadow:none}
+.objective-card{border-left:3px solid #d39b43}.health-card{border-right:3px solid #a2c17b}
+.hud-kicker,.objective-card p,.health-card,.weapon-label,.movement-card,.control-hint{font-family:var(--mono);text-shadow:1px 1px #000}
+.objective-card h2{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:#e4dfc4}
+.progress-track,.health-track{border:1px solid #4c5542;background:#121711}
+.progress-track span{background:#d39b43}.health-track span{background:#9bb87a}
+.crosshair i{background:#d5d9bc;box-shadow:1px 1px #000}
+.interaction-prompt,.toast{border:1px solid #8d986e;border-radius:0;background:#171d14;color:#deddbb;box-shadow:none;backdrop-filter:none;font-family:var(--mono)}
+.subtitles{border:1px solid #65715a;border-left:3px solid #a2c17b;border-radius:0;background:rgba(12,17,12,.92);backdrop-filter:none;box-shadow:none}
+.subtitle-copy strong{color:#d59b48}
+.modal-screen{background:rgba(4,7,4,.76);backdrop-filter:none}
+.modal-panel{border:2px solid #71805e;border-radius:0;background:#1b2119;box-shadow:4px 4px 0 #080b07;backdrop-filter:none}
+.modal-panel h2{font-family:Arial,Helvetica,sans-serif;font-weight:700;letter-spacing:0;text-transform:uppercase;color:#e2dfc2}
+.modal-panel p,.modal-foot{font-family:var(--mono)}
+.primary-button{border:2px solid #d39b43;border-radius:0;background:#79502b;box-shadow:inset 1px 1px #d4a56c,3px 3px 0 #080b07}
+.primary-button:hover{filter:brightness(1.15);transform:none}
+.secondary-button{border:1px solid #65715a;border-radius:0;background:#141a12}
+.menu-brand{border-radius:0;backdrop-filter:none}.menu-title{font-family:var(--mono);text-transform:uppercase}.menu-start-button{border-radius:0;box-shadow:3px 3px 0 #080b07}
+@media(max-width:760px){.objective-card,.health-card{backdrop-filter:none}.modal-panel{padding:24px}}

@@ -1,15 +1,15 @@
 import * as THREE from 'three';
 
 function pixelTexture(kind, repeatX, repeatY) {
-  const size = 128;
+  const size = 64;
   const data = new Uint8Array(size * size * 4);
   const palettes = {
-    concrete: [[91,98,96],[117,119,109],[69,76,77],[135,130,115]],
-    tile: [[105,106,96],[132,127,112],[80,87,83],[151,140,119]],
-    steel: [[44,57,61],[75,88,90],[31,41,44],[107,111,103]],
-    brick: [[94,64,48],[120,80,57],[65,52,45],[147,101,69]],
-    hazard: [[190,139,57],[34,43,44],[217,174,91],[24,32,34]],
-    rubber: [[41,48,47],[57,64,59],[30,38,39],[77,78,69]]
+    concrete: [[91,99,86],[119,119,102],[68,75,68],[143,132,110]],
+    tile: [[91,96,83],[117,116,96],[63,71,64],[135,126,104]],
+    steel: [[51,61,58],[79,88,78],[34,43,42],[114,111,94]],
+    brick: [[90,66,51],[117,82,61],[61,48,42],[143,101,70]],
+    hazard: [[183,129,39],[28,36,33],[211,160,63],[18,25,24]],
+    rubber: [[32,40,37],[53,58,49],[23,30,29],[81,78,62]]
   };
   const p = palettes[kind] || palettes.concrete;
   let seed = 0x1234567 + kind.length * 7919;
@@ -36,7 +36,7 @@ function pixelTexture(kind, repeatX, repeatY) {
   const tex=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);
   tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
   tex.repeat.set(repeatX,repeatY); tex.magFilter=THREE.NearestFilter;
-  tex.minFilter=THREE.LinearMipmapLinearFilter; tex.generateMipmaps=true; tex.anisotropy=4; tex.needsUpdate=true;
+  tex.minFilter=THREE.NearestMipmapNearestFilter; tex.generateMipmaps=true; tex.anisotropy=4; tex.needsUpdate=true;
   return tex;
 }
 
@@ -119,40 +119,75 @@ function makeCoil(parent,x,z,mats,interactables) {
   root.userData.kind='coil'; root.userData.label='OTA JÄÄHDYTYSKELA'; interactables.push(root); return root;
 }
 
+
+function makeRetroSignMaterial(title, subtitle, accent = "#d69a4d") {
+  const canvas=document.createElement("canvas");
+  canvas.width=128; canvas.height=64;
+  const ctx=canvas.getContext("2d");
+  ctx.fillStyle="#242b25"; ctx.fillRect(0,0,128,64);
+  ctx.fillStyle=accent; ctx.fillRect(0,0,128,5);
+  ctx.strokeStyle="#85907a"; ctx.lineWidth=2; ctx.strokeRect(2,2,124,60);
+  ctx.fillStyle="#e0ddbd"; ctx.font="bold 11px monospace";
+  ctx.fillText(String(title).slice(0,18),7,26);
+  ctx.fillStyle=accent; ctx.font="8px monospace";
+  ctx.fillText(String(subtitle).slice(0,24),7,43);
+  ctx.fillStyle="#6f7c68"; ctx.fillRect(7,51,114,3);
+  ctx.fillStyle=accent; ctx.fillRect(7,51,76,3);
+  const texture=new THREE.CanvasTexture(canvas);
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.magFilter=THREE.NearestFilter;
+  texture.minFilter=THREE.NearestFilter;
+  texture.generateMipmaps=false;
+  return new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide});
+}
+function wallSign(parent,x,y,z,w,h,rotationY,title,subtitle,accent) {
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),makeRetroSignMaterial(title,subtitle,accent));
+  mesh.position.set(x,y,z); mesh.rotation.y=rotationY;
+  mesh.castShadow=false; parent.add(mesh); return mesh;
+}
+function addWallVent(parent,x,y,z,w,h,rotationY,mats) {
+  const root=new THREE.Group(); root.position.set(x,y,z); root.rotation.y=rotationY; parent.add(root);
+  box(root,0,0,0,w,h,0.09,mats.dark,false);
+  box(root,0,h/2-0.09,0.06,w-0.12,0.05,0.035,mats.lightSteel,false);
+  box(root,0,-h/2+0.09,0.06,w-0.12,0.05,0.035,mats.lightSteel,false);
+  for(let i=0;i<7;i++) box(root,0,-h*0.36+i*h*0.12,0.07,w-0.18,0.035,0.035,mats.lightSteel,false);
+  return root;
+}
+
 export function buildSector(scene) {
-  scene.background=new THREE.Color(0x161d20);
-  scene.fog=new THREE.FogExp2(0x161d20,0.0092);
+  scene.background=new THREE.Color(0x3d4942);
+  scene.fog=new THREE.Fog(0x3d4942,24,118);
   const tex={
     concrete:pixelTexture('concrete',3,3),tile:pixelTexture('tile',14,16),
     steel:pixelTexture('steel',2,2),brick:pixelTexture('brick',3,3),
     hazard:pixelTexture('hazard',3,1),rubber:pixelTexture('rubber',5,6)
   };
   const mats={
-    concrete:new THREE.MeshStandardMaterial({map:tex.concrete,color:0xc5c0ae,roughness:0.96}),
-    tile:new THREE.MeshStandardMaterial({map:tex.tile,color:0xc3bda9,roughness:0.95}),
-    steel:new THREE.MeshStandardMaterial({map:tex.steel,color:0xaeb3ae,roughness:0.65,metalness:0.45}),
-    brick:new THREE.MeshStandardMaterial({map:tex.brick,color:0xb39c86,roughness:0.93}),
-    dark:new THREE.MeshStandardMaterial({map:tex.rubber,color:0xa0a49b,roughness:0.9,metalness:0.16}),
-    wood:new THREE.MeshStandardMaterial({color:0x6f5b47,roughness:0.94}),
-    ivory:new THREE.MeshStandardMaterial({color:0xd8d5c8,roughness:0.68}),
-    glass:new THREE.MeshStandardMaterial({color:0x6a9a9b,roughness:0.16,metalness:0.18,transparent:true,opacity:0.42}),
-    screen:new THREE.MeshStandardMaterial({color:0x5ac6bd,emissive:0x227b79,emissiveIntensity:1.1,roughness:0.34}),
-    amber:new THREE.MeshStandardMaterial({color:0xd28e4c,emissive:0x9a481e,emissiveIntensity:0.55}),
-    cyan:new THREE.MeshStandardMaterial({color:0x65d3d1,emissive:0x268d92,emissiveIntensity:1.2}),
-    redGlow:new THREE.MeshStandardMaterial({color:0xff5c3f,emissive:0xff2b19,emissiveIntensity:1.8}),
-    cyanGlow:new THREE.MeshStandardMaterial({color:0x8af3e5,emissive:0x39d7c5,emissiveIntensity:1.7}),
-    lightGlow:new THREE.MeshStandardMaterial({color:0xffefc9,emissive:0xffd28b,emissiveIntensity:2.25}),
-    lightSteel:new THREE.MeshStandardMaterial({color:0x758286,metalness:0.82,roughness:0.34}),
-    hazard:new THREE.MeshStandardMaterial({map:tex.hazard,roughness:0.85})
+    concrete:new THREE.MeshLambertMaterial({map:tex.concrete,color:0xb4b5a1}),
+    tile:new THREE.MeshLambertMaterial({map:tex.tile,color:0xaaa58f}),
+    steel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xa0a38f}),
+    brick:new THREE.MeshLambertMaterial({map:tex.brick,color:0xa38a70}),
+    dark:new THREE.MeshLambertMaterial({map:tex.rubber,color:0x8a8e7c}),
+    wood:new THREE.MeshLambertMaterial({color:0x66513c}),
+    ivory:new THREE.MeshLambertMaterial({color:0xc5c0a9}),
+    glass:new THREE.MeshLambertMaterial({color:0x648282,transparent:true,opacity:0.42}),
+    screen:new THREE.MeshLambertMaterial({color:0x5ac6a7,emissive:0x164b34,emissiveIntensity:1.0}),
+    amber:new THREE.MeshLambertMaterial({color:0xc4863e,emissive:0x75401c,emissiveIntensity:0.7}),
+    cyan:new THREE.MeshLambertMaterial({color:0x65c9c2,emissive:0x1b6965,emissiveIntensity:1.0}),
+    redGlow:new THREE.MeshLambertMaterial({color:0xff624b,emissive:0x9c211a,emissiveIntensity:1.45}),
+    cyanGlow:new THREE.MeshLambertMaterial({color:0x8af3d0,emissive:0x248c72,emissiveIntensity:1.3}),
+    lightGlow:new THREE.MeshLambertMaterial({color:0xffefc9,emissive:0xa97843,emissiveIntensity:1.8}),
+    lightSteel:new THREE.MeshLambertMaterial({color:0x829083}),
+    hazard:new THREE.MeshLambertMaterial({map:tex.hazard})
   };
   const worldGroup=new THREE.Group(); scene.add(worldGroup);
   const colliders=[],interactables=[],lights=[],doors=[];
-  scene.add(new THREE.HemisphereLight(0xb9c2c1,0x28221b,0.78));
-  const keyLight=new THREE.DirectionalLight(0xffd8ad,1.35);
+  scene.add(new THREE.HemisphereLight(0xa7b4a3,0x25251b,0.58));
+  const keyLight=new THREE.DirectionalLight(0xdcc9a0,0.92);
   keyLight.position.set(-12,28,18); keyLight.castShadow=true;
   keyLight.shadow.mapSize.set(2048,2048); keyLight.shadow.camera.left=-28; keyLight.shadow.camera.right=28;
   keyLight.shadow.camera.top=36; keyLight.shadow.camera.bottom=-110; keyLight.shadow.bias=-0.00025; scene.add(keyLight);
-  const coolFill=new THREE.DirectionalLight(0x83acb1,0.35); coolFill.position.set(18,12,-58); scene.add(coolFill);
+  const coolFill=new THREE.DirectionalLight(0x718c78,0.2); coolFill.position.set(18,12,-58); scene.add(coolFill);
 
   function wall(x,z,w,d,height=4.8,mat=mats.concrete){
     box(worldGroup,x,height/2,z,w,height,d,mat);
@@ -166,6 +201,10 @@ export function buildSector(scene) {
 
   // Area 01: arrival lobby and security office.
   shell(0,16,31,36);
+  wallSign(worldGroup,-15.34,3.28,18.2,2.9,1.12,Math.PI/2,"KALLIO ANNEX","SECTOR 09 / STAFF");
+  wallSign(worldGroup,15.34,3.28,18.2,2.9,1.12,-Math.PI/2,"SECURITY","ACCESS LEVEL 3","#c36e48");
+  addWallVent(worldGroup,-15.34,2.05,5.5,1.8,1.05,Math.PI/2,mats);
+  addWallVent(worldGroup,15.34,2.05,5.5,1.8,1.05,-Math.PI/2,mats);
   wall(-15.7,16,0.6,36); wall(15.7,16,0.6,36); wall(0,34,31,0.6);
   wall(-10,-2,11.4,0.6); wall(10,-2,11.4,0.6);
   for(const z of [6,18,30]){trim(-15.35,0.42,z,0.16,10);trim(15.35,0.42,z,0.16,10);}
@@ -184,11 +223,18 @@ export function buildSector(scene) {
   const badge=makeBadge(worldGroup,10.1,14.2,mats,interactables);
 
   // Area 02: service corridor.
-  shell(0,-18,12.8,32); wall(-6.5,-18,0.6,32); wall(6.5,-18,0.6,32);
+  shell(0,-18,12.8,32);
+  wallSign(worldGroup,-6.17,3.15,-20.5,2.6,0.92,Math.PI/2,"SERVICE TUNNEL","AUTHORIZED ONLY");
+  wallSign(worldGroup,6.17,3.15,-9.6,2.6,0.92,-Math.PI/2,"CAUTION","LOW CLEARANCE","#c36e48");
+  addWallVent(worldGroup,-6.17,2.0,-29.0,1.9,1.12,Math.PI/2,mats);
+  addWallVent(worldGroup,6.17,2.0,-14.0,1.9,1.12,-Math.PI/2,mats); wall(-6.5,-18,0.6,32); wall(6.5,-18,0.6,32);
   for(const z of [-7,-15,-23,-31]){trim(-6.17,0.48,z,0.12,7.4,mats.dark);trim(6.17,0.48,z,0.12,7.4,mats.dark);}
 
   // Area 03: test chamber and resonance cage.
-  shell(0,-57,32,46); wall(-16.5,-57,0.6,46); wall(16.5,-57,0.6,46);
+  shell(0,-57,32,46);
+  wallSign(worldGroup,-16.18,3.25,-49,3.1,1.0,Math.PI/2,"TEST CHAMBER","RESONANCE LAB","#bb7850");
+  wallSign(worldGroup,16.18,3.25,-65,3.1,1.0,-Math.PI/2,"BIOHAZARD","AUTHORIZED STAFF","#bb7850");
+  addWallVent(worldGroup,16.18,2.0,-48,2.1,1.25,-Math.PI/2,mats); wall(-16.5,-57,0.6,46); wall(16.5,-57,0.6,46);
   wall(-11,-80,10.6,0.6); wall(11,-80,10.6,0.6);
   box(worldGroup,-16.16,2.5,-53,0.08,2.4,7.2,mats.glass,false);
   for(const z of [-56.5,-49.5]) box(worldGroup,-16.08,2.5,z,0.18,2.8,0.18,mats.lightSteel,false);
@@ -215,7 +261,9 @@ export function buildSector(scene) {
   box(worldGroup,8.2,2.34,-70.92,1.72,0.08,0.13,mats.amber,false);
 
   // Area 04: service lift bay and the lift car's inner door.
-  shell(0,-96,15,32); wall(-7.5,-96,0.6,32); wall(7.5,-96,0.6,32); wall(0,-112,15,0.6);
+  shell(0,-96,15,32);
+  wallSign(worldGroup,-7.18,3.2,-97,2.5,0.96,Math.PI/2,"MAINTENANCE","LIFT BAY 01");
+  wallSign(worldGroup,7.18,3.2,-91,2.5,0.96,-Math.PI/2,"HEV ROUTE","KEEP MOVING","#c36e48"); wall(-7.5,-96,0.6,32); wall(7.5,-96,0.6,32); wall(0,-112,15,0.6);
   const liftFrame=new THREE.Group(); liftFrame.position.set(0,0,-108); worldGroup.add(liftFrame);
   box(liftFrame,-3.2,2.35,0,0.4,4.7,0.65,mats.lightSteel);
   box(liftFrame,3.2,2.35,0,0.4,4.7,0.65,mats.lightSteel);
@@ -236,6 +284,11 @@ export function buildSector(scene) {
     box(worldGroup,x,1.12,z,0.54,2.2,0.72,mats.steel);
     for(let y=0.35;y<1.8;y+=0.42) box(worldGroup,x,y,z-0.39,0.34,0.06,0.035,mats.amber,false);
     addPoint(scene,0xffaa5a,0.45,2.8,x,2.25,z);
+  }
+  for(const z of [-6,-18,-30,-42,-54,-66,-90,-102]){
+    box(worldGroup,-6.05,4.31,z,0.22,0.42,0.46,mats.dark);
+    box(worldGroup,6.05,4.31,z,0.22,0.42,0.46,mats.dark);
+    box(worldGroup,0,4.58,z,12.2,0.12,0.32,mats.lightSteel,false);
   }
   for(let i=0;i<12;i++) box(worldGroup,-5.3+i*0.96,0.015,-36,0.38,0.025,0.32,mats.hazard,false,false);
 

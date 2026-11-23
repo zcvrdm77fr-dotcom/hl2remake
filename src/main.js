@@ -16,19 +16,18 @@ const ui = {
 };
 
 const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
+renderer.setPixelRatio(1);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.shadowMap.type = THREE.BasicShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.08;
+renderer.toneMapping = THREE.NoToneMapping;
 renderer.domElement.id = 'gameCanvas';
 $('gameRoot').appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
 const world = buildSector(scene);
-const camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.08, 170);
+const camera = new THREE.PerspectiveCamera(76, window.innerWidth / window.innerHeight, 0.08, 170);
 camera.rotation.order = 'YXZ';
 scene.add(camera);
 const controls = new PointerLockControls(camera, renderer.domElement);

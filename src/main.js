@@ -7,7 +7,7 @@ import { makeCombine, makeWeapon, makeEnemyBolt } from './entities.js';
 const $ = (id) => document.getElementById(id);
 const ui = {
   start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'),
-  startButton: $('startButton'), resume: $('resumeButton'), restart: $('restartButton'), use: $('useButton'),
+  startButton: $('startButton'), resume: $('resumeButton'), restart: $('restartButton'), use: $('useButton'), pauseButton: $('pauseButton'),
   hud: $('hud'), objective: $('objective'), detail: $('objectiveDetail'),
   progress: $('progressFill'), prompt: $('interactionPrompt'), subtitles: $('subtitles'),
   health: $('healthValue'), healthFill: $('healthFill'), ammo: $('ammoValue'),
@@ -159,6 +159,11 @@ function saveBestRun() {
   } catch {}
 }
 
+function lockPointer() {
+  if (matchMedia('(pointer: coarse)').matches) return;
+  if (typeof renderer.domElement.requestPointerLock === 'function') controls.lock();
+}
+
 function startGame() {
   ensureAudio();
   started = true;
@@ -169,7 +174,7 @@ function startGame() {
   ui.pause.classList.add('hidden');
   ui.end.classList.add('hidden');
   ui.hud.classList.add('active');
-  controls.lock();
+  lockPointer();
   previousTime = performance.now();
   showSubtitle('arrival', 4.4);
   beep(280, 0.16, 'triangle', 0.05);
@@ -191,7 +196,7 @@ function resumeGame() {
   running = true;
   previousTime = performance.now();
   if ('speechSynthesis' in window) speechSynthesis.resume();
-  controls.lock();
+  lockPointer();
 }
 
 function finishGame(won) {
@@ -415,6 +420,7 @@ controls.addEventListener('unlock', () => {
 
 ui.startButton.addEventListener('click', startGame);
 ui.resume.addEventListener('click', resumeGame);
+ui.pauseButton.addEventListener('click', pauseGame);
 ui.restart.addEventListener('click', () => {
   window.location.reload();
 });

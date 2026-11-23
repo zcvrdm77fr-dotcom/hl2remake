@@ -1,43 +1,8 @@
 import * as THREE from 'three';
+import { makeGoldSrcTexture } from './graphics/GoldSrcSurface.js?v=art-1';
 
 function pixelTexture(kind, repeatX, repeatY) {
-  const size = 64;
-  const data = new Uint8Array(size * size * 4);
-  const palettes = {
-    concrete: [[91,99,86],[119,119,102],[68,75,68],[143,132,110]],
-    tile: [[91,96,83],[117,116,96],[63,71,64],[135,126,104]],
-    steel: [[51,61,58],[79,88,78],[34,43,42],[114,111,94]],
-    brick: [[90,66,51],[117,82,61],[61,48,42],[143,101,70]],
-    hazard: [[183,129,39],[28,36,33],[211,160,63],[18,25,24]],
-    rubber: [[32,40,37],[53,58,49],[23,30,29],[81,78,62]]
-  };
-  const p = palettes[kind] || palettes.concrete;
-  let seed = 0x1234567 + kind.length * 7919;
-  const random = () => { seed = (Math.imul(seed,1664525)+1013904223)>>>0; return seed/4294967296; };
-  for (let y=0;y<size;y++) for (let x=0;x<size;x++) {
-    let tone=0;
-    if (kind==='brick') {
-      const row=Math.floor(y/16), col=Math.floor((x+(row%2)*16)/32);
-      tone=(y%16<2)||((x+(row%2)*16)%32<2)?2:((row*7+col*3)%2);
-    } else if (kind==='tile') {
-      const edge=(x%32<2)||(y%32<2);
-      tone=edge?2:((Math.floor(x/32)+Math.floor(y/32))%2);
-    } else if (kind==='steel') {
-      const panel=(x%32<2)||(y%32<2);
-      tone=panel?2:((Math.floor(x/32)+Math.floor(y/32))%3===0?1:0);
-    } else if (kind==='hazard') tone=((x+y)%28<14)?0:1;
-    else tone=random()>0.7?1:random()>0.94?3:0;
-    const base=p[tone], noise=Math.floor((random()-0.5)*(kind==='rubber'?15:24)), i=(y*size+x)*4;
-    data[i]=THREE.MathUtils.clamp(base[0]+noise,0,255);
-    data[i+1]=THREE.MathUtils.clamp(base[1]+noise,0,255);
-    data[i+2]=THREE.MathUtils.clamp(base[2]+noise,0,255);
-    data[i+3]=255;
-  }
-  const tex=new THREE.DataTexture(data,size,size,THREE.RGBAFormat);
-  tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
-  tex.repeat.set(repeatX,repeatY); tex.magFilter=THREE.NearestFilter;
-  tex.minFilter=THREE.NearestMipmapNearestFilter; tex.generateMipmaps=true; tex.anisotropy=4; tex.needsUpdate=true;
-  return tex;
+  return makeGoldSrcTexture(kind, repeatX, repeatY, 31);
 }
 
 function box(parent,x,y,z,w,h,d,mat,cast=true,receive=true) {
@@ -104,7 +69,7 @@ function makeBadge(parent,x,z,mats,interactables) {
   box(root,0,0,0,0.32,0.035,0.22,mats.ivory,true,false);
   box(root,-0.07,0.022,-0.01,0.08,0.008,0.12,mats.redGlow,false,false);
   addPoint(root,0xffa85a,0.65,2.1,0,0.3,0);
-  root.userData.kind='badge'; root.userData.label='POIMI KULKUKORTTI'; interactables.push(root); return root;
+  root.userData.kind='badge'; root.userData.label='TAKE SECURITY KEYCARD'; interactables.push(root); return root;
 }
 function makeCoil(parent,x,z,mats,interactables) {
   const root=new THREE.Group(); root.position.set(x,0,z); parent.add(root);
@@ -116,7 +81,7 @@ function makeCoil(parent,x,z,mats,interactables) {
     ring.rotation.x=Math.PI/2; ring.position.set(0,1.05+i*0.16,0); root.add(ring);
   }
   addPoint(root,0x65dbdc,2.2,4.8,0,1.25,0.12);
-  root.userData.kind='coil'; root.userData.label='OTA JÄÄHDYTYSKELA'; interactables.push(root); return root;
+  root.userData.kind='coil'; root.userData.label='TAKE COOLANT COIL'; interactables.push(root); return root;
 }
 
 
@@ -179,12 +144,13 @@ function addWallVent(parent,x,y,z,w,h,rotationY,mats) {
 }
 
 export function buildSector(scene) {
-  scene.background=new THREE.Color(0x3d4942);
-  scene.fog=new THREE.Fog(0x3d4942,24,118);
+  scene.background=new THREE.Color(0x343b36);
+  scene.fog=new THREE.Fog(0x343b36,34,172);
   const tex={
     concrete:pixelTexture('concrete',3,3),tile:pixelTexture('tile',14,16),
     steel:pixelTexture('steel',2,2),brick:pixelTexture('brick',3,3),
-    hazard:pixelTexture('hazard',3,1),rubber:pixelTexture('rubber',5,6)
+    hazard:pixelTexture('hazard',3,1),rubber:pixelTexture('rubber',5,6),
+    wood:pixelTexture('wood',2,2),bone:pixelTexture('bone',1,1),cloth:pixelTexture('cloth',2,2)
   };
   const mats={
     concrete:new THREE.MeshLambertMaterial({map:tex.concrete,color:0xb4b5a1}),
@@ -192,8 +158,9 @@ export function buildSector(scene) {
     steel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xa0a38f}),
     brick:new THREE.MeshLambertMaterial({map:tex.brick,color:0xa38a70}),
     dark:new THREE.MeshLambertMaterial({map:tex.rubber,color:0x8a8e7c}),
-    wood:new THREE.MeshLambertMaterial({color:0x66513c}),
-    ivory:new THREE.MeshLambertMaterial({color:0xc5c0a9}),
+    wood:new THREE.MeshLambertMaterial({map:tex.wood,color:0xb49a75}),
+    ivory:new THREE.MeshLambertMaterial({map:tex.bone,color:0xc5c0a9}),
+    cloth:new THREE.MeshLambertMaterial({map:tex.cloth,color:0xb0aa83}),
     glass:new THREE.MeshLambertMaterial({color:0x648282,transparent:true,opacity:0.42}),
     screen:new THREE.MeshLambertMaterial({color:0x5ac6a7,emissive:0x164b34,emissiveIntensity:1.0}),
     amber:new THREE.MeshLambertMaterial({color:0xc4863e,emissive:0x75401c,emissiveIntensity:0.7}),
@@ -201,7 +168,7 @@ export function buildSector(scene) {
     redGlow:new THREE.MeshLambertMaterial({color:0xff624b,emissive:0x9c211a,emissiveIntensity:1.45}),
     cyanGlow:new THREE.MeshLambertMaterial({color:0x8af3d0,emissive:0x248c72,emissiveIntensity:1.3}),
     lightGlow:new THREE.MeshLambertMaterial({color:0xffefc9,emissive:0xa97843,emissiveIntensity:1.8}),
-    lightSteel:new THREE.MeshLambertMaterial({color:0x829083}),
+    lightSteel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xb7b7a4}),
     hazard:new THREE.MeshLambertMaterial({map:tex.hazard})
   };
   const worldGroup=new THREE.Group(); scene.add(worldGroup);
@@ -340,7 +307,7 @@ export function buildSector(scene) {
   const bulkhead=makeDoor(scene,worldGroup,colliders,'security',-2,8.5,mats);
   const liftGate=makeDoor(scene,worldGroup,colliders,'lift',-80,12,mats);
   const scanner=addTerminal(worldGroup,-5.1,-1.55,mats,'scanner');
-  scanner.rotation.y=Math.PI; scanner.userData.label='KÄYTÄ KULKUKORTTIA';
+  scanner.rotation.y=Math.PI; scanner.userData.label='USE SECURITY CARD';
   interactables.push(scanner);
 
   const redAlarm=addPoint(scene,0xff392a,2.1,18,0,3.7,-50);

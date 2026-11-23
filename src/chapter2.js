@@ -41,8 +41,8 @@ function sign(parent,x,y,z,w,h,rotationY,title,subtitle,accent="#d9a257"){
   g.fillStyle="#343b31";g.fillRect(0,0,256,96);
   g.fillStyle=accent;g.fillRect(0,0,256,7);
   g.strokeStyle="#89917a";g.lineWidth=4;g.strokeRect(3,3,250,90);
-  g.fillStyle="#e0ddc5";g.font="bold 23px Arial";g.fillText(title,14,43);
-  g.fillStyle=accent;g.font="15px Arial";g.fillText(subtitle,14,70);
+  g.fillStyle="#e0ddc5";g.font="bold 23px Tahoma";g.fillText(title,14,43);
+  g.fillStyle=accent;g.font="15px Tahoma";g.fillText(subtitle,14,70);
   const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
   texture.magFilter=THREE.NearestFilter;texture.minFilter=THREE.NearestFilter;texture.generateMipmaps=false;
   const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide}));
@@ -79,7 +79,7 @@ function medkitPickup(world,x,z){
   box(root,0,.43,.215,.17,.035,.035,m.redGlow,false,false);
   box(root,0,.43,0,.055,.035,.37,m.redGlow,false,false);
   const glow=new THREE.PointLight(0xc95e49,.32,2.8);glow.position.set(0,.65,0);root.add(glow);
-  root.userData.kind="medkit";root.userData.label="Käytä ensiapupakkaus";world.interactables.push(root);return root;
+  root.userData.kind="medkit";root.userData.label="USE MEDKIT";world.interactables.push(root);return root;
 }
 function fusePickup(world,x,z){
   const root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
@@ -89,7 +89,7 @@ function fusePickup(world,x,z){
   box(root,0,.31,-.13,.13,.21,.035,m.lightSteel,false,false);
   for(const side of [-1,1])box(root,side*.25,.31,0,.05,.38,.28,m.lightSteel,false,false);
   const glow=new THREE.PointLight(0xe7a34e,.6,3);glow.position.set(0,.55,0);root.add(glow);
-  root.userData.kind="fuse";root.userData.label="Ota varasulake";world.interactables.push(root);
+  root.userData.kind="fuse";root.userData.label="TAKE SPARE FUSE";world.interactables.push(root);
   return root;
 }
 function valveWheel(world,x,z){
@@ -104,7 +104,7 @@ function valveWheel(world,x,z){
     rod(wheel,[0,0,-.1],[Math.cos(a)*.47,Math.sin(a)*.47,-.1],.035,m.lightSteel,6);
   }
   const lamp=new THREE.Mesh(new THREE.SphereGeometry(.09,6,5),m.redGlow);lamp.position.set(0,.72,-.31);root.add(lamp);
-  root.userData.kind="valve";root.userData.label="Sulje paineventtiili";root.userData.wheel=wheel;root.userData.statusLight=lamp;
+  root.userData.kind="valve";root.userData.label="CLOSE PRESSURE VALVE";root.userData.wheel=wheel;root.userData.statusLight=lamp;
   world.interactables.push(root);
   world.colliders.push(boundsCollider(x,z,.95,.65,0,2.2));
   return root;
@@ -145,9 +145,9 @@ function movableDrum(world,x,z){
 }
 function workerCorpse(world,x,z){
   const g=world.worldGroup,m=world.mats,root=new THREE.Group();root.position.set(x,0,z);root.rotation.y=-.72;g.add(root);
-  const coat=new THREE.MeshLambertMaterial({color:0x77796b});
-  const dark=new THREE.MeshLambertMaterial({color:0x252c27});
-  const skin=new THREE.MeshLambertMaterial({color:0x9b8064});
+  const coat=m.cloth;
+  const dark=m.dark;
+  const skin=m.ivory;
   const torso=new THREE.Mesh(new THREE.BoxGeometry(.62,.34,1.0),coat);
   torso.position.set(0,.34,0);torso.rotation.x=.12;root.add(torso);
   const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,1),skin);
@@ -220,8 +220,8 @@ export function buildChapterTwo(world,scene){
   for(const x of [-4.7,4.7])rod(g,[x,4.15,-116],[x,4.15,-151],.095,m.brick,7);
   sign(g,-7.04,3.25,-121,2.4,.85,Math.PI/2,"TRANSFER SHAFT","LOWER SERVICE / -2");
   sign(g,7.04,3.25,-145,2.4,.85,-Math.PI/2,"FREIGHT LEVEL","AUTHORIZED STAFF","#bd7e4c");
-  const shaftRecorder=terminal(world,5.65,-142.0,"shaftRecording","Toista hissikuilun tallenne");
-  shaftRecorder.userData.label="Kuuntele hissikuilun tallenne";
+  const shaftRecorder=terminal(world,5.65,-142.0,"shaftRecording","PLAY SHAFT LOG");
+  shaftRecorder.userData.label="LISTEN TO SHAFT LOG";
 
   // Freight receiving hall: overhead gantry, cargo stacks and a shallow coolant spill.
   room(world,scene,0,-174,34,44);
@@ -257,16 +257,16 @@ export function buildChapterTwo(world,scene){
   for(const z of [-158,-173,-189])lamp(world,scene,0,z,0xe0bc7d);
   workerCorpse(world,-7.4,-163.2);
   const fuse=fusePickup(world,12.6,-178.5);
-  const pistolPickup=pickupToken(world,-12.6,-174.2,"pistol","Ota 9 mm pistooli",0x87908a);
+  const pistolPickup=pickupToken(world,-12.6,-174.2,"pistol","TAKE 9MM PISTOL",0x87908a);
   const ammoPickups=[
-    pickupToken(world,-9.2,-185.7,"ammo","Ota 9 mm ammuksia",0xd8c078),
-    pickupToken(world,13.7,-190.1,"ammo","Ota 9 mm ammuksia",0xd8c078)
+    pickupToken(world,-9.2,-185.7,"ammo","TAKE 9MM AMMO",0xd8c078),
+    pickupToken(world,13.7,-190.1,"ammo","TAKE 9MM AMMO",0xd8c078)
   ];
   const medkit=medkitPickup(world,5.3,-190.8);
-  const recorder=terminal(world,-14.8,-162.2,"recording","Toista huoltopäiväkirja");
+  const recorder=terminal(world,-14.8,-162.2,"recording","PLAY MAINTENANCE LOG");
   const steamClouds=[steamCloud(world,1.5,-210.2,0),steamCloud(world,-2.8,-230.0,1)];
   const steamZones=[{x:1.5,z:-210.2,radius:1.8},{x:-2.8,z:-230.0,radius:1.7}];
-  recorder.userData.label="Kuuntele tallenne";
+  recorder.userData.label="LISTEN TO RECORDING";
   // A half-open tool locker tells the player where the replacement fuse came from.
   box(g,13.5,.95,-179.5,1.15,1.9,.82,m.steel);
   box(g,13.5,1.82,-179.05,1.0,.12,.12,m.amber);
@@ -293,7 +293,7 @@ export function buildChapterTwo(world,scene){
   for(let z=-204;z>=-236;z-=8){
     for(const x of [-10.8,10.8])box(g,x,4.15,z,.22,.2,.3,m.dark);
   }
-  const pumpConsole=terminal(world,9.3,-216,"pump","Käynnistä jäähdytyspumput");
+  const pumpConsole=terminal(world,9.3,-216,"pump","START COOLANT PUMPS");
   const valve=valveWheel(world,-8.8,-224);
   const pressurePipe=rod(g,[-10.4,2.2,-224],[-2.2,2.2,-224],.22,m.lightSteel,10);
   const pipeJoint=cylinder(g,-2.25,2.2,-224,.42,.42,.42,m.amber,10,Math.PI/2);
@@ -328,7 +328,7 @@ export function buildChapterTwo(world,scene){
     for(const x of [-14.5,14.5])box(g,x,2.25,z,.18,4.2,.5,m.dark);
     box(g,0,4.55,z,28.8,.16,.35,m.lightSteel,false);
   }
-  const tramConsole=terminal(world,0,-255,"tram","Käynnistä huoltoraitiovaunu");
+  const tramConsole=terminal(world,0,-255,"tram","START SERVICE TRAM");
   const exitGate=box(g,0,2.25,-290,29.6,4.5,.35,m.steel);
   const exitCollider=boundsCollider(0,-290,29.7,.6,0,4.7);world.colliders.push(exitCollider);
   for(let x=-5;x<=5;x+=1.25)box(g,x,4.45,-289.7,.05,4.0,.05,m.amber,false);

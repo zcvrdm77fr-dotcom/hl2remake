@@ -1,145 +1,314 @@
 import * as THREE from 'three';
+import { makeGoldSrcTexture, makeOrganicMaterial } from './graphics/GoldSrcSurface.js?v=art-1';
 
-function material(color, roughness = 0.82, metalness = 0.04, emissive = 0x000000) {
-  return new THREE.MeshLambertMaterial({ color, roughness, metalness, emissive, emissiveIntensity: emissive ? 0.8 : 0 });
-}
+const flesh = makeOrganicMaterial('flesh', 0xb18a75);
+const paleFlesh = makeOrganicMaterial('flesh', 0xc19b80);
+const bone = makeOrganicMaterial('bone', 0xc2b18e);
+const darkBone = new THREE.MeshLambertMaterial({ color: 0x554b3e, flatShading: true });
+const chitin = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('leather', 1, 1, 7), color: 0x8a7960, flatShading: true });
+const chitinEdge = new THREE.MeshLambertMaterial({ color: 0x5c5142, flatShading: true });
+const eyeMat = new THREE.MeshLambertMaterial({ color: 0xffa35b, emissive: 0x7e210c, emissiveIntensity: 1.25 });
+const crawlerEye = new THREE.MeshLambertMaterial({ color: 0xb8c77b, emissive: 0x526529, emissiveIntensity: 1.05 });
+const darkWet = new THREE.MeshLambertMaterial({ color: 0x171916, flatShading: true });
+const steel = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('steel', 1, 1, 5), color: 0xa1a294 });
+const wornSteel = new THREE.MeshLambertMaterial({ color: 0x868a7f });
+const redPaint = new THREE.MeshLambertMaterial({ color: 0x763c2d });
+const glove = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('leather', 1, 1, 4), color: 0x7a7667 });
+const sleeve = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('cloth', 1, 1, 8), color: 0x8c9470 });
+const gunmetal = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('steel', 1, 1, 13), color: 0x515b59 });
+const blackMetal = new THREE.MeshLambertMaterial({ color: 0x202723 });
+const pistolGrip = new THREE.MeshLambertMaterial({ map: makeGoldSrcTexture('rubber', 1, 1, 3), color: 0x555346 });
 
-function rod(parent, a, b, radius, mat, sides = 6) {
-  const start = new THREE.Vector3(...a);
-  const end = new THREE.Vector3(...b);
-  const delta = new THREE.Vector3().subVectors(end, start);
-  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, delta.length(), sides), mat);
-  mesh.position.copy(start).add(end).multiplyScalar(0.5);
-  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
+function addMesh(parent, geometry, mat, position, scale = null) {
+  const mesh = new THREE.Mesh(geometry, mat);
+  mesh.position.set(...position);
+  if (scale) mesh.scale.set(...scale);
   mesh.castShadow = true;
+  mesh.receiveShadow = true;
   parent.add(mesh);
   return mesh;
 }
 
+function sphere(parent, position, scale, mat, width = 9, height = 7) {
+  return addMesh(parent, new THREE.SphereGeometry(1, width, height), mat, position, scale);
+}
+
+function rod(parent, a, b, radius, mat, sides = 7, endRadius = radius) {
+  const start = new THREE.Vector3(...a);
+  const end = new THREE.Vector3(...b);
+  const delta = end.clone().sub(start);
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(endRadius, radius, delta.length(), sides), mat);
+  mesh.position.copy(start).add(end).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+function curvedRib(parent, points, radius, mat) {
+  const curve = new THREE.CatmullRomCurve3(points.map(p => new THREE.Vector3(...p)));
+  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 8, radius, 5, false), mat);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+function makeClawedHand(parent, x, y, z, direction = -1) {
+  sphere(parent, [x, y, z], [.13, .105, .15], flesh, 7, 6);
+  for (let i = 0; i < 3; i++) {
+    const spread = (i - 1) * .09;
+    rod(parent, [x + spread, y - .01, z], [x + spread * 1.45, y - .08, z + direction * .22], .045, flesh, 6, .025);
+    rod(parent, [x + spread * 1.45, y - .08, z + direction * .22], [x + spread * 1.6, y - .16, z + direction * .34], .026, darkBone, 5, .004);
+  }
+  rod(parent, [x - direction * .08, y, z], [x - direction * .19, y - .1, z + direction * .12], .045, flesh, 6, .025);
+}
+
 export function makeCrowbar(camera) {
   const root = new THREE.Group();
-  root.position.set(0.42, -0.37, -0.64);
-  root.rotation.set(-0.1, -0.1, -0.12);
+  root.position.set(.43, -.34, -.64);
+  root.rotation.set(-.16, -.12, -.19);
   camera.add(root);
-  const steel = material(0x596267, 0.36, 0.82);
-  const worn = material(0x8b8a7a, 0.54, 0.64);
-  const grip = material(0x6f3426, 0.88);
-  rod(root, [0, -0.16, 0.12], [0.02, 0.24, -0.28], 0.032, steel, 7);
-  rod(root, [0.02, 0.24, -0.28], [-0.14, 0.39, -0.4], 0.032, steel, 7);
-  rod(root, [-0.14, 0.39, -0.4], [-0.31, 0.32, -0.4], 0.032, worn, 7);
-  rod(root, [-0.02, -0.12, 0.08], [0, 0.04, -0.03], 0.045, grip, 7);
-  const hand = new THREE.Mesh(new THREE.IcosahedronGeometry(0.105, 1), material(0x7c5947, 0.96));
-  hand.position.set(0.015, -0.19, 0.15);
-  hand.scale.set(1.0, 0.75, 1.1);
-  root.add(hand);
+
+  // A worn, painted steel bar with a flattened split claw at the business end.
+  rod(root, [.02, -.29, .12], [-.025, .02, -.12], .037, redPaint, 8);
+  rod(root, [-.025, .02, -.12], [-.13, .31, -.32], .038, redPaint, 8);
+  rod(root, [-.13, .31, -.32], [-.28, .43, -.39], .034, wornSteel, 8);
+  rod(root, [-.28, .43, -.39], [-.39, .36, -.41], .03, wornSteel, 7, .018);
+  rod(root, [-.28, .43, -.39], [-.23, .53, -.45], .03, wornSteel, 7, .018);
+  rod(root, [.02, -.24, .06], [.02, -.1, -.02], .047, glove, 8);
+
+  // A visible HEV sleeve, wrist cuff and wrapped glove keep the weapon grounded.
+  const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .32, 3, 8), sleeve);
+  forearm.position.set(.055, -.36, .32);
+  forearm.rotation.set(-.36, -.08, -.08);
+  forearm.castShadow = true;
+  root.add(forearm);
+  sphere(root, [.02, -.19, .05], [.16, .12, .16], glove, 8, 6);
+  for (let i = 0; i < 4; i++) {
+    const x = -.09 + i * .072;
+    const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.027, .105, 2, 6), glove);
+    finger.position.set(x, -.13, -.015 + Math.abs(i - 1.5) * .02);
+    finger.rotation.x = -.46;
+    finger.rotation.z = (i - 1.5) * .13;
+    root.add(finger);
+  }
+  sphere(root, [-.11, -.22, .09], [.055, .09, .09], glove, 7, 5);
   return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), swing: 0 };
+}
+
+export function makePistol(camera) {
+  const root = new THREE.Group();
+  root.position.set(.38, -.32, -.62);
+  root.rotation.set(-.04, -.055, -.055);
+  camera.add(root);
+
+  // Late-90s service sidearm: slide, ejection port, sights, trigger and textured grip.
+  const slide = addMesh(root, new THREE.BoxGeometry(.205, .16, .49), gunmetal, [0, .055, -.28]);
+  slide.scale.set(1, 1, 1);
+  addMesh(root, new THREE.BoxGeometry(.18, .045, .27), wornSteel, [0, .145, -.30]);
+  addMesh(root, new THREE.BoxGeometry(.12, .055, .18), blackMetal, [.032, .04, -.47]);
+  addMesh(root, new THREE.BoxGeometry(.12, .035, .09), blackMetal, [-.028, .055, -.17]);
+  addMesh(root, new THREE.BoxGeometry(.155, .24, .18), pistolGrip, [0, -.135, -.12]).rotation.x = -.22;
+  addMesh(root, new THREE.BoxGeometry(.16, .025, .19), blackMetal, [0, -.23, -.13]).rotation.x = -.22;
+
+  const barrel = new THREE.Mesh(new THREE.CylinderGeometry(.047, .047, .37, 9), blackMetal);
+  barrel.rotation.x = Math.PI / 2;
+  barrel.position.set(0, .045, -.62);
+  barrel.castShadow = true;
+  root.add(barrel);
+  const muzzleRing = new THREE.Mesh(new THREE.TorusGeometry(.049, .009, 5, 10), wornSteel);
+  muzzleRing.position.set(0, .045, -.80);
+  root.add(muzzleRing);
+  addMesh(root, new THREE.BoxGeometry(.045, .05, .055), wornSteel, [0, .16, -.48]);
+  addMesh(root, new THREE.BoxGeometry(.035, .055, .05), wornSteel, [0, .16, -.08]);
+  addMesh(root, new THREE.BoxGeometry(.13, .035, .08), blackMetal, [0, .15, -.58]);
+  addMesh(root, new THREE.BoxGeometry(.065, .12, .06), blackMetal, [.11, .04, -.22]);
+  addMesh(root, new THREE.BoxGeometry(.045, .035, .09), wornSteel, [-.104, .03, -.25]);
+
+  const trigger = new THREE.Mesh(new THREE.TorusGeometry(.074, .012, 5, 12, Math.PI), wornSteel);
+  trigger.position.set(0, -.055, -.18);
+  trigger.rotation.x = Math.PI / 2;
+  root.add(trigger);
+  rod(root, [0, -.045, -.12], [0, -.1, -.19], .012, wornSteel, 5);
+  for (let y = -.18; y < -.04; y += .045) addMesh(root, new THREE.BoxGeometry(.115, .012, .012), blackMetal, [0, y, -.025]);
+
+  const sleeveMesh = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .27, 3, 8), sleeve);
+  sleeveMesh.position.set(.015, -.34, .23);
+  sleeveMesh.rotation.set(-.38, 0, -.03);
+  root.add(sleeveMesh);
+  sphere(root, [.015, -.19, .015], [.145, .12, .16], glove, 8, 6);
+  for (let i = 0; i < 4; i++) {
+    const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.025, .11, 2, 6), glove);
+    finger.position.set(-.09 + i * .06, -.13, -.075 + Math.abs(i - 1.5) * .022);
+    finger.rotation.x = -.62;
+    root.add(finger);
+  }
+
+  const muzzle = new THREE.PointLight(0xffbd75, 0, 2.6);
+  muzzle.position.set(0, .05, -.84);
+  root.add(muzzle);
+  return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), muzzle, recoil: 0 };
 }
 
 export function makeEchoStalker(scene, x, z) {
   const root = new THREE.Group();
   root.position.set(x, 0, z);
   scene.add(root);
-  const hide = material(0x34332f, 0.94, 0.02);
-  const hideLight = material(0x554b3d, 0.9, 0.02);
-  const bone = material(0x9b8969, 0.9, 0.0);
-  const eye = new THREE.MeshLambertMaterial({ color: 0xe88c45, emissive: 0xff5117, emissiveIntensity: 2.1, roughness: 0.4 });
-  const wet = material(0x20272a, 0.3, 0.3);
 
-  const torso = new THREE.Mesh(new THREE.IcosahedronGeometry(0.57, 1), hide);
-  torso.position.set(0, 1.05, 0.08); torso.scale.set(0.82, 1.28, 0.72); torso.castShadow = true; root.add(torso);
-  const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.39, 1), hideLight);
-  head.position.set(0, 1.9, -0.19); head.scale.set(0.8, 0.77, 1.1); head.castShadow = true; root.add(head);
+  // An emaciated human-shaped specimen: stretched forearms, exposed ribs and a split jaw.
+  const torso = sphere(root, [0, 1.16, .02], [.43, .64, .34], flesh, 10, 8);
+  sphere(root, [0, .74, .06], [.31, .36, .29], paleFlesh, 9, 7);
+  sphere(root, [0, 1.46, .1], [.35, .35, .28], flesh, 9, 7);
+  sphere(root, [0, .45, .08], [.28, .25, .24], darkWet, 8, 6);
 
+  // Broken clavicle and a cage of narrow, dirty ribs, silhouetted against the chest.
+  rod(root, [-.33, 1.51, -.02], [0, 1.57, -.12], .055, bone, 6);
+  rod(root, [0, 1.57, -.12], [.33, 1.51, -.02], .055, bone, 6);
+  for (let side of [-1, 1]) for (let i = 0; i < 3; i++) {
+    const y = 1.37 - i * .16;
+    curvedRib(root, [
+      [side * .06, y + .05, -.285],
+      [side * .22, y + .04, -.315],
+      [side * .35, y - .05, -.22],
+      [side * .29, y - .12, -.12]
+    ], .026, i === 2 ? darkBone : bone);
+  }
+  for (let i = 0; i < 6; i++) {
+    sphere(root, [0, .74 + i * .16, .315], [.055, .06, .075], darkBone, 6, 5);
+  }
+
+  // Head with recessed eye sockets, wet mouth cavity, uneven teeth and a hanging jaw.
+  const skull = sphere(root, [0, 1.96, -.13], [.31, .36, .29], paleFlesh, 10, 8);
+  sphere(root, [0, 1.76, -.34], [.25, .13, .16], darkWet, 9, 6);
+  sphere(root, [0, 1.67, -.29], [.22, .09, .13], flesh, 8, 6);
+  for (let side of [-1, 1]) {
+    sphere(root, [side * .135, 2.04, -.375], [.105, .105, .045], darkWet, 7, 5);
+    sphere(root, [side * .135, 2.04, -.414], [.035, .035, .02], eyeMat, 7, 5);
+    rod(root, [side * .10, 1.77, -.44], [side * .08, 1.69, -.49], .022, bone, 5, .008);
+    for (let i = 0; i < 3; i++) {
+      const tx = side * (.055 + i * .062);
+      const tooth = new THREE.Mesh(new THREE.ConeGeometry(.022, .09 + (i % 2) * .025, 5), bone);
+      tooth.position.set(tx, 1.755, -.49);
+      tooth.rotation.z = Math.PI;
+      root.add(tooth);
+    }
+    const torn = new THREE.Mesh(new THREE.ConeGeometry(.07, .28, 5), darkBone);
+    torn.position.set(side * .25, 2.24, -.03);
+    torn.rotation.z = side * -.58;
+    root.add(torn);
+  }
+  sphere(root, [0, 1.62, -.39], [.15, .075, .12], darkWet, 8, 6);
+
+  const armPivots = [];
+  const legPivots = [];
   for (const side of [-1, 1]) {
-    const socket = new THREE.Mesh(new THREE.SphereGeometry(0.105, 7, 5), wet);
-    socket.position.set(side * 0.19, 1.94, -0.5); root.add(socket);
-    const iris = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), eye);
-    iris.position.set(side * 0.19, 1.94, -0.575); root.add(iris);
-    rod(root, [side * 0.32, 1.35, -0.01], [side * 0.67, 0.72, -0.33], 0.13, hideLight, 6);
-    rod(root, [side * 0.67, 0.72, -0.33], [side * 0.76, 0.17, -0.58], 0.085, hide, 6);
-    rod(root, [side * 0.22, 0.7, 0.03], [side * 0.34, 0.14, 0.27], 0.13, hide, 6);
-    rod(root, [side * 0.34, 0.14, 0.27], [side * 0.48, 0.08, -0.04], 0.075, hideLight, 6);
-    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.58, 5), bone);
-    horn.position.set(side * 0.27, 2.24, 0.06); horn.rotation.z = side * -0.42; horn.castShadow = true; root.add(horn);
-  }
-  const jaw = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.48, 6), bone);
-  jaw.position.set(0, 1.56, -0.45); jaw.rotation.x = -Math.PI / 2; root.add(jaw);
-  for (let i = 0; i < 4; i++) {
-    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.42, 5), hideLight);
-    spike.position.set(-0.23 + i * 0.15, 1.25 + Math.sin(i) * 0.08, 0.55);
-    spike.rotation.x = Math.PI / 2.5; root.add(spike);
-  }
-  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), eye);
-  core.position.set(0, 1.12, 0.58); root.add(core);
-  const halo = new THREE.PointLight(0xff7135, 1.4, 5);
-  halo.position.set(0, 1.6, 0.5); root.add(halo);
+    const shoulder = new THREE.Group();
+    shoulder.position.set(side * .34, 1.46, .01);
+    root.add(shoulder);
+    sphere(shoulder, [0, -.04, 0], [.19, .19, .19], flesh, 8, 6);
+    rod(shoulder, [0, -.04, 0], [side * .17, -.36, -.05], .145, flesh, 7, .11);
+    sphere(shoulder, [side * .17, -.36, -.05], [.12, .12, .13], paleFlesh, 7, 5);
+    rod(shoulder, [side * .17, -.36, -.05], [side * .21, -.86, -.27], .105, flesh, 7, .065);
+    makeClawedHand(shoulder, side * .21, -.91, -.28, -1);
+    armPivots.push({ pivot: shoulder, side });
 
-  const enemy = { root, health: 5, alive: true, attackCooldown: 0.8, speed: 2.65, halo, phase: 0 };
+    const hip = new THREE.Group();
+    hip.position.set(side * .19, .72, .08);
+    root.add(hip);
+    rod(hip, [0, 0, 0], [side * .08, -.31, .06], .15, flesh, 7, .11);
+    sphere(hip, [side * .08, -.31, .06], [.12, .12, .14], darkBone, 7, 5);
+    rod(hip, [side * .08, -.31, .06], [side * .11, -.62, -.13], .11, paleFlesh, 7, .075);
+    sphere(hip, [side * .11, -.62, -.13], [.13, .09, .22], darkBone, 7, 5);
+    for (let i = 0; i < 2; i++) rod(hip, [side * (.08 + i * .055), -.62, -.22], [side * (.08 + i * .055), -.67, -.38], .03, bone, 5, .005);
+    legPivots.push({ pivot: hip, side });
+  }
+
+  // Irregular dorsal growths break the outline; these are not decorative glowing spikes.
+  for (let i = 0; i < 5; i++) {
+    const xPos = (i - 2) * .105;
+    rod(root, [xPos, 1.08 + Math.sin(i) * .2, .25], [xPos + .035, 1.24 + Math.sin(i * 1.7) * .18, .52], .06, darkBone, 5, .012);
+  }
+  const halo = new THREE.PointLight(0xff7135, .46, 3.3);
+  halo.position.set(0, 1.68, -.2);
+  root.add(halo);
+
+  const enemy = {
+    root, health: 5, alive: true, attackCooldown: .8, speed: 2.45, halo, phase: Math.random() * 4,
+    growlClock: 2 + Math.random() * 4, kind: 'stalker',
+    animate(time) {
+      armPivots.forEach(({ pivot, side }) => { pivot.rotation.x = Math.sin(time * 5.2 + side) * .16; pivot.rotation.z = side * (.08 + Math.sin(time * 2.7) * .045); });
+      legPivots.forEach(({ pivot, side }) => { pivot.rotation.x = Math.sin(time * 5.2 + side * Math.PI) * .2; });
+      skull.rotation.x = Math.sin(time * 2.4) * .035;
+      torso.rotation.z = Math.sin(time * 3.2) * .025;
+    }
+  };
   root.traverse(object => { if (object.isMesh) object.userData.enemy = enemy; });
   return enemy;
 }
 
+export function makeResonanceCrawler(scene, x, z) {
+  const root = new THREE.Group();
+  root.position.set(x, 0, z);
+  scene.add(root);
 
-export function makeResonanceCrawler(scene,x,z){
-  const root=new THREE.Group();root.position.set(x,0,z);scene.add(root);
-  const shell=material(0x46443a,.96,.02),shellEdge=material(0x74634a,.91,.02);
-  const bone=material(0x9f9274,.95,0),dark=material(0x1c2420,.4,.12);
-  const eyeMat=new THREE.MeshLambertMaterial({color:0xb6cf7e,emissive:0x617d29,emissiveIntensity:1.7});
-  const body=new THREE.Mesh(new THREE.IcosahedronGeometry(.48,1),shell);
-  body.position.set(0,.72,.02);body.scale.set(1.05,.62,1.3);body.castShadow=true;root.add(body);
-  const carapace=new THREE.Mesh(new THREE.IcosahedronGeometry(.38,0),shellEdge);
-  carapace.position.set(0,.95,.18);carapace.scale.set(.96,.54,1.08);root.add(carapace);
-  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.29,1),bone);
-  head.position.set(0,.69,-.53);head.scale.set(.9,.72,.9);root.add(head);
-  for(const side of [-1,1]){
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(.075,6,5),eyeMat);
-    eye.position.set(side*.16,.78,-.77);root.add(eye);
-    for(const i of [0,1,2]){
-      const z=.4-i*.42,outer=side*(.55+i*.06);
-      rod(root,[side*.28,.68,z],[outer,.5,z-.22],.095,shellEdge,5);
-      rod(root,[outer,.5,z-.22],[side*(.83+i*.05),.13,z-.4],.065,dark,5);
-      const claw=new THREE.Mesh(new THREE.ConeGeometry(.075,.22,5),bone);
-      claw.position.set(side*(.83+i*.05),.09,z-.5);claw.rotation.x=Math.PI/2;root.add(claw);
+  // A broad, low alien arthropod with a plated back, exposed belly and six articulated legs.
+  sphere(root, [0, .67, .02], [.48, .29, .72], flesh, 9, 7);
+  sphere(root, [0, .87, .12], [.49, .22, .61], chitin, 10, 7);
+  sphere(root, [0, .96, .23], [.40, .15, .46], chitinEdge, 9, 6);
+  sphere(root, [0, .64, -.52], [.28, .22, .29], paleFlesh, 8, 6);
+  sphere(root, [0, .58, -.72], [.20, .12, .12], darkWet, 8, 5);
+
+  // Segmented armour plates and an uneven row of dorsal spines.
+  for (let i = 0; i < 4; i++) {
+    const zPos = -.23 + i * .22;
+    const plate = sphere(root, [0, .99, zPos], [.34 - i * .035, .11, .13], i % 2 ? chitin : chitinEdge, 8, 5);
+    plate.rotation.x = (i - 1.5) * .035;
+    const spine = new THREE.Mesh(new THREE.ConeGeometry(.075, .27 + (i % 2) * .09, 5), bone);
+    spine.position.set((i % 2 ? .09 : -.09), 1.13, zPos);
+    spine.rotation.z = i % 2 ? -.25 : .25;
+    root.add(spine);
+  }
+
+  // Six small eyes are recessed beneath the shell edge.
+  for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
+    const eye = sphere(root, [side * (.19 + i * .025), .76 - i * .035, -.64 + i * .12], [.043, .045, .032], darkWet, 6, 5);
+    sphere(root, [side * (.205 + i * .025), .765 - i * .035, -.665 + i * .12], [.019, .019, .018], crawlerEye, 6, 5);
+  }
+
+  // Mandibles and paired hooked mouthparts.
+  for (const side of [-1, 1]) {
+    rod(root, [side * .1, .62, -.68], [side * .17, .47, -.88], .065, paleFlesh, 6, .035);
+    rod(root, [side * .17, .47, -.88], [side * .08, .43, -.98], .035, darkBone, 5, .004);
+  }
+  const legs = [];
+  for (const side of [-1, 1]) for (let i = 0; i < 3; i++) {
+    const zPos = .38 - i * .38;
+    const hip = new THREE.Group();
+    hip.position.set(side * .31, .72, zPos);
+    root.add(hip);
+    sphere(hip, [side * .055, 0, 0], [.12, .13, .15], chitinEdge, 7, 5);
+    rod(hip, [0, 0, 0], [side * .43, -.16, -.04], .085, chitin, 7, .06);
+    sphere(hip, [side * .43, -.16, -.04], [.075, .075, .08], darkBone, 6, 5);
+    rod(hip, [side * .43, -.16, -.04], [side * .64, -.59, -.21], .055, chitinEdge, 6, .027);
+    rod(hip, [side * .64, -.59, -.21], [side * .72, -.69, -.36], .028, bone, 5, .004);
+    legs.push({ hip, side, index: i });
+  }
+  const halo = new THREE.PointLight(0xa8ce6d, .34, 2.8);
+  halo.position.set(0, .83, -.42);
+  root.add(halo);
+  const enemy = {
+    root, health: 4, alive: true, attackCooldown: 1.1, speed: 3.1, damage: 12,
+    kind: 'crawler', halo, phase: Math.random() * 4, growlClock: 1.5 + Math.random() * 3,
+    animate(time) {
+      legs.forEach(({ hip, side, index }) => {
+        hip.rotation.z = side * (.08 + Math.sin(time * 8 + index * 1.7) * .15);
+        hip.rotation.x = Math.sin(time * 8 + index * 1.8 + side) * .11;
+      });
+      root.position.y = Math.abs(Math.sin(time * 7 + this.phase)) * .025;
     }
-  }
-  for(let i=0;i<4;i++){
-    const spike=new THREE.Mesh(new THREE.ConeGeometry(.075,.36,5),shellEdge);
-    spike.position.set(-.22+i*.145,1.12,.18+i*.08);spike.rotation.x=.4;root.add(spike);
-  }
-  const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,0),eyeMat);
-  core.position.set(0,.73,.5);root.add(core);
-  const halo=new THREE.PointLight(0xa8ce6d,.8,3.5);halo.position.set(0,.9,.42);root.add(halo);
-  const enemy={root,health:4,alive:true,attackCooldown:1.1,speed:3.35,damage:12,kind:'crawler',halo,phase:0};
-  root.traverse(o=>{if(o.isMesh)o.userData.enemy=enemy});
+  };
+  root.traverse(object => { if (object.isMesh) object.userData.enemy = enemy; });
   return enemy;
-}
-
-
-export function makePistol(camera){
-  const root=new THREE.Group();
-  root.position.set(.39,-.32,-.62);
-  root.rotation.set(-.045,-.055,-.06);
-  camera.add(root);
-  const slide=material(0x4b5654,.48,.6);
-  const dark=material(0x202724,.86,.08);
-  const grip=material(0x493b2c,.94,.02);
-  const steel=material(0x8a907f,.42,.52);
-  const box=(size,pos,mat)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(...size),mat);o.position.set(...pos);o.castShadow=true;root.add(o);return o};
-  // Compact late-90s service pistol, built from simple low-poly parts.
-  box([.19,.16,.51],[0,.045,-.28],slide);
-  box([.195,.075,.34],[0,.151,-.31],steel);
-  box([.15,.24,.17],[0,-.13,-.14],grip).rotation.x=-.22;
-  box([.105,.11,.18],[0,-.205,-.13],dark).rotation.x=-.22;
-  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.043,.043,.32,8),dark);
-  barrel.rotation.x=Math.PI/2;barrel.position.set(0,.045,-.62);root.add(barrel);
-  box([.22,.035,.07],[0,.15,-.5],dark);
-  box([.045,.065,.045],[0,.19,-.49],steel);
-  box([.06,.04,.045],[0,.185,-.06],steel);
-  const trigger=new THREE.Mesh(new THREE.TorusGeometry(.065,.012,4,8,Math.PI),steel);
-  trigger.position.set(0,-.06,-.19);trigger.rotation.x=Math.PI/2;root.add(trigger);
-  const hand=new THREE.Mesh(new THREE.IcosahedronGeometry(.12,1),material(0x745642,.95,0));
-  hand.position.set(0,-.22,.03);hand.scale.set(1.1,.78,1.2);root.add(hand);
-  const muzzle=new THREE.PointLight(0xffc878,0,3);
-  muzzle.position.set(0,.05,-.82);root.add(muzzle);
-  return {root,basePosition:root.position.clone(),baseRotation:root.rotation.clone(),muzzle,recoil:0};
 }

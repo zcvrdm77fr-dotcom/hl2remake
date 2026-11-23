@@ -1,80 +1,80 @@
 export const STORY = {
   intro: {
-    speaker: 'AINO / VALVOMO',
-    line: 'Huoltoteknikko, kuuletko? Sektorissa 09 on häiriö jäähdytysreleessä. Käy hakemassa kulkukortti vartijan kopista. Pidetään tämä tavallisena huoltokeikkana.'
+    speaker: 'CONTROL / AINO',
+    line: 'Maintenance, do you copy? Sector 09 is reporting a fault in the cooling relay. Pick up a security card from the guard station. Keep this routine. I will talk you through it.'
   },
   warning: {
-    speaker: 'DR. LEHTO / TALLENNE',
-    line: 'Jos tämä tallenne käynnistyi, koe on jo alkanut. Älä luota valvomoon. Hae sininen jäähdytyskela ja pysy poissa säiliön läheltä.'
+    speaker: 'DR. LEHTO / RECORDED MESSAGE',
+    line: 'If this recording is playing, the experiment has already started. Do not trust Control. Find the blue coolant coil and stay away from the containment tank.'
   },
   card: {
-    speaker: 'AINO / VALVOMO',
-    line: 'Tunniste hyväksytty. Huolto-ovi avautuu. Odota... Sektorissa ei pitäisi olla ketään, mutta liiketunnistin näyttää kaksi kohdetta.'
+    speaker: 'CONTROL / AINO',
+    line: 'Identity confirmed. The service door is opening. Wait... There should be nobody in that sector, but the motion sensors are showing two contacts.'
   },
   breach: {
-    speaker: 'KUULUTUS',
-    line: 'Varoitus. Koealueen paine-ero ylittää turvallisen rajan. Kaikki työntekijät evakuoitava välittömästi. Tämä ei ole harjoitus.'
+    speaker: 'FACILITY ANNOUNCEMENT',
+    line: 'Warning. Pressure differential in the test chamber has exceeded safe operating limits. All personnel must evacuate immediately. This is not a drill.'
   },
   coil: {
-    speaker: 'DR. LEHTO / TALLENNE',
-    line: 'Se seuraa ääntä. Jos kuulet askeleet, älä jää paikallesi. Varavoima on reaktorin oikealla puolella. Hissin pitäisi viedä sinut alemmalle huoltotasolle.'
+    speaker: 'DR. LEHTO / RECORDED MESSAGE',
+    line: 'It follows sound. If you hear footsteps, keep moving. The backup generator is beside the reactor. The lift should take you to the lower service level.'
   },
   power: {
-    speaker: 'AINO / VALVOMO',
-    line: 'Virta palautui. Hissi on nyt käytettävissä. En saa ulko-ovia auki täältä käsin. Alemmalla tasolla on vanha huoltoraitiovaunu. Sen pitäisi kulkea vielä.'
+    speaker: 'CONTROL / AINO',
+    line: 'Power is back. The maintenance lift is online. I cannot release the outer doors from here. There is an old service tram on the freight level. It should still run.'
   },
   liftStart: {
     speaker: 'AINO / RADIO',
-    line: 'Hissi liikkuu. Kuulen jotain kuilussa. Kun ovet aukeavat, jatka suoraan rahtihalliin. Etsi varasulake ja käynnistä jäähdytyspumput.'
+    line: 'The lift is moving. I can hear something inside the shaft. When the doors open, head straight for the freight hall. Find a replacement fuse and restart the coolant pumps.'
   },
   freightArrival: {
     speaker: 'AINO / RADIO',
-    line: 'Olet rahtitasolla. Tämä paikka suljettiin vuosia sitten. Sulakekaappi on lastauslaiturin toisella puolella. Älä koske punaisiin venttiileihin ennen kuin pumput ovat käynnissä.'
+    line: 'You are on the freight level. This place was sealed years ago. The fuse cabinet is across the loading bay. Do not touch the red valves until the pumps are running.'
   },
   fuseFound: {
     speaker: 'AINO / RADIO',
-    line: 'Hyvä. Sulake näyttää ehjältä. Pumppukeskus on hallin perällä, kahden paineastian välissä. Yritän pitää valot päällä.'
+    line: 'Good. The fuse looks intact. The pump station is at the far end of the hall, between the two pressure tanks. I will try to keep the lights on.'
   },
   pumpStarted: {
-    speaker: 'DR. LEHTO / RADIO?',
-    line: 'Älä käynnistä pumppuja. Se ei ole jäähdytysnestettä putkissa. Se on... Kuuntele. Se osaa käyttää radiota.'
+    speaker: 'DR. LEHTO? / RADIO',
+    line: 'Do not start the pumps. That is not coolant in the pipes. It is... Listen. It has learned how to use the radio.'
   },
   valveClosed: {
     speaker: 'AINO / RADIO',
-    line: 'Paine laskee. Saimme kulkuväylän auki. Raitiovaunun ohjauspaneeli on laiturilla. Kun käynnistät sen, älä jää odottamaan.'
+    line: 'Pressure is dropping. The service route is clear. The tram controls are on the platform. Once you start it, do not wait around.'
   },
   pistolFound: {
     speaker: 'AINO / RADIO',
-    line: 'Löysit vartijan pistoolin. Pidä se valmiina. Täällä ei ole enää ketään, joka tulisi auttamaan.'
+    line: 'You found the guard’s sidearm. Keep it ready. There is nobody left down there who can help you.'
   },
   shaftLog: {
-    speaker: 'HUOLTOPÄIVYSTYS / TALLENNE',
-    line: 'Hissi ei ole ollut käytössä kolmeen vuoteen. Silti joku kutsui sen tänään alhaalta. Lehto käski meitä poistumaan ennen kuin ovet avautuvat. Hän jäi itse koealueelle.'
+    speaker: 'NIGHT MAINTENANCE / RECORDING',
+    line: 'The lift has been out of service for three years. Someone called it from below tonight. Lehto told us to leave before the doors opened. He stayed behind in the test chamber.'
   },
   freightLog: {
-    speaker: 'HUOLTOTEKNIKKO / TALLENNE',
-    line: 'Rahtihalli suljettiin ennen koetta. Joku siirsi tänne kaikki näytteet, mutta luovutuslistassa ei ole vastaanottajaa. Älä vie mitään raitiovaunuun.'
+    speaker: 'FREIGHT TECHNICIAN / RECORDING',
+    line: 'The freight bay was sealed before the experiment. Someone moved all the samples down here, but the transfer manifest has no recipient. Do not take anything onto the tram.'
   },
   tramStarted: {
-    speaker: 'TUNTEMATON',
-    line: 'Sinä et ole ensimmäinen, joka yrittää lähteä. Mutta olet ensimmäinen, joka avasi oven oikealta puolelta.'
+    speaker: 'UNKNOWN TRANSMISSION',
+    line: 'You are not the first to try to leave. But you are the first to open the door from the right side.'
   },
   ending: {
     speaker: 'AINO / RADIO',
-    line: 'Näen raitiovaunun signaalin. Se liikkuu. En tiedä minne raide vie, mutta pysy kyydissä. Minä etsin toisen reitin.'
+    line: 'I can see the tram signal. It is moving. I do not know where that track leads, but stay on board. I will find another way out.'
   }
 };
 
 export const OBJECTIVES = [
-  ['Etsi kulkukortti', 'Vartijan kopista.'],
-  ['Avaa huolto-ovi', 'Käytä korttia lukijaan.'],
-  ['Hae jäähdytyskela', 'Testikammion huoltotasolta.'],
-  ['Palauta varavoima', 'Käynnistä reaktorin vieressä oleva konsoli.'],
-  ['Kutsu huoltohissi', 'Käytä hissin ohjauspaneelia.'],
-  ['Saavu rahtitasolle', 'Poistu hissistä ja etsi reitti rahtihalliin.'],
-  ['Etsi varasulake', 'Tutki lastauslaiturin työkalukaappi.'],
-  ['Käynnistä jäähdytyspumput', 'Asenna sulake pumppukeskuksen konsoliin.'],
-  ['Sulje paineventtiili', 'Käännä käsiventtiili pumppugalleriassa.'],
-  ['Käynnistä huoltoraitiovaunu', 'Mene laiturin ohjauspaneelille.'],
-  ['Pakene huoltotunnelin läpi', 'Pysy raitiovaunussa.']
+  ['Find the security keycard', 'Take it from the guard station.'],
+  ['Unlock the service door', 'Use the card reader.'],
+  ['Retrieve the coolant coil', 'Search the test chamber maintenance level.'],
+  ['Restore backup power', 'Activate the generator beside the reactor.'],
+  ['Call the maintenance lift', 'Use the lift control panel.'],
+  ['Reach the freight level', 'Leave the lift and enter the freight hall.'],
+  ['Find a replacement fuse', 'Search the loading bay tool cabinet.'],
+  ['Restart the coolant pumps', 'Install the fuse at the pump control panel.'],
+  ['Close the pressure valve', 'Turn the manual valve in the pump gallery.'],
+  ['Start the service tram', 'Use the platform control panel.'],
+  ['Escape through the service tunnel', 'Stay aboard the tram.']
 ];

@@ -1,10 +1,13 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { SourceMovement } from './physics.js?v=campaign-6';
-import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=campaign-6';
-import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=campaign-6';
-import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=campaign-6';
-import { STORY, OBJECTIVES } from './story.js?v=campaign-6';
+import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=art-1';
+import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=art-1';
+import { makeEchoStalker, makeResonanceCrawler, makeCrowbar, makePistol } from './entities.js?v=art-1';
+import { STORY, OBJECTIVES } from './story.js?v=art-1';
+import { RetroAudio } from './audio/RetroAudio.js?v=art-1';
+
+const audio = new RetroAudio();
 
 const $ = (id) => document.getElementById(id);
 const ui = {
@@ -21,9 +24,10 @@ const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'h
 renderer.setPixelRatio(1);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.BasicShadowMap;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
-renderer.toneMapping = THREE.NoToneMapping;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.94;
 renderer.domElement.id = 'gameCanvas';
 $('gameRoot').appendChild(renderer.domElement);
 
@@ -53,7 +57,7 @@ let lowerChapterStarted = false, tramRide = false, tramLastZ = 0;
 let health = 100, elapsed = 0, previousTime = performance.now();
 let attackCooldown = 0, invulnerability = 0, hitFlash = 0, footstepClock = 0;
 let subtitleClock = 0, subtitleFullText = '', subtitleIndex = 0, toastClock = 0;
-let audioContext = null, ambientOsc = null, ambientGain = null, muted = false;
+let muted = false;
 let liftEndingClock = 0, tramEndingClock = 0, steamDamageClock = 0, outroSpoken = false;
 
 function setObjective() {
@@ -69,42 +73,11 @@ function say(message, seconds = 6.5) {
   ui.subtitleName.textContent = message.speaker;
   subtitleFullText = message.line; subtitleIndex = 0; ui.subtitleText.textContent = '';
   ui.subtitles.classList.add('visible'); subtitleClock = seconds;
-  if (!muted) radioBlip();
+  if (!muted) audio.play('radio');
 }
-function ensureAudio() {
-  if (muted) return;
-  const AC = window.AudioContext || window.webkitAudioContext;
-  if (!AC) return;
-  try {
-    if (!audioContext) {
-      audioContext = new AC(); ambientOsc = audioContext.createOscillator();
-      ambientGain = audioContext.createGain();
-      const lowpass = audioContext.createBiquadFilter();
-      ambientOsc.type = 'sawtooth'; ambientOsc.frequency.value = 41.5;
-      lowpass.type = 'lowpass'; lowpass.frequency.value = 105;
-      ambientGain.gain.value = 0.012;
-      ambientOsc.connect(lowpass).connect(ambientGain).connect(audioContext.destination); ambientOsc.start();
-    }
-    if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
-  } catch (error) {
-    console.warn('Audio unavailable; continuing without sound.', error);
-    muted = true;
-  }
-}
-function radioBlip() {
-  ensureAudio(); if (!audioContext || muted) return;
-  const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
-  osc.type='triangle'; osc.frequency.setValueAtTime(720,now); osc.frequency.exponentialRampToValueAtTime(320,now+0.12);
-  gain.gain.setValueAtTime(0.045,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.16);
-  osc.connect(gain).connect(audioContext.destination); osc.start(now); osc.stop(now+0.17);
-}
-function impactSound() {
-  ensureAudio(); if (!audioContext || muted) return;
-  const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
-  osc.type='square'; osc.frequency.setValueAtTime(92,now); osc.frequency.exponentialRampToValueAtTime(36,now+0.14);
-  gain.gain.setValueAtTime(0.075,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.16);
-  osc.connect(gain).connect(audioContext.destination); osc.start(now); osc.stop(now+0.17);
-}
+function ensureAudio() { if (!muted) audio.unlock(); }
+function radioBlip() { audio.play('radio'); }
+function impactSound() { audio.play('impact'); }
 
 function getLookedAtInteractable() {
   raycaster.setFromCamera(screenCenter,camera);
@@ -122,19 +95,19 @@ function updatePrompt() {
   if(!running){ui.prompt.classList.remove('visible');return}
   const target=getLookedAtInteractable();
   if(!target){ui.prompt.classList.remove('visible');return}
-  let label=target.node.userData.label||'Käytä';
-  if(target.node.userData.kind==='badge') label=hasBadge?'Kulkukortti mukana':'Ota kulkukortti';
-  if(target.node.userData.kind==='scanner') label=hasBadge?'Käytä korttia lukijaan':'Lukija vaatii kortin';
-  if(target.node.userData.kind==='coil') label='Ota jäähdytyskela';
-  if(target.node.userData.kind==='power') label=hasCoil?'Käynnistä varavoima':'Tarvitset jäähdytyskelan';
-  if(target.node.userData.kind==='lift') label=world.powerOn?'Kutsu huoltohissi':'Hississä ei ole virtaa';
-  if(target.node.userData.kind==='fuse') label=hasFuse?'Varasulake mukana':'Ota varasulake';
-  if(target.node.userData.kind==='pistol') label=hasPistol?'Pistooli mukana':'Ota 9 mm pistooli';
-  if(target.node.userData.kind==='ammo') label='Ota 9 mm ammuksia';
-  if(target.node.userData.kind==='pump') label=hasFuse?'Käynnistä jäähdytyspumput':'Tarvitset varasulakkeen';
-  if(target.node.userData.kind==='valve') label=world.lower.pumpOn?'Sulje paineventtiili':'Käynnistä pumput ensin';
-  if(target.node.userData.kind==='tram') label=world.lower.valveClosed?'Käynnistä huoltoraitiovaunu':'Paineventtiili on vielä auki';
-  if(target.node.userData.kind==='shaftRecording') label='Kuuntele hissikuilun tallenne';
+  let label=target.node.userData.label||'USE';
+  if(target.node.userData.kind==='badge') label=hasBadge?'KEYCARD ACQUIRED':'TAKE KEYCARD';
+  if(target.node.userData.kind==='scanner') label=hasBadge?'USE korttia lukijaan':'CARD REQUIRED';
+  if(target.node.userData.kind==='coil') label='TAKE COOLANT COIL';
+  if(target.node.userData.kind==='power') label=hasCoil?'RESTORE BACKUP POWER':'COOLANT COIL REQUIRED';
+  if(target.node.userData.kind==='lift') label=world.powerOn?'CALL MAINTENANCE LIFT':'LIFT HAS NO POWER';
+  if(target.node.userData.kind==='fuse') label=hasFuse?'FUSE ACQUIRED':'TAKE SPARE FUSE';
+  if(target.node.userData.kind==='pistol') label=hasPistol?'PISTOL ACQUIRED':'TAKE 9MM PISTOL';
+  if(target.node.userData.kind==='ammo') label='TAKE 9MM AMMO';
+  if(target.node.userData.kind==='pump') label=hasFuse?'START COOLANT PUMPS':'SPARE FUSE REQUIRED';
+  if(target.node.userData.kind==='valve') label=world.lower.pumpOn?'CLOSE PRESSURE VALVE':'START THE PUMPS FIRST';
+  if(target.node.userData.kind==='tram') label=world.lower.valveClosed?'START SERVICE TRAM':'PRESSURE VALVE IS OPEN';
+  if(target.node.userData.kind==='shaftRecording') label='LISTEN TO SHAFT LOG';
   ui.promptLabel.textContent=label; ui.prompt.classList.add('visible');
 }
 
@@ -146,11 +119,11 @@ function spawnEnemy(factory,x,z) {
 }
 
 function setWeapon(type) {
-  if(type==='pistol' && !hasPistol){toast('Et ole vielä löytänyt pistoolia.');return}
+  if(type==='pistol' && !hasPistol){toast('You have not found the pistol yet.');return}
   activeWeapon=type;
   weapon.root.visible=type==='crowbar';
   pistol.root.visible=type==='pistol';
-  ui.weaponName.textContent=type==='pistol'?'9 mm pistooli':'Sorkkarauta';
+  ui.weaponName.textContent=type==='pistol'?'9mm Pistol':'Crowbar';
   ui.ammoReadout.classList.toggle('hidden',type!=='pistol');
   updateAmmo();
 }
@@ -164,7 +137,7 @@ function enterLowerChapter(){
     movementKeys.clear();camera.rotation.set(0,0,0);
     physics.reset(new THREE.Vector3(0,0,-119));
     stage=5;setObjective();
-    toast('Huoltohissi pysähtyi rahtitasolle.',3.5);
+    toast('The freight lift has stopped.',3.5);
     running=true;previousTime=performance.now();
     window.setTimeout(()=>ui.fade.classList.remove('active'),90);
   },270);
@@ -173,86 +146,86 @@ function enterLowerChapter(){
 function interact() {
   if(!running) return;
   const target=getLookedAtInteractable();
-  if(!target){toast('Ei käyttökelpoista kohdetta.');return}
+  if(!target){toast('Nothing to use here.');return}
   const node=target.node,kind=node.userData.kind;
 
   if(kind==='badge') {
-    if(stage!==0){toast('Kulkukortti on jo mukana.');return}
-    hasBadge=true;world.badge.visible=false;stage=1;setObjective();
-    toast('Kulkukortti: teknikko 17.');say(STORY.warning,8.5);return;
+    if(stage!==0){toast('The keycard is already secured.');return}
+    hasBadge=true;world.badge.visible=false;stage=1;setObjective();audio.play('pickup');
+    toast('KEYCARD: MAINTENANCE TECHNICIAN 17');say(STORY.warning,8.5);return;
   }
   if(kind==='scanner') {
     if(!hasBadge){toast('Lukija vaatii kulkukortin.');return}
-    if(stage>1){toast('Huolto-ovi on jo auki.');return}
-    stage=2;openDoor(world,'security');setObjective();
-    toast('Kulkukortti hyväksytty.');say(STORY.card,8.2);return;
+    if(stage>1){toast('The service door is already open.');return}
+    stage=2;openDoor(world,'security');setObjective();audio.play('door');
+    toast('ACCESS GRANTED.');say(STORY.card,8.2);return;
   }
   if(kind==='coil') {
-    if(stage<2){toast('Ovi on vielä lukossa.');return}
-    if(hasCoil){toast('Jäähdytyskela on jo mukana.');return}
-    hasCoil=true;world.coil.visible=false;stage=3;setObjective();
+    if(stage<2){toast('The door is still locked.');return}
+    if(hasCoil){toast('The coolant coil is already secured.');return}
+    hasCoil=true;world.coil.visible=false;stage=3;setObjective();audio.play('pickup');
     world.redAlarm.visible=true;world.sideAlarm.visible=true;
     enemy=spawnEnemy(makeEchoStalker,world.enemySpawn.x,world.enemySpawn.z);
-    toast('Jäähdytyskela poimittu.');say(STORY.breach,8.0);
+    toast('COOLANT COIL ACQUIRED');say(STORY.breach,8.0);
     window.setTimeout(()=>{if(running&&enemies.some(item=>item.alive))say(STORY.coil,8.0)},4300);return;
   }
   if(kind==='power') {
-    if(!hasCoil||stage<3){toast('Tarvitset jäähdytyskelan.');return}
-    if(world.powerOn){toast('Varavoima on jo käynnissä.');return}
-    world.powerOn=true;stage=4;openDoor(world,'lift');
+    if(!hasCoil||stage<3){toast('COOLANT COIL REQUIRED.');return}
+    if(world.powerOn){toast('Backup power is already online.');return}
+    world.powerOn=true;stage=4;openDoor(world,'lift');audio.play('door');
     world.reactorCore.material.emissiveIntensity=2.1;world.reactorLight.intensity=16;
-    setObjective();toast('Varavoima palautettu.');say(STORY.power,8.5);return;
+    setObjective();toast('BACKUP POWER RESTORED');say(STORY.power,8.5);return;
   }
   if(kind==='lift') {
-    if(!world.powerOn||stage<4){toast('Hississä ei ole virtaa.');return}
-    stage=5;setObjective();openLiftCar(world);say(STORY.liftStart,8.0);
-    toast('Huoltohissi lähtee liikkeelle.');liftEndingClock=4.0;return;
+    if(!world.powerOn||stage<4){toast('LIFT HAS NO POWER.');return}
+    stage=5;setObjective();openLiftCar(world);audio.play('door');say(STORY.liftStart,8.0);
+    toast('The maintenance lift is moving.');liftEndingClock=4.0;return;
   }
   if(kind==='fuse') {
-    if(stage<6){toast('Tutki ensin rahtihalli.');return}
+    if(stage<6){toast('Search the freight hall first.');return}
     if(hasFuse){toast('Varasulake on jo mukana.');return}
-    hasFuse=true;world.lower.fuse.visible=false;stage=7;setObjective();
-    toast('Varasulake löytyi.');say(STORY.fuseFound,7.8);return;
+    hasFuse=true;world.lower.fuse.visible=false;stage=7;setObjective();audio.play('pickup');
+    toast('SPARE FUSE ACQUIRED');say(STORY.fuseFound,7.8);return;
   }
   if(kind==='pistol') {
-    if(hasPistol){toast('Pistooli on jo mukana.');return}
-    hasPistol=true;world.lower.pistolPickup.visible=false;pistolAmmo=Math.max(pistolAmmo,18);
-    setWeapon('pistol');toast('9 mm pistooli löytyi.');say(STORY.pistolFound,6.5);return;
+    if(hasPistol){toast('The pistol is already secured.');return}
+    hasPistol=true;world.lower.pistolPickup.visible=false;pistolAmmo=Math.max(pistolAmmo,18);audio.play('pickup');
+    setWeapon('pistol');toast('9MM PISTOL ACQUIRED');say(STORY.pistolFound,6.5);return;
   }
   if(kind==='ammo') {
-    if(!hasPistol){toast('Löydä ensin pistooli.');return}
-    node.visible=false;pistolAmmo=Math.min(60,pistolAmmo+12);updateAmmo();
+    if(!hasPistol){toast('Find the pistol first.');return}
+    node.visible=false;pistolAmmo=Math.min(60,pistolAmmo+12);updateAmmo();audio.play('pickup');
     toast('+12 patruunaa');return;
   }
   if(kind==='medkit') {
-    if(health>=100){toast('Ensiapupakkaus kannattaa säästää.');return}
-    node.visible=false;setHealth(Math.min(100,health+35));toast('Terveys palautui.');impactSound();return;
+    if(health>=100){toast('Save the medkit until you need it.');return}
+    node.visible=false;setHealth(Math.min(100,health+35));audio.play('pickup');toast('HEALTH RESTORED');impactSound();return;
   }
   if(kind==='recording') {
-    node.visible=false;toast('Huoltopäiväkirja tallennettu.',2.4);say(STORY.freightLog,10.5);return;
+    node.visible=false;toast('MAINTENANCE LOG RECOVERED',2.4);say(STORY.freightLog,10.5);return;
   }
   if(kind==='shaftRecording') {
-    node.visible=false;toast('Hissikuilun tallenne tallennettu.',2.4);say(STORY.shaftLog,10.5);return;
+    node.visible=false;toast('SHAFT RECORDING RECOVERED',2.4);say(STORY.shaftLog,10.5);return;
   }
   if(kind==='pump') {
-    if(!hasFuse||stage<7){toast('Pumput tarvitsevat varasulakkeen.');return}
-    if(world.lower.pumpOn){toast('Pumput ovat jo käynnissä.');return}
-    activatePumps(world.lower,world);stage=8;setObjective();
+    if(!hasFuse||stage<7){toast('The pumps need a replacement fuse.');return}
+    if(world.lower.pumpOn){toast('The pumps are already running.');return}
+    activatePumps(world.lower,world);stage=8;setObjective();audio.play('alarm');audio.play('door');
     spawnEnemy(makeResonanceCrawler,-8.6,-230.5);
-    toast('Jäähdytyspumput käynnistyivät.');say(STORY.pumpStarted,8.2);return;
+    toast('COOLANT PUMPS ONLINE');say(STORY.pumpStarted,8.2);return;
   }
   if(kind==='valve') {
-    if(!world.lower.pumpOn||stage<8){toast('Käynnistä pumput ennen venttiiliä.');return}
-    if(world.lower.valveClosed){toast('Paineventtiili on jo suljettu.');return}
-    closePressureValve(world.lower,world);stage=9;setObjective();
+    if(!world.lower.pumpOn||stage<8){toast('Start the pumps before closing the valve.');return}
+    if(world.lower.valveClosed){toast('The pressure valve is already closed.');return}
+    closePressureValve(world.lower,world);stage=9;setObjective();audio.play('door');
     toast('Paine tasaantuu.');say(STORY.valveClosed,8.0);return;
   }
   if(kind==='tram') {
-    if(!world.lower.valveClosed||stage<9){toast('Huoltoraitiovaunu ei saa vielä virtaa.');return}
-    stage=10;setObjective();startTram(world.lower,world);
+    if(!world.lower.valveClosed||stage<9){toast('The service tram has no power yet.');return}
+    stage=10;setObjective();startTram(world.lower,world);audio.play('tram');
     tramRide=true;tramLastZ=world.lower.tram.position.z;movementKeys.clear();
     camera.rotation.set(0,0,0);physics.reset(new THREE.Vector3(0,0,-273));
-    toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=8.5;outroSpoken=false;
+    toast('THE SERVICE TRAM IS STARTING');say(STORY.tramStarted,8.0);tramEndingClock=8.5;outroSpoken=false;
   }
 }
 
@@ -272,8 +245,8 @@ function damageEnemy(target,damage){
   impactSound();
   if(target.health<=0){
     target.alive=false;target.root.visible=false;
-    toast('Olento kaatui.',2.0);
-  }else toast('Osumia jäljellä: '+target.health,0.75);
+    toast('CREATURE DOWN',2.0);
+  }else toast('WOUNDS: '+target.health,0.75);
 }
 function hitPhysicsProp(range,force){
   if(!world.physicsProps.length)return false;
@@ -286,19 +259,13 @@ function hitPhysicsProp(range,force){
   const prop=world.physicsProps.find(item=>item.root===root)||world.physicsProps.find(item=>item.root===hit.object.parent);
   if(!prop)return false;
   prop.velocity.addScaledVector(camera.getWorldDirection(viewDirection),force/prop.mass);
-  impactSound();toast('Tynnyri liikahti.',.7);return true;
+  impactSound();toast('DRUM MOVED',.7);return true;
 }
 function firePistol(){
   if(!hasPistol)return;
-  if(pistolAmmo<=0){toast('Lipas tyhjä.',.85);radioBlip();return}
+  if(pistolAmmo<=0){toast('MAGAZINE EMPTY',.85);radioBlip();return}
   attackCooldown=.24;pistolAmmo--;updateAmmo();pistol.recoil=1;pistol.muzzle.intensity=3.6;
-  ensureAudio();
-  if(audioContext&&!muted){
-    const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
-    osc.type='square';osc.frequency.setValueAtTime(155,now);osc.frequency.exponentialRampToValueAtTime(46,now+.11);
-    gain.gain.setValueAtTime(.09,now);gain.gain.exponentialRampToValueAtTime(.0001,now+.13);
-    osc.connect(gain).connect(audioContext.destination);osc.start(now);osc.stop(now+.14);
-  }
+  ensureAudio();audio.play('pistol');
   raycaster.setFromCamera(screenCenter,camera);
   const hits=raycaster.intersectObjects(enemyMeshes,true);
   const hit=hits.find(h=>h.distance<38&&h.object.userData.enemy?.alive&&hasClearShot(h.distance));
@@ -319,13 +286,13 @@ function firePistol(){
 function attack() {
   if(!running||tramRide||attackCooldown>0)return;
   if(activeWeapon==='pistol'){firePistol();return}
-  attackCooldown=.48;weapon.swing=1;radioBlip();
+  attackCooldown=.48;weapon.swing=1;audio.play('crowbar');
   raycaster.setFromCamera(screenCenter,camera);
   const hits=raycaster.intersectObjects(enemyMeshes,true);
   const hit=hits.find(h=>h.distance<=2.75&&h.object.userData.enemy?.alive);
   if(hit){damageEnemy(hit.object.userData.enemy,1);return}
   if(hitPhysicsProp(2.8,4.6))return;
-  toast('Ohi.',.65);
+  toast('MISS',.65);
 }
 
 function blockedEnemy(x,z) {
@@ -347,6 +314,9 @@ function updateEnemies(dt){
     creature.halo.intensity=1.35+Math.sin(elapsed*6.5+creature.phase)*.55;
     const pos=creature.root.position;
     const dx=physics.feet.x-pos.x,dz=physics.feet.z-pos.z,distance=Math.hypot(dx,dz);
+    creature.animate?.(elapsed);
+    creature.growlClock=(creature.growlClock??4)-dt;
+    if(distance<13&&creature.growlClock<=0){audio.play('monster',Math.max(.25,1-distance/22));creature.growlClock=5+Math.random()*5}
     // Distant chapter-one creatures stay behind instead of teleporting through
     // a sealed bulkhead to the new level.
     if(distance>64)continue;
@@ -364,7 +334,7 @@ function updateEnemies(dt){
       setHealth(health-(creature.damage||16));hitFlash=.22;
       const shove=new THREE.Vector3(-dx,0,-dz).normalize();
       physics.velocity.addScaledVector(shove,creature.kind==='crawler'?2.2:3.0);
-      impactSound();toast('Olento osui. Suojapuku vaurioitui.',1.1);
+      impactSound();toast('The creature hit you. HEV suit integrity is falling.',1.1);
     }
   }
 }
@@ -379,11 +349,11 @@ function finishGame(won) {
   running=false;finished=true;tramRide=false;controls.unlock();
   ui.hud.classList.remove('active'); ui.weaponLabel.classList.remove('active');
   ui.end.classList.remove('hidden');
-  $('endTitle').textContent=won?'Pääsit pois Kallion asemalta':'Suojapuku petti';
+  $('endTitle').textContent=won?'ESCAPED THE KALLIO ANNEX':'HEV SUIT FAILURE';
   $('endDescription').textContent=won
-    ? 'Huoltoraitiovaunu katoaa pimeään tunneliin. Aino jää radioon: "Tämä ei ollut viimeinen koe."'
-    : 'Jäät loukkuun tutkimusaseman alemmille huoltotasoille. Etsi suojaa ja seuraa radiota.';
-  $('endTime').textContent='Aika '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
+    ? 'The service tram disappears into the tunnel. Aino remains on the radio: "This was not the last test."'
+    : 'You are trapped on the lower service levels. Find cover and follow the radio.';
+  $('endTime').textContent='TIME '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
 }
 function openPause() {
   if(!running) return;
@@ -435,7 +405,7 @@ function pushPropsFromPlayer(dt){
 function enterFreightHall(){
   if(stage!==5||physics.feet.z>-153)return;
   stage=6;setObjective();
-  toast('Rahtihalli. Etsi varasulake.',3.4);
+  toast('FREIGHT LEVEL. FIND THE SPARE FUSE.',3.4);
   say(STORY.freightArrival,8.5);
   spawnEnemy(makeEchoStalker,-3.5,-188.2);
 }
@@ -461,12 +431,12 @@ function startGame() {
     if (lockRequest && typeof lockRequest.catch === 'function') {
       lockRequest.catch(error => {
         console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
-        toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
+        toast('Mouse capture failed. Click the game to retry.', 4);
       });
     }
   } catch (error) {
     console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
-    toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
+    toast('Mouse capture failed. Click the game to retry.', 4);
   }
 }
 
@@ -527,7 +497,7 @@ function update(dt) {
   if(world.lower.pumpOn){
     steamDamageClock=Math.max(0,steamDamageClock-dt);
     const hot=world.lower.steamZones.some(zone=>Math.hypot(physics.feet.x-zone.x,physics.feet.z-zone.z)<zone.radius);
-    if(hot&&steamDamageClock<=0){steamDamageClock=1.45;setHealth(health-5);hitFlash=.12;toast('Kuuma höyry polttaa.',.8)}
+    if(hot&&steamDamageClock<=0){steamDamageClock=1.45;setHealth(health-5);hitFlash=.12;audio.play('steam');toast('HOT STEAM!',.8)}
   }
   if(liftEndingClock>0){liftEndingClock-=dt;if(liftEndingClock<=0&&running)enterLowerChapter()}
   if(tramEndingClock>0){
@@ -542,16 +512,7 @@ function update(dt) {
 
 
 
-function footstepSound(speed){
-  if(muted)return;
-  ensureAudio();if(!audioContext||muted)return;
-  const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
-  const intensity=Math.min(.035,.012+speed*.002);
-  osc.type='triangle';osc.frequency.setValueAtTime(72+Math.random()*18,now);
-  osc.frequency.exponentialRampToValueAtTime(34,now+.075);
-  gain.gain.setValueAtTime(intensity,now);gain.gain.exponentialRampToValueAtTime(.0001,now+.085);
-  osc.connect(gain).connect(audioContext.destination);osc.start(now);osc.stop(now+.09);
-}
+function footstepSound(speed){ ensureAudio(); audio.play('footstep',Math.min(1.55,.65+speed/12)); }
 
 function startLoop() {
   function frame(time) {
@@ -592,7 +553,7 @@ controls.addEventListener('unlock', () => {
   if (pointerLockHasWorked && running) openPause();
 });
 document.addEventListener('pointerlockerror', () => {
-  if (running) toast('Hiiren lukitus epäonnistui. Klikkaa peliä.', 4);
+  if (running) toast('Mouse capture failed. Click the game to retry.', 4);
 });
 
 ui.startButton.addEventListener('click', (event) => {
@@ -612,5 +573,5 @@ window.addEventListener('resize',resize);
 
 setObjective();
 ui.health.textContent='100';ui.healthFill.style.width='100%';
-ui.weaponName.textContent='Sorkkarauta';ui.ammoReadout.classList.add('hidden');updateAmmo();
+ui.weaponName.textContent='Crowbar';ui.ammoReadout.classList.add('hidden');updateAmmo();
 startLoop();

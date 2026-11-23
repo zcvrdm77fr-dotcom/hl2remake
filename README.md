@@ -8,14 +8,21 @@ An original browser FPS fan campaign inspired by late-1990s PC shooters, with Go
 
 **Chapter 02 — Freight Level:** ride the lift into the abandoned lower station. Search the cargo hall for a replacement fuse and a 9 mm service pistol, restart the coolant pumps, close the pressure valve and escape on the old service tram. The freight hall also contains an optional maintenance recording. The pump gallery has live steam vents, so keep moving.
 
-The campaign now contains four additional connected environments: the lift transfer shaft, freight receiving hall, pump gallery and service-tram platform. The lower chapter adds two more hostile creature types/encounters, optional supplies, movable drums and a second escape sequence.
+The campaign now contains four additional connected environments: the lift transfer shaft, freight receiving hall, pump gallery and service-tram platform. The lower chapter adds two more hostile creature types/encounters, optional supplies, movable drums and a second escape sequence. All objectives, radio dialogue, interaction prompts and subtitles are in English.
 
 ## Visual direction
 
 - Real-time Three.js WebGL rendering; not a 2.5D raycaster.
-- Low-poly industrial brushwork, 64×64 nearest-filtered textures, matte Lambert materials, hard shadows and distance fog.
-- A freight gantry, cargo stacks, coolant spill, pressure tanks, large pipes, steam vents, valve wheel and a detailed low-poly service tram.
-- Minimal in-game HUD text over the world. No floating dashboard cards or glassmorphism.
+- Original late-90s industrial art direction: low-poly brushwork, hand-authored 128×128 nearest-filtered concrete, ceramic tile, painted steel, hazard paint, timber, cloth and organic textures, baked-looking contrast and distance fog.
+- Detailed industrial dressing: freight gantry and bracing, marked cargo crates, riveted steel plates, coolant spills, pressure tanks, pipe joints, cable runs, steam vents, a manual valve and a battered service tram.
+- Custom first-person crowbar and 9 mm pistol viewmodels with visible HEV sleeves and gloves.
+- Two original, articulated creature models with textured organic surfaces, exposed anatomy, layered carapace, recessed eyes and animated limbs.
+- Restrained Tahoma HUD and English subtitles, with no floating dashboard cards or glassmorphism.
+
+## Sound
+
+- Procedural Web Audio sound design starts after the player presses Start: a continuous ventilation and machinery bed, layered footsteps, metallic crowbar strikes, a multi-layer 9 mm report, radio static, machinery movement, alarm, steam hiss and creature vocalisations.
+- Sound is generated locally at runtime; the game does not download audio assets or require a CDN.
 
 ## Movement and combat
 

@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="fi">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#111719">
-  <meta name="description" content="HALF-LIFE² — A low-poly first-person fan campaign.">
+  <meta name="description" content="HALF-LIFE² — A first-person industrial horror campaign inspired by late-90s PC shooters.">
   <title>HALF-LIFE²</title>
   <link rel="icon" href="assets/lambda.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="style.css?v=campaign-4">
+  <link rel="stylesheet" href="style.css?v=art-1">
   <script type="importmap">
     {
       "imports": {
@@ -30,23 +30,23 @@
 
     <section id="hud" class="hud">
       <div class="mission-readout">
-        <h2 id="objectiveTitle">Etsi kulkukortti</h2>
-        <p id="objectiveDetail">Vartijan pöydältä.</p>
+        <h2 id="objectiveTitle">Find the security keycard</h2>
+        <p id="objectiveDetail">Take it from the guard station.</p>
         <div class="progress-track"><span id="progressFill"></span></div>
       </div>
       <div id="crosshair" class="crosshair"><i></i><i></i><i></i><i></i></div>
       <div id="interactionPrompt" class="interaction-prompt"><kbd>E</kbd><span id="promptLabel"></span></div>
       <div id="subtitles" class="subtitles">
-        <div class="subtitle-copy"><strong id="subtitleName">VALVOMO</strong><p id="subtitleText"></p></div>
+        <div class="subtitle-copy"><strong id="subtitleName">CONTROL ROOM</strong><p id="subtitleText"></p></div>
       </div>
       <div class="hud-bottom">
         <div class="health-card">
           <span class="health-symbol">+</span>
-          <div class="health-readout"><strong id="healthValue">100</strong><small>HP</small></div>
+          <div class="health-readout"><strong id="healthValue">100</strong><small>HEALTH</small></div>
           <div class="health-track"><span id="healthFill"></span></div>
         </div>
         <div class="weapon-stack">
-          <div id="weaponLabel" class="weapon-label"><strong id="weaponName">Sorkkarauta</strong></div>
+          <div id="weaponLabel" class="weapon-label"><strong id="weaponName">Crowbar</strong></div>
           <div id="ammoReadout" class="ammo-readout hidden"><strong id="ammoValue">18</strong><small>9 MM</small></div>
         </div>
       </div>
@@ -57,20 +57,20 @@
     <section id="pauseScreen" class="screen modal-screen hidden">
       <div class="modal-panel">
         <div class="menu-cap">KALLIO RESEARCH ANNEX</div>
-        <h2>KESKEYTETTY</h2>
-        <button id="resumeButton" class="primary-button">JATKA</button>
-        <button id="pauseQuitButton" class="secondary-button">ALOITA ALUSTA</button>
-        <div class="modal-foot">ESC — JATKA</div>
+        <h2>PAUSED</h2>
+        <button id="resumeButton" class="primary-button">RESUME</button>
+        <button id="pauseQuitButton" class="secondary-button">RESTART</button>
+        <div class="modal-foot">ESC — RESUME</div>
       </div>
     </section>
 
     <section id="endScreen" class="screen modal-screen hidden">
       <div class="modal-panel">
         <div class="menu-cap">KALLIO RESEARCH ANNEX</div>
-        <h2 id="endTitle">SEKTORI 09</h2>
+        <h2 id="endTitle">SECTOR 09</h2>
         <p id="endDescription"></p>
         <strong id="endTime" class="end-time"></strong>
-        <button id="retryButton" class="primary-button">PELAA UUDELLEEN</button>
+        <button id="retryButton" class="primary-button">PLAY AGAIN</button>
       </div>
     </section>
   </main>
@@ -78,17 +78,17 @@
     (() => {
       const saveError = (reason) => {
         const detail = reason && (reason.stack || reason.message || String(reason));
-        window.__bootError = String(detail || 'Tuntematon latausvirhe').slice(0, 700);
+        window.__bootError = String(detail || 'Unknown startup error').slice(0, 700);
         console.error('Game startup error:', window.__bootError);
       };
       window.addEventListener('error', (event) => {
         if (event.target && event.target.tagName === 'SCRIPT') {
-          saveError('Moduulin lataus epäonnistui: ' + (event.target.src || 'inline script'));
+          saveError('Module failed to load: ' + (event.target.src || 'inline script'));
         } else saveError(event.error || event.message);
       }, true);
       window.addEventListener('unhandledrejection', (event) => saveError(event.reason));
       window.__showBootError = (button) => {
-        const message = window.__bootError || 'Pelin käynnistysmoduuli ei latautunut. Päivitä sivu Ctrl+Shift+R.';
+        const message = window.__bootError || 'The game module did not load. Refresh with Ctrl+Shift+R.';
         button.textContent = 'LOAD ERROR';
         button.style.opacity = '1';
         button.style.color = '#ff982e';
@@ -99,6 +99,6 @@
       };
     })();
   </script>
-  <script type="module" src="src/main.js?v=campaign-6" onerror="window.__bootError = window.__bootError || 'src/main.js tai sen moduuli ei latautunut';"></script>
+  <script type="module" src="src/main.js?v=art-1" onerror="window.__bootError = window.__bootError || 'src/main.js or one of its modules failed to load';"></script>
 </body>
 </html>

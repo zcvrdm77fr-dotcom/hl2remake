@@ -272,6 +272,8 @@ function startGame() {
   }
 }
 
+window.__startGame = startGame;
+
 function update(dt) {
   elapsed+=dt;
   attackCooldown=Math.max(0,attackCooldown-dt);

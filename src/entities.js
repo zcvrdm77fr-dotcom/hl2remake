@@ -76,33 +76,77 @@ function makeClawedHand(parent, x, y, z, direction = -1) {
 
 export function makeCrowbar(camera) {
   const root = new THREE.Group();
-  root.position.set(.39, -.38, -.64);
-  root.rotation.set(-.16, -.12, -.19);
+  root.position.set(.34, -.34, -.61);
+  root.rotation.set(-.10, -.18, -.13);
   camera.add(root);
 
-  // A worn, painted steel bar with a flattened split claw at the business end.
-  rod(root, [.02, -.29, .12], [-.055, .04, -.12], .039, redPaint, 8);
-  rod(root, [-.055, .04, -.12], [-.17, .34, -.31], .039, redPaint, 8);
-  curvedRib(root, [[-.17,.34,-.31],[-.26,.42,-.34],[-.38,.40,-.36],[-.43,.32,-.36],[-.38,.25,-.36],[-.31,.25,-.35]], .035, wornSteel);
-  rod(root, [.02, -.24, .06], [.02, -.1, -.02], .047, glove, 8);
-  for (const y of [-.19,-.13]) rod(root, [.0,y,.015], [.025,y+.006,-.035], .009, wornSteel, 5);
+  // First-person HEV crowbar: one continuous, thick steel shaft with a hooked,
+  // split claw. The red enamel is chipped back to dark steel at the edges.
+  const shaftMat = new THREE.MeshStandardMaterial({
+    color: 0x8b3026, roughness: .78, metalness: .48,
+    map: makeGoldSrcTexture('steel', 1, 1, 11)
+  });
+  const edgeMat = new THREE.MeshStandardMaterial({ color: 0x77766b, roughness: .68, metalness: .72 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x292b28, roughness: .9, metalness: .35 });
+  const shaftCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(.105,-.30,.17),
+    new THREE.Vector3(.075,-.16,.07),
+    new THREE.Vector3(.025,.015,-.055),
+    new THREE.Vector3(-.045,.17,-.20),
+    new THREE.Vector3(-.115,.285,-.29)
+  ]);
+  const shaft = new THREE.Mesh(new THREE.TubeGeometry(shaftCurve, 24, .037, 9, false), shaftMat);
+  shaft.castShadow = true; shaft.receiveShadow = true; root.add(shaft);
 
-  // A visible HEV sleeve, wrist cuff and wrapped glove keep the weapon grounded.
-  const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .32, 3, 8), sleeve);
-  forearm.position.set(.055, -.14, .32);
-  forearm.rotation.set(-.36, -.08, -.08);
-  forearm.castShadow = true;
-  root.add(forearm);
-  sphere(root, [.02, -.09, .05], [.16, .12, .16], glove, 8, 6);
-  for (let i = 0; i < 4; i++) {
-    const x = -.09 + i * .072;
-    const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.027, .105, 2, 6), glove);
-    finger.position.set(x, -.035, -.015 + Math.abs(i - 1.5) * .02);
-    finger.rotation.x = -.46;
-    finger.rotation.z = (i - 1.5) * .13;
-    root.add(finger);
+  // Forged hook at the business end; its flattened fork is deliberately
+  // asymmetric so the silhouette reads as a real pry bar, not a red stick.
+  const hookCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-.115,.285,-.29),
+    new THREE.Vector3(-.18,.365,-.31),
+    new THREE.Vector3(-.295,.385,-.315),
+    new THREE.Vector3(-.385,.335,-.31),
+    new THREE.Vector3(-.405,.265,-.30),
+    new THREE.Vector3(-.355,.225,-.29)
+  ]);
+  const hook = new THREE.Mesh(new THREE.TubeGeometry(hookCurve, 22, .035, 9, false), edgeMat);
+  hook.castShadow = true; hook.receiveShadow = true; root.add(hook);
+  // Flattened chisel/fork tips and the dark split between the claws.
+  const tipA = new THREE.Mesh(new THREE.BoxGeometry(.115,.035,.075), edgeMat);
+  tipA.position.set(-.355,.225,-.29); tipA.rotation.z=-.38; root.add(tipA);
+  const tipB = new THREE.Mesh(new THREE.BoxGeometry(.095,.026,.052), darkMat);
+  tipB.position.set(-.295,.235,-.292); tipB.rotation.z=-.34; root.add(tipB);
+  const collar = new THREE.Mesh(new THREE.CylinderGeometry(.046,.046,.055,10), edgeMat);
+  collar.position.set(.068,-.235,.11); collar.rotation.set(.48,0,.22); root.add(collar);
+
+  // Worn black grip bands below the hand.
+  for (let i=0;i<3;i++) {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(.040,.008,5,10), darkMat);
+    band.position.set(.075-i*.012,-.19+i*.035,.105-i*.032);
+    band.rotation.set(.48,0,.22); root.add(band);
   }
-  sphere(root, [-.11, -.12, .09], [.055, .09, .09], glove, 7, 5);
+
+  // Sleeve, cuff and a closed work glove visibly wrapped around the shaft.
+  const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(.105,.34,4,9), sleeve);
+  forearm.position.set(.12,-.17,.39);
+  forearm.rotation.set(-.30,-.12,-.12);
+  forearm.castShadow=true; root.add(forearm);
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(.112,.105,.095,9), gunmetal);
+  cuff.position.set(.105,-.205,.205); cuff.rotation.set(-.30,0,-.12); root.add(cuff);
+  sphere(root, [.035,-.095,.045], [.145,.115,.145], glove, 10, 7);
+  // Four curled fingers cross the front of the handle; thumb clamps the side.
+  for (let i=0;i<4;i++) {
+    const x=-.075+i*.052;
+    const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.027,.095,3,7), glove);
+    finger.position.set(x,-.065,.005+Math.abs(i-1.5)*.012);
+    finger.rotation.set(-.45,0,(i-1.5)*.10);
+    finger.castShadow=true; root.add(finger);
+    const knuckle = new THREE.Mesh(new THREE.SphereGeometry(.027,7,5), wornSteel);
+    knuckle.position.set(x,-.025,-.018); knuckle.scale.set(1,.72,.65); root.add(knuckle);
+  }
+  const thumb = new THREE.Mesh(new THREE.CapsuleGeometry(.035,.105,3,7), glove);
+  thumb.position.set(.145,-.105,.035); thumb.rotation.set(-.7,0,-.72); root.add(thumb);
+
+  // Viewmodel lighting is isolated from the world so the bar remains legible.
   lightViewmodel(camera, root);
   return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), swing: 0 };
 }

@@ -68,16 +68,21 @@ function ensureAudio() {
   if (muted) return;
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return;
-  if (!audioContext) {
-    audioContext = new AC(); ambientOsc = audioContext.createOscillator();
-    ambientGain = audioContext.createGain();
-    const lowpass = audioContext.createBiquadFilter();
-    ambientOsc.type = 'sawtooth'; ambientOsc.frequency.value = 41.5;
-    lowpass.type = 'lowpass'; lowpass.frequency.value = 105;
-    ambientGain.gain.value = 0.012;
-    ambientOsc.connect(lowpass).connect(ambientGain).connect(audioContext.destination); ambientOsc.start();
+  try {
+    if (!audioContext) {
+      audioContext = new AC(); ambientOsc = audioContext.createOscillator();
+      ambientGain = audioContext.createGain();
+      const lowpass = audioContext.createBiquadFilter();
+      ambientOsc.type = 'sawtooth'; ambientOsc.frequency.value = 41.5;
+      lowpass.type = 'lowpass'; lowpass.frequency.value = 105;
+      ambientGain.gain.value = 0.012;
+      ambientOsc.connect(lowpass).connect(ambientGain).connect(audioContext.destination); ambientOsc.start();
+    }
+    if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+  } catch (error) {
+    console.warn('Audio unavailable; continuing without sound.', error);
+    muted = true;
   }
-  if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
 }
 function radioBlip() {
   ensureAudio(); if (!audioContext || muted) return;
@@ -254,10 +259,16 @@ function startGame() {
   ensureAudio();
   say(STORY.intro, 6.3);
   try {
-    controls.lock();
+    const lockRequest = controls.lock();
+    if (lockRequest && typeof lockRequest.catch === 'function') {
+      lockRequest.catch(error => {
+        console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
+        toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
+      });
+    }
   } catch (error) {
     console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
-    toast('PELI KÄYNNISSÄ — KLIKKAA PELINÄKYMÄÄ LUKITAKSESI HIIRI', 5);
+    toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
   }
 }
 
@@ -353,7 +364,10 @@ document.addEventListener('pointerlockerror', () => {
   if (running) toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
 });
 
-ui.startButton.addEventListener('click',startGame);
+ui.startButton.addEventListener('click', (event) => {
+  event.preventDefault();
+  startGame();
+});
 ui.resume.addEventListener('click',resumeGame);
 ui.retry.addEventListener('click',pauseToMenu);
 $('pauseQuitButton').addEventListener('click',pauseToMenu);

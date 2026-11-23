@@ -30,9 +30,18 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
 /* Minimal Xen-style title screen */
 .start-screen {
   display:block; padding:0; overflow:hidden;
-  background:
-    linear-gradient(180deg,rgba(10,5,18,.18),transparent 36%,transparent 68%,rgba(9,5,16,.12)),
-    url("assets/xen-menu.svg") center center / cover no-repeat;
+  background:#21142a;
+}
+.menu-backdrop {
+  position:absolute; inset:0; z-index:0;
+  display:block; width:100%; height:100%;
+  object-fit:cover; object-position:center;
+  pointer-events:none; user-select:none;
+}
+.start-screen:after {
+  content:""; position:absolute; z-index:1; inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,4,14,.18),transparent 35%,transparent 65%,rgba(8,4,14,.16));
 }
 .start-screen:before { display:none; }
 .menu-brand {

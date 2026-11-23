@@ -43,6 +43,10 @@ export const STORY = {
     speaker: 'AINO / RADIO',
     line: 'Paine laskee. Saimme kulkuväylän auki. Raitiovaunun ohjauspaneeli on laiturilla. Kun käynnistät sen, älä jää odottamaan.'
   },
+  pistolFound: {
+    speaker: 'AINO / RADIO',
+    line: 'Löysit vartijan pistoolin. Pidä se valmiina. Täällä ei ole enää ketään, joka tulisi auttamaan.'
+  },
   tramStarted: {
     speaker: 'TUNTEMATON',
     line: 'Sinä et ole ensimmäinen, joka yrittää lähteä. Mutta olet ensimmäinen, joka avasi oven oikealta puolelta.'

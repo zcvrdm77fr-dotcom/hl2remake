@@ -173,3 +173,10 @@ button{font:inherit;color:inherit;cursor:pointer}
   .hud-bottom{bottom:7px}
   .interaction-prompt{bottom:17%}
 }
+/* Campaign HUD weapon + ammunition readout */
+.weapon-stack{display:flex;align-items:flex-end;gap:12px}
+.ammo-readout{display:flex;align-items:baseline;gap:5px;padding:0;background:none;border:0;box-shadow:none;text-shadow:1px 1px 2px #000}
+.ammo-readout strong{font:600 18px/1 Arial,Helvetica,sans-serif;color:#f0eee2}
+.ammo-readout small{font:400 9px Arial,Helvetica,sans-serif;color:var(--hud-muted)}
+.weapon-label strong{font:500 13px/1 Arial,Helvetica,sans-serif}
+@media(max-width:760px){.weapon-stack{gap:8px}.ammo-readout strong{font-size:16px}}

@@ -2,10 +2,10 @@
 <html lang="fi">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#111719">
-  <meta name="description" content="Aikakatkos – epävirallinen Half-Life 2 -fanitehtävä, oikeassa selainpohjaisessa 3D-ympäristössä.">
-  <title>Half-Life 2 · Aikakatkos</title>
+  <meta name="description" content="HELIX PROTOCOL — Chapter 01: Sector 09. An unofficial low-poly first-person fan campaign.">
+  <title>HELIX PROTOCOL · SECTOR 09</title>
   <link rel="icon" href="assets/lambda.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
@@ -19,90 +19,53 @@
 </head>
 <body>
   <main id="gameRoot">
-    <div id="startScreen" class="screen">
-      <div class="titleBlock">
-        <div class="eyebrow"><span class="statusDot"></span> CITY 17 · FAN CAMPAIGN</div>
-        <h1>HALF-LIFE <em>2</em></h1>
-        <div class="subtitle">AIKAKATKOS</div>
-        <p class="intro">Aamujuna ei koskaan lähtenyt. Ratapihalta kuuluu vielä yksi lähetys.</p>
-        <button id="startButton" class="primaryButton">ALOITA KAMPANJA <span>↵</span></button>
-        <div class="menuOptions">
-          <label>RENDER SCALE <select id="qualitySelect"><option value="1">PERFORMANCE</option><option value="1.35" selected>BALANCED</option><option value="1.75">HIGH</option></select></label>
-          <label>SUOMENKIELINEN PUHE <select id="soundSelect"><option value="on" selected>ON</option><option value="off">TEXT ONLY</option></select></label>
-        </div>
-        <div class="quickControls">
-          <span><b>WASD</b> LIKU</span><span><b>HIIRI</b> KATSO</span><span><b>SPACE</b> HYPPI / BHOP</span>
+    <section id="startScreen" class="screen start-screen">
+      <div class="topline">
+        <div class="brand-mark">KRA<span>/</span>09</div>
+        <div class="top-meta">KALLIO RESEARCH ANNEX <i></i> INTERNAL BUILD 0.9.4</div>
+      </div>
+      <div class="title-block">
+        <div class="eyebrow"><span class="status-dot"></span> INCIDENT REPORT · 06:42:17</div>
+        <h1>HELIX <span>PROTOCOL</span></h1>
+        <div class="chapter">CHAPTER 01 <b>/</b> SECTOR 09</div>
+        <p class="intro">A routine maintenance shift. An experiment that started before its operators arrived. And a radio message carrying tomorrow's timestamp.</p>
+        <div class="start-actions">
+          <button id="startButton" class="primary-button"><span>ALOITA VUORO</span><b>↗</b></button>
+          <div class="press-enter">KLIKKAUS ALOITTAA · HIIRI LUKITTUU PELIIN</div>
         </div>
       </div>
-      <div class="menuFooter">
-        <span>UNOFFICIAL FAN PROJECT</span>
-        <span>WEBGL · THREE.JS · r187</span>
+      <div class="briefing">
+        <div class="brief-card"><span class="card-label">TEHTÄVÄ</span><strong>Palauta hissin varavoima</strong><p>Etsi sektorin 09 kulkukortti, hae jäähdytyskela ja pääse huoltohissiin.</p></div>
+        <div class="brief-card"><span class="card-label">OHJAUS</span><strong>WASD · HIIRI · SPACE</strong><p>Space = hyppy / bunnyhop. Shift = juoksu. E = käytä. Vasen hiiri = crowbar. ESC = tauko.</p></div>
+        <div class="brief-card warning-card"><span class="card-label">TURVALLISUUS</span><strong>Älä pysähdy käytävään.</strong><p>Resonanssipoikkeama reagoi liikkeeseen. Ilmaliike auttaa pitämään vauhdin yllä.</p></div>
       </div>
-    </div>
+      <div class="bottomline"><span>UNOFFICIAL FAN CAMPAIGN <b>·</b> NOT AFFILIATED WITH VALVE</span><span>WEBGL 3D <b>·</b> GOLD-SRC ERA VISUALS <b>·</b> SOURCE-INSPIRED MOVEMENT</span></div>
+    </section>
 
-    <div id="pauseScreen" class="screen hidden">
-      <div class="panel">
-        <div class="eyebrow">LAMBDA TERMINAL // PAUSE</div>
-        <h2>PELI TAUOLLA</h2>
-        <p>Liike pysäytetty. Paina jatka palataksesi City 17:ään.</p>
-        <button id="resumeButton" class="primaryButton">JATKA PELIÄ</button>
-        <button id="restartButton" class="secondaryButton">ALOITA ALUSTA</button>
-      </div>
-    </div>
-
-    <div id="endScreen" class="screen hidden">
-      <div class="panel">
-        <div class="eyebrow">TRANSMISSION ENDED</div>
-        <h2 id="endTitle">AIKA PYSÄHTYI</h2>
-        <p id="endDescription"></p>
-        <button id="playAgainButton" class="primaryButton" onclick="window.location.reload()">PELAA UUDELLEEN</button>
-      </div>
-    </div>
-
-    <div id="hud">
-      <header class="hudTop">
-        <div class="objectiveCard">
-          <div class="eyebrow" id="objective">VIRTA PALAUTETTAVA</div>
-          <div id="objectiveDetail">Virtakennot releelle · 0/2</div>
-          <div class="progressTrack"><span id="progressFill"></span></div>
-        </div>
-        <div class="hudRight">
-          <div class="healthCard"><span>HEV</span><b id="healthValue">100%</b><div class="healthTrack"><span id="healthFill"></span></div></div>
-          <button id="pauseButton" class="smallButton">TAUKO</button>
-          <button id="muteButton" class="smallButton">ÄÄNET PÄÄLLÄ</button>
-        </div>
+    <section id="hud" class="hud">
+      <header class="hud-top">
+        <div class="objective-card"><div class="hud-kicker">SEKTORI 09 <span> / </span> HUOLTOTEHTÄVÄ</div><h2 id="objectiveTitle">TUNNISTAUDU</h2><p id="objectiveDetail">Etsi vartijan pöydältä sektorin yhdeksän kulkukortti.</p><div class="progress-track"><span id="progressFill"></span></div></div>
+        <div class="health-card"><span class="hud-kicker">HEV · SUOJAPUKU</span><strong id="healthValue">100%</strong><div class="health-track"><span id="healthFill"></span></div></div>
       </header>
-
-      <div id="crosshair"><i></i><i></i><i></i><i></i></div>
-      <div id="interactionPrompt"></div>
-      <div id="subtitles" aria-live="polite">
-        <div id="subtitleName">ASEMAN RADIO</div>
-        <div id="subtitleText"></div>
+      <div id="crosshair" class="crosshair"><i></i><i></i><i></i><i></i></div>
+      <div id="interactionPrompt" class="interaction-prompt"></div>
+      <div id="subtitles" class="subtitles"><div class="radio-mark"><span></span><b>INCOMING</b></div><div class="subtitle-copy"><strong id="subtitleName">KALLIO CONTROL</strong><p id="subtitleText"></p></div></div>
+      <div class="hud-bottom">
+        <div id="weaponLabel" class="weapon-label"><span>VARUSTE</span><strong>CROWBAR · Mk.II</strong></div>
+        <div class="movement-card"><strong id="speedValue">0.0</strong><span>M/S</span><small id="movementState">GROUND</small></div>
+        <div class="control-hint"><kbd>SPACE</kbd> HYPPY / BHOP <kbd>SHIFT</kbd> JUOKSE <kbd>E</kbd> KÄYTÄ</div>
       </div>
-      <div id="hitFlash"></div>
-      <div id="toast"></div>
+      <div id="toast" class="toast"></div><div id="hitFlash" class="hit-flash"></div>
+    </section>
 
-      <footer class="hudBottom">
-        <div class="weaponCard"><span>GRAVITY / PULSE TOOL</span><b id="ammoValue">30</b></div>
-        <div class="movementCard"><b id="speedValue">0.0</b><span>M/S</span><small id="movementState">GROUND</small></div>
-        <div class="controlsHint"><kbd>SPACE</kbd> HYPPI / BHOP <kbd>E</kbd> KÄYTÄ <kbd>ESC</kbd> TAUKO</div>
-      </footer>
-    </div>
+    <section id="pauseScreen" class="screen modal-screen hidden">
+      <div class="modal-panel"><div class="eyebrow"><span class="status-dot"></span> SESSION SUSPENDED</div><h2>VUORO KESKEYTETTY</h2><p>Maailma odottaa. Resonanssipoikkeama ei.</p><button id="resumeButton" class="primary-button"><span>JATKA</span><b>↗</b></button><button id="pauseQuitButton" class="secondary-button">ALOITA ALUSTA</button><div class="modal-foot">ESC JATKAA / KESKEYTTÄÄ</div></div>
+    </section>
 
-    <div id="mobileControls">
-      <div class="mobileLeft">
-        <button data-key="KeyW">▲</button>
-        <div><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div>
-      </div>
-      <div id="lookArea"></div>
-      <div class="mobileRight">
-        <button id="jumpButton">JUMP</button>
-        <button id="fireButton">FIRE</button>
-        <button id="useButton">USE</button>
-      </div>
-    </div>
+    <section id="endScreen" class="screen modal-screen hidden">
+      <div class="modal-panel"><div class="eyebrow"><span class="status-dot"></span> CHAPTER REPORT</div><h2 id="endTitle">HUOLTOHISSI</h2><p id="endDescription"></p><strong id="endTime" class="end-time"></strong><button id="retryButton" class="primary-button"><span>ALOITA UUDELLEEN</span><b>↗</b></button><div class="modal-foot">HELIX PROTOCOL <b>·</b> CHAPTER 01</div></div>
+    </section>
   </main>
-
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

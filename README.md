@@ -1,74 +1,50 @@
-# Half-Life 2: Aikakatkos
+# HELIX PROTOCOL — Chapter 01: Sector 09
 
-An unofficial browser-based Half-Life 2 fan campaign rebuilt as a real-time **3D WebGL first-person game** with Three.js. This version replaces the old 2.5D raycaster gameplay path with a 3D scene, perspective camera, world-space collision, first-person pointer lock, and air/ground movement physics.
+An unofficial, original browser FPS fan campaign inspired by late-1990s PC shooters and Source-style movement. This branch replaces the old raycaster game with a real Three.js/WebGL 3D scene.
 
-> This is an independent fan project, not a full recreation of Valve's Source engine or the original Half-Life 2 campaign. Half-Life and its associated marks belong to their respective rights holders.
+## What this build contains
+
+- Real-time 3D rendering through Three.js WebGLRenderer (not a 2.5D raycaster).
+- A low-poly research facility with tiled concrete, steel, brick, glass, pipes, warning strips, fluorescent fixtures and a resonance test cage.
+- A complete first chapter objective chain: find a security card, open the bulkhead, retrieve the coolant coil, restore lift power and escape.
+- One original hostile creature with pursuit and melee damage.
+- A first-person crowbar and hit detection.
+- Written radio/subtitle dialogue and original procedural radio/impact tones. No mismatched old voice recording or forced text-to-speech.
+- Source-inspired ground acceleration, friction, air acceleration, gravity, jump height and hold-to-bunnyhop behaviour.
 
 ## Run locally
 
-This project uses ES modules and a pinned Three.js CDN import map. It does not need a bundler or npm install, but it must be served over HTTP.
+The project is static and has no build step. It imports the pinned Three.js package from jsDelivr, so an internet connection is required when the game first loads.
 
-\`\`\`bash
-python3 -m http.server 8000
-\`\`\`
+From the repository root:
 
-Open <http://localhost:8000>. The first load requires an internet connection to retrieve Three.js 0.187.0 from jsDelivr.
+    python3 -m http.server 8000
+
+Open http://localhost:8000 in a modern browser with WebGL support.
+
+Do not open index.html directly with file://; ES modules and the Three.js import map should be served over HTTP.
 
 ## Controls
 
 | Action | Control |
 |---|---|
-| Move | W A S D |
-| Look | Mouse (click to lock pointer) |
+| Move | W / A / S / D |
+| Look | Mouse |
+| Jump | Space |
+| Bunnyhop | Hold Space while moving; air-strafe with A/D and mouse |
 | Sprint | Shift |
-| Jump / auto-bunnyhop | Hold Space |
-| Air-strafe | A / D while moving the mouse |
-| Interact / pick up cells / use relay | E or right mouse button |
-| Fire pulse tool | Left mouse button or F |
-| Reload | R |
-| Pause | Esc |
-| Touch move/look | On-screen controls |
+| Interact | E |
+| Crowbar | Left mouse button or F |
+| Pause / resume | Esc |
 
-Bunnyhop is automatic while Space is held. Preserve speed across landings, build momentum with air strafing, and use small smooth mouse turns rather than jerking the mouse.
+Click the start button to capture the mouse. Press Esc to release it and pause.
 
-## What's in this rebuild
+## Movement notes
 
-- Three.js WebGLRenderer with perspective 3D geometry, real depth testing, shadows, fog, tone mapping and material textures.
-- A procedural City 17 street, station facade, rail yard, freight train, power relay, doors, lamps and industrial skyline.
-- FPS camera with pointer lock and a visible first-person tool.
-- Source-inspired horizontal acceleration, ground friction, air acceleration, gravity, jump arc, air control and momentum-preserving auto-bhop.
-- Collisions against level geometry, with sliding along obstacles.
-- Interactable energy cells and an opening bulkhead.
-- Three waves of Combine units with basic pursuit and attack behaviour.
-- A pulse weapon with hit detection, reloads and tracer effects.
-- Finnish subtitles and optional native Finnish speech synthesis if the browser has a Finnish voice installed. The old mismatched radio recording is not used.
-- Touch-friendly movement, jump, fire, use and look controls.
+The controller is Source-inspired, not a copy of Valve's engine. It uses separate ground and air acceleration, ground friction, gravity, a buffered held-jump for bunnyhopping, sub-stepped horizontal collision and a speed cap chosen for this small level. Momentum can be built by turning into an air-strafe while airborne.
 
-## Project layout
+## Story premise
 
-- \`index.html\` – menus, HUD and Three.js import map.
-- \`style.css\` – interface, subtitles, menus and touch layout.
-- \`src/main.js\` – game lifecycle, renderer, input, objectives, combat and HUD.
-- \`src/world.js\` – City 17 environment, procedural materials, level colliders and interactables.
-- \`src/physics.js\` – player movement and collision.
-- \`src/entities.js\` – Combine character models, first-person tool and weapon effects.
-- \`assets/\` – original fan-project art kept for the menu and icon.
+Your shift at Kallio Research Annex begins as routine maintenance. A recorded message from Dr. Lehto carries a timestamp from the future. The Helix experiment has already breached containment, and the only working route out is the service lift in Sector 09.
 
-The old root-level JavaScript files are retained as legacy reference files but are no longer loaded by the new game entry point.
-
-## Technical notes
-
-- Three.js is pinned to 0.187.0. Core and addons are loaded from the same jsDelivr version through an import map.
-- Browser support requires WebGL 2 and ES modules.
-- Pointer lock requires a user gesture (press **Start** first).
-- The Finnish voice is provided by the browser/operating system. If no Finnish voice is installed, dialogue remains as subtitles.
-- Visual quality and shadow-map performance depend on the user's GPU. The quality selector can be used to lower render scale on slower hardware.
-
-## Contributing
-
-1. Fork the repository.
-2. Create a feature branch.
-3. Keep changes focused and document the relevant controls or systems.
-4. Test locally with \`python3 -m http.server 8000\`.
-5. Check browser devtools for module, WebGL or asset-loading errors before opening a pull request.
-
+This is an original fan-made scenario. Half-Life and Valve are trademarks of their respective owners; this project is not affiliated with or endorsed by Valve.

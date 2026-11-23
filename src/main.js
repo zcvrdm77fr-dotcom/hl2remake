@@ -1,547 +1,345 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { SourceMovement } from './physics.js';
-import { buildCity, openGate, animateWorld } from './world.js';
-import { makeCombine, makeWeapon, makeEnemyBolt } from './entities.js';
+import { buildSector, openDoor, openLiftCar, animateSector } from './world.js';
+import { makeEchoStalker, makeCrowbar } from './entities.js';
+import { STORY, OBJECTIVES } from './story.js';
 
 const $ = (id) => document.getElementById(id);
 const ui = {
-  start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'),
-  startButton: $('startButton'), resume: $('resumeButton'), restart: $('restartButton'), use: $('useButton'), pauseButton: $('pauseButton'),
-  hud: $('hud'), objective: $('objective'), detail: $('objectiveDetail'),
-  progress: $('progressFill'), prompt: $('interactionPrompt'), subtitles: $('subtitles'),
-  health: $('healthValue'), healthFill: $('healthFill'), ammo: $('ammoValue'),
-  speed: $('speedValue'), state: $('movementState'), crosshair: $('crosshair'),
-  mute: $('muteButton'), quality: $('qualitySelect'), sound: $('soundSelect'),
-  jump: $('jumpButton'), fire: $('fireButton'), mobile: $('mobileControls'),
-  hit: $('hitFlash'), toast: $('toast')
+  start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'), hud: $('hud'),
+  startButton: $('startButton'), resume: $('resumeButton'), retry: $('retryButton'),
+  objective: $('objectiveTitle'), detail: $('objectiveDetail'), progress: $('progressFill'),
+  health: $('healthValue'), healthFill: $('healthFill'), speed: $('speedValue'), state: $('movementState'),
+  prompt: $('interactionPrompt'), subtitles: $('subtitles'), subtitleName: $('subtitleName'),
+  subtitleText: $('subtitleText'), toast: $('toast'), hit: $('hitFlash'), weaponLabel: $('weaponLabel')
 };
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Number(ui.quality.value)));
+const renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.35));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.12;
+renderer.toneMappingExposure = 1.08;
 renderer.domElement.id = 'gameCanvas';
 $('gameRoot').appendChild(renderer.domElement);
 
-const sceneBundle = buildCity(THREE);
-const scene = sceneBundle.scene;
-const camera = new THREE.PerspectiveCamera(88, window.innerWidth / window.innerHeight, 0.08, 190);
+const scene = new THREE.Scene();
+const world = buildSector(scene);
+const camera = new THREE.PerspectiveCamera(78, window.innerWidth / window.innerHeight, 0.08, 170);
 camera.rotation.order = 'YXZ';
 scene.add(camera);
 const controls = new PointerLockControls(camera, renderer.domElement);
-controls.pointerSpeed = 0.85;
-controls.minPolarAngle = 0.12;
-controls.maxPolarAngle = Math.PI - 0.12;
-
-const physics = new SourceMovement(camera);
-const weapon = makeWeapon(camera);
+controls.pointerSpeed = 0.82;
+const physics = new SourceMovement(camera, world.colliders);
+const weapon = makeCrowbar(camera);
 const raycaster = new THREE.Raycaster();
-const center = new THREE.Vector2(0, 0);
-const direction = new THREE.Vector3();
-const up = new THREE.Vector3(0, 1, 0);
-const enemyBolts = [];
-const enemies = [];
-const tracers = [];
-let running = false;
-let started = false;
-let paused = false;
-let elapsed = 0;
-let previousTime = performance.now();
-let health = 100;
-let ammo = 30;
-let shotCooldown = 0;
-let hurtCooldown = 0;
-let hitTimer = 0;
-let cellsInstalled = 0;
-let cellsCarried = 0;
-let wave = 0;
-let kills = 0;
-let gameWon = false;
-let mobileLook = null;
-let voiceEnabled = true;
-let audioContext = null;
-let muted = false;
-let toastTimer = 0;
-let objectiveStep = 'cells';
-let currentSubtitle = '';
-let subtitleTimer = 0;
+const screenCenter = new THREE.Vector2(0, 0);
+const viewDirection = new THREE.Vector3();
+const enemyMeshes = [];
+const movementKeys = new Set();
 
-const subtitleLines = {
-  arrival: ['ASEMAN KUULUTUS', 'Matkustajat, juna raiteelta kolme on myöhässä. Pysykää laiturialueella.'],
-  firstCell: ['JUNANLÄHETTÄJÄ', 'Virtakennot ovat yhä ehjiä. Tuo ne releelle, niin saan portin auki.'],
-  secondCell: ['KAJO', 'Kuulitko? Ratapihalla on vastarintaa. Pääset sinne vanhan huoltoportin kautta.'],
-  yard: ['SÄRÖ', 'Me pidämme vaihteen auki. Ota kivääri ja pysäytä Combine-partiot.'],
-  wave: ['COMBINE', 'Valvontakeskus yksiköille. Tunkeilija havaittu. Sulkekaa alue.'],
-  clear: ['KAJO', 'Portti on vapaa. Jatka terminaalin läpi.'],
-  finale: ['G-MAN', 'Teillä on kiire, herra Freeman. Aina on.']
-};
+let started = false, running = false, finished = false;
+let stage = 0, hasBadge = false, hasCoil = false, enemy = null;
+let health = 100, elapsed = 0, previousTime = performance.now();
+let attackCooldown = 0, invulnerability = 0, hitFlash = 0;
+let subtitleClock = 0, subtitleFullText = '', subtitleIndex = 0, toastClock = 0;
+let audioContext = null, ambientOsc = null, ambientGain = null, muted = false;
+let liftEndingClock = 0;
 
+function setObjective() {
+  const item = OBJECTIVES[Math.max(0, Math.min(OBJECTIVES.length - 1, stage))];
+  ui.objective.textContent = item[0];
+  ui.detail.textContent = item[1];
+  ui.progress.style.width = ((stage / 5) * 100) + '%';
+}
+function toast(message, seconds = 2.4) {
+  ui.toast.textContent = message; ui.toast.classList.add('visible'); toastClock = seconds;
+}
+function say(message, seconds = 6.5) {
+  ui.subtitleName.textContent = message.speaker;
+  subtitleFullText = message.line; subtitleIndex = 0; ui.subtitleText.textContent = '';
+  ui.subtitles.classList.add('visible'); subtitleClock = seconds;
+  if (!muted) radioBlip();
+}
 function ensureAudio() {
   if (muted) return;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
   if (!audioContext) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return;
-    audioContext = new AC();
+    audioContext = new AC(); ambientOsc = audioContext.createOscillator();
+    ambientGain = audioContext.createGain();
+    const lowpass = audioContext.createBiquadFilter();
+    ambientOsc.type = 'sawtooth'; ambientOsc.frequency.value = 41.5;
+    lowpass.type = 'lowpass'; lowpass.frequency.value = 105;
+    ambientGain.gain.value = 0.012;
+    ambientOsc.connect(lowpass).connect(ambientGain).connect(audioContext.destination); ambientOsc.start();
   }
   if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
 }
-
-function beep(frequency = 220, duration = 0.12, waveform = 'sine', gainValue = 0.07) {
-  if (muted) return;
-  ensureAudio();
-  if (!audioContext) return;
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  oscillator.type = waveform;
-  oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime);
-  gain.gain.setValueAtTime(gainValue, audioContext.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + duration);
-  oscillator.connect(gain).connect(audioContext.destination);
-  oscillator.start();
-  oscillator.stop(audioContext.currentTime + duration + 0.01);
+function radioBlip() {
+  ensureAudio(); if (!audioContext || muted) return;
+  const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
+  osc.type='triangle'; osc.frequency.setValueAtTime(720,now); osc.frequency.exponentialRampToValueAtTime(320,now+0.12);
+  gain.gain.setValueAtTime(0.045,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.16);
+  osc.connect(gain).connect(audioContext.destination); osc.start(now); osc.stop(now+0.17);
+}
+function impactSound() {
+  ensureAudio(); if (!audioContext || muted) return;
+  const now=audioContext.currentTime,osc=audioContext.createOscillator(),gain=audioContext.createGain();
+  osc.type='square'; osc.frequency.setValueAtTime(92,now); osc.frequency.exponentialRampToValueAtTime(36,now+0.14);
+  gain.gain.setValueAtTime(0.075,now); gain.gain.exponentialRampToValueAtTime(0.0001,now+0.16);
+  osc.connect(gain).connect(audioContext.destination); osc.start(now); osc.stop(now+0.17);
 }
 
-function showSubtitle(key, duration = 5) {
-  const line = subtitleLines[key];
-  if (!line) return;
-  currentSubtitle = line[1];
-  $('subtitleName').textContent = line[0];
-  $('subtitleText').textContent = line[1];
-  ui.subtitles.classList.add('visible');
-  subtitleTimer = duration;
-  if (voiceEnabled && !muted && 'speechSynthesis' in window) {
-    const voice = speechSynthesis.getVoices().find(item => /^fi([-_]|$)/i.test(item.lang));
-    if (voice) {
-      speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(line[1]);
-      utterance.voice = voice;
-      utterance.lang = voice.lang;
-      utterance.rate = 0.95;
-      utterance.volume = 0.82;
-      speechSynthesis.speak(utterance);
-    }
+function getLookedAtInteractable() {
+  raycaster.setFromCamera(screenCenter,camera);
+  const hits=raycaster.intersectObjects(world.interactables.filter(item=>item.visible),true);
+  for(const hit of hits) {
+    if(hit.distance>3.35) break;
+    let node=hit.object;
+    while(node && !node.userData.kind) node=node.parent;
+    if(node && node.userData.kind) return {node,distance:hit.distance};
   }
+  return null;
 }
 
-function showToast(message, duration = 2.2) {
-  ui.toast.textContent = message;
-  ui.toast.classList.add('visible');
-  toastTimer = duration;
-}
-
-function setObjective(title, detail, percent) {
-  ui.objective.textContent = title;
-  ui.detail.textContent = detail;
-  ui.progress.style.width = Math.max(0, Math.min(100, percent)) + '%';
-}
-
-function setPrompt(text) {
-  ui.prompt.textContent = text;
-  ui.prompt.classList.toggle('visible', Boolean(text));
-}
-
-function setHealth(value) {
-  health = Math.max(0, Math.min(100, value));
-  ui.health.textContent = Math.round(health) + '%';
-  ui.healthFill.style.width = health + '%';
-  if (health <= 0) die();
-}
-
-function saveBestRun() {
-  try {
-    const best = Number(localStorage.getItem('aikakatkos.best') || 0);
-    if (!best || elapsed < best) localStorage.setItem('aikakatkos.best', String(elapsed));
-  } catch {}
-}
-
-function lockPointer() {
-  if (matchMedia('(pointer: coarse)').matches) return;
-  if (typeof renderer.domElement.requestPointerLock === 'function') controls.lock();
-}
-
-function startGame() {
-  ensureAudio();
-  started = true;
-  paused = false;
-  running = true;
-  gameWon = false;
-  ui.start.classList.add('hidden');
-  ui.pause.classList.add('hidden');
-  ui.end.classList.add('hidden');
-  ui.hud.classList.add('active');
-  lockPointer();
-  previousTime = performance.now();
-  showSubtitle('arrival', 4.4);
-  beep(280, 0.16, 'triangle', 0.05);
-}
-
-function pauseGame() {
-  if (!running) return;
-  running = false;
-  paused = true;
-  controls.unlock();
-  ui.pause.classList.remove('hidden');
-  if ('speechSynthesis' in window) speechSynthesis.pause();
-}
-
-function resumeGame() {
-  if (!started || gameWon || health <= 0) return;
-  ui.pause.classList.add('hidden');
-  paused = false;
-  running = true;
-  previousTime = performance.now();
-  if ('speechSynthesis' in window) speechSynthesis.resume();
-  lockPointer();
-}
-
-function finishGame(won) {
-  running = false;
-  gameWon = won;
-  ui.hud.classList.remove('active');
-  controls.unlock();
-  ui.end.classList.remove('hidden');
-  $('endTitle').textContent = won ? 'Aika liikkuu taas.' : 'Yhteys katkesi.';
-  $('endDescription').textContent = won
-    ? 'Ratapiha on vapaa. Juna lähtee viimein City 17:stä.'
-    : 'Suojapuku ei kestänyt. Kokeile uudelleen ja pidä vauhtisi yllä.';
-  if (won) saveBestRun();
-}
-
-function die() {
-  if (!running) return;
-  finishGame(false);
-}
-
-function updateObjective() {
-  if (objectiveStep === 'cells') {
-    const total = cellsInstalled + cellsCarried;
-    setObjective('VIRTA PALAUTETTAVA', 'Virtakennot releelle · ' + total + '/2', total * 28);
-  } else if (objectiveStep === 'gate') {
-    setObjective('HUOLTO-OVI', 'Kulje avautuvasta portista ratapihalle', 58);
-  } else if (objectiveStep === 'yard') {
-    setObjective('RATAPIHA 09', 'Pysäytä Combine-partiot · Aalto ' + wave + '/3', 58 + (wave / 3) * 25);
-  } else {
-    setObjective('JUNA LIIKKEELLE', 'Mene päätepuskurille', 100);
-  }
-}
-
-function currentColliders() {
-  return sceneBundle.unlocked && sceneBundle.openProgress >= 1
-    ? sceneBundle.colliders
-    : sceneBundle.colliders.concat(sceneBundle.gateCollider);
-}
-
-function spawnWave() {
-  wave++;
-  if (wave > 3) {
-    objectiveStep = 'exit';
-    showSubtitle('clear', 4);
-    updateObjective();
-    return;
-  }
-  showSubtitle('wave', 3.8);
-  const positions = [
-    [[-8, -72], [0, -80], [8, -74]],
-    [[-10, -84], [7, -88], [13, -66]],
-    [[-7, -96], [4, -94], [12, -97]]
-  ][wave - 1];
-  positions.forEach(([x, z], i) => enemies.push(makeCombine(scene, x, z, i)));
-  updateObjective();
+function updatePrompt() {
+  if(!running){ui.prompt.classList.remove('visible');return}
+  const target=getLookedAtInteractable();
+  if(!target){ui.prompt.classList.remove('visible');return}
+  let label=target.node.userData.label||'KÄYTÄ';
+  if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'POIMI KULKUKORTTI';
+  if(target.node.userData.kind==='scanner') label=hasBadge?'SKANNAA KULKUKORTTI':'LUKIJA · VAATII KORTIN';
+  if(target.node.userData.kind==='coil') label='OTA JÄÄHDYTYSKELA';
+  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'VARAVOIMA · KELA PUUTTUU';
+  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HUOLTOHISSI':'HISSI · EI VIRTOJA';
+  ui.prompt.textContent='[ E ]  '+label; ui.prompt.classList.add('visible');
 }
 
 function interact() {
-  if (!running) return;
-  raycaster.setFromCamera(center, camera);
-  const targets = sceneBundle.interactables.filter(item => item.visible);
-  const intersections = raycaster.intersectObjects(targets, true).filter(hit => hit.distance < 3.8);
-  const hit = intersections[0];
-  if (!hit) {
-    showToast('Tähtää esineeseen ja paina E.');
+  if(!running) return;
+  const target=getLookedAtInteractable();
+  if(!target){toast('Tähtää kohteeseen ja paina E.');return}
+  const kind=target.node.userData.kind;
+
+  if(kind==='badge') {
+    if(stage!==0){toast('Kulkukortti on jo otettu.');return}
+    hasBadge=true; world.badge.visible=false; stage=1; setObjective();
+    toast('KULKUKORTTI · TEKNIKKO 17'); say(STORY.warning,7.5); return;
+  }
+  if(kind==='scanner') {
+    if(!hasBadge){toast('Lukija vaatii sektorin 09 kulkukortin.');return}
+    if(stage>1){toast('Bulkhead on jo avattu.');return}
+    stage=2; openDoor(world,'security'); setObjective();
+    toast('TUNNISTE HYVÄKSYTTY · BULKHEAD AVAUTUU'); say(STORY.card,6.7); return;
+  }
+  if(kind==='coil') {
+    if(stage<2){toast('Jäähdytyskela on lukitun alueen takana.');return}
+    if(hasCoil){toast('Jäähdytyskela on jo mukana.');return}
+    hasCoil=true; world.coil.visible=false; stage=3; setObjective();
+    world.redAlarm.visible=true; world.sideAlarm.visible=true;
+    enemy=makeEchoStalker(scene,world.enemySpawn.x,world.enemySpawn.z); enemyMeshes.push(enemy.root);
+    toast('JÄÄHDYTYSKELA POIMITTU · POIKKEAMA AKTIVOITUI');
+    say(STORY.breach,7.1);
+    window.setTimeout(()=>{if(running && enemy && enemy.alive) say(STORY.coil,7.1)},4300);
     return;
   }
-  let object = hit.object;
-  while (object && !object.userData.kind) object = object.parent;
-  if (!object) return;
-
-  if (object.userData.kind === 'cell') {
-    if (cellsCarried >= 1) {
-      showToast('Kanna yksi virtakenno kerrallaan.');
-      return;
-    }
-    object.visible = false;
-    cellsCarried++;
-    updateObjective();
-    showToast('Virtakenno poimittu. Vie se releelle.');
-    beep(460, 0.13, 'triangle');
-    return;
+  if(kind==='power') {
+    if(!hasCoil || stage<3){toast('Varavoima tarvitsee sinisen jäähdytyskelan.');return}
+    if(world.powerOn){toast('Varavoima on jo palautettu.');return}
+    world.powerOn=true; stage=4; openDoor(world,'lift');
+    world.reactorCore.material.emissiveIntensity=2.1; world.reactorLight.intensity=16;
+    setObjective(); toast('VARAVOIMA PALAUTETTU · HISSIN LUKKO AUKI'); say(STORY.power,7.2); return;
   }
-
-  if (object.userData.kind === 'relay') {
-    if (!cellsCarried) {
-      showToast('Rele tarvitsee kaksi virtakennoa.');
-      return;
-    }
-    cellsCarried = 0;
-    cellsInstalled++;
-    sceneBundle.relayCore.material = cellsInstalled === 2 ? sceneBundle.mats.cyan : sceneBundle.mats.orange;
-    sceneBundle.relayLight.intensity = 1.8 + cellsInstalled * 2.0;
-    updateObjective();
-    showToast('Virtakenno asennettu · ' + cellsInstalled + '/2');
-    beep(520 + cellsInstalled * 80, 0.22, 'sine');
-    if (cellsInstalled === 2) {
-      objectiveStep = 'gate';
-      openGate(sceneBundle);
-      showSubtitle('secondCell', 4.6);
-      updateObjective();
-    }
+  if(kind==='lift') {
+    if(!world.powerOn || stage<4){toast('Hissi ei saa vielä virtaa.');return}
+    stage=5; setObjective(); openLiftCar(world); say(STORY.ending,6.8);
+    toast('HUOLTOHISSI KÄYNNISTYY'); liftEndingClock=3.3;
   }
 }
 
-function shoot() {
-  if (!running || shotCooldown > 0 || ammo <= 0) return;
-  shotCooldown = 0.115;
-  ammo--;
-  ui.ammo.textContent = String(ammo).padStart(2, '0');
-  weapon.kick = 1;
-  beep(118, 0.075, 'sawtooth', 0.08);
-  raycaster.setFromCamera(center, camera);
-  const meshList = enemies.filter(e => !e.dead).map(e => e.root);
-  const hits = raycaster.intersectObjects(meshList, true);
-  const muzzle = camera.localToWorld(new THREE.Vector3(0.02, -0.07, -0.8));
-  let end = muzzle.clone().add(camera.getWorldDirection(new THREE.Vector3()).multiplyScalar(48));
-  if (hits.length) {
-    const hit = hits[0];
-    end = hit.point.clone();
-    const enemy = hit.object.userData.enemy;
-    if (enemy && !enemy.dead) {
-      enemy.health--;
-      enemy.flash = 0.12;
-      if (enemy.health <= 0) {
-        enemy.dead = true;
-        scene.remove(enemy.root);
-        kills++;
-        if (enemies.every(e => e.dead) && wave < 3) spawnWave();
-        else if (enemies.every(e => e.dead) && wave === 3) {
-          objectiveStep = 'exit';
-          updateObjective();
-          showSubtitle('finale', 5);
-        }
-      }
-    }
+function attack() {
+  if(!running || attackCooldown>0) return;
+  attackCooldown=0.48; weapon.swing=1; radioBlip();
+  if(!enemy || !enemy.alive) return;
+  raycaster.setFromCamera(screenCenter,camera);
+  const hits=raycaster.intersectObjects(enemyMeshes,true);
+  if(!hits.length || hits[0].distance>2.75){toast('Crowbar osuu vain ilmaan.',0.8);return}
+  const target=hits[0].object.userData.enemy;
+  if(!target || !target.alive) return;
+  target.health-=1; target.phase+=1; target.halo.intensity=4.5; target.root.scale.setScalar(1.07);
+  toast('OSUMA · OLENTO '+Math.max(0,target.health)+'/5',0.9); impactSound();
+  if(target.health<=0){target.alive=false;target.root.visible=false;toast('OLENTO PYSÄYTETTY',2.8)}
+}
+
+function blockedEnemy(x,z) {
+  const radius=0.34;
+  for(const c of world.colliders) {
+    if(1.8<=c.minY || 0>=c.maxY) continue;
+    const nx=THREE.MathUtils.clamp(x,c.minX,c.maxX),nz=THREE.MathUtils.clamp(z,c.minZ,c.maxZ);
+    const dx=x-nx,dz=z-nz;
+    if(dx*dx+dz*dz<radius*radius) return true;
   }
-  const lineGeometry = new THREE.BufferGeometry().setFromPoints([muzzle, end]);
-  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffbd7b, transparent: true, opacity: 0.95 });
-  const line = new THREE.Line(lineGeometry, lineMaterial);
-  scene.add(line);
-  tracers.push({ line, life: 0.055, max: 0.055 });
-  if (ammo === 0) showToast('Lipas tyhjä · paina R');
+  return false;
 }
 
-function reload() {
-  if (!running || ammo === 30) return;
-  showToast('Ladataan...');
-  setTimeout(() => {
-    if (!started || gameWon) return;
-    ammo = 30;
-    ui.ammo.textContent = '30';
-    beep(360, 0.1, 'triangle');
-  }, 850);
-}
-
-function enemyAttack(enemy, dt) {
-  const position = enemy.root.position;
-  const delta = new THREE.Vector3(physics.feet.x - position.x, 0, physics.feet.z - position.z);
-  const distance = delta.length();
-  if (distance > 4.7) {
-    delta.normalize();
-    const step = enemy.speed * dt;
-    const nx = position.x + delta.x * step;
-    const nz = position.z + delta.z * step;
-    const collision = currentColliders().some(c => nx > c.minX - 0.35 && nx < c.maxX + 0.35 && nz > c.minZ - 0.35 && nz < c.maxZ + 0.35);
-    if (!collision) {
-      position.x = nx;
-      position.z = nz;
+function updateEnemy(dt) {
+  if(!enemy || !enemy.alive || !running) return;
+  enemy.attackCooldown=Math.max(0,enemy.attackCooldown-dt);
+  enemy.halo.intensity=1.5+Math.sin(elapsed*6.5)*0.6;
+  const pos=enemy.root.position;
+  const dx=physics.feet.x-pos.x,dz=physics.feet.z-pos.z,distance=Math.hypot(dx,dz);
+  if(distance>1.42) {
+    const step=enemy.speed*dt,nx=pos.x+dx/Math.max(0.001,distance)*step,nz=pos.z+dz/Math.max(0.001,distance)*step;
+    if(!blockedEnemy(nx,pos.z)) pos.x=nx;
+    else if(!blockedEnemy(pos.x,nz)) pos.z=nz;
+    else {
+      const alternate=Math.abs(dx)>Math.abs(dz)?[pos.x,pos.z+Math.sign(dz)*step]:[pos.x+Math.sign(dx)*step,pos.z];
+      if(!blockedEnemy(alternate[0],alternate[1])){pos.x=alternate[0];pos.z=alternate[1]}
     }
-    enemy.root.rotation.y = Math.atan2(-delta.x, -delta.z);
-  } else {
-    enemy.attackTimer -= dt;
-    if (enemy.attackTimer <= 0) {
-      enemy.attackTimer = 1.35;
-      setHealth(health - 12);
-      hitTimer = 0.18;
-      showToast('Osuma · HEV-suojapuku vaurioitui', 1.1);
-      const from = position.clone().add(new THREE.Vector3(0, 1.5, 0));
-      const to = camera.position.clone();
-      const bolt = makeEnemyBolt(scene, from, to);
-      enemyBolts.push({ mesh: bolt, life: 0.12 });
-      beep(70, 0.1, 'square', 0.06);
-    }
+    enemy.root.rotation.y=Math.atan2(-dx,-dz);
+    enemy.root.position.y=Math.abs(Math.sin(elapsed*8))*0.07;
+    enemy.root.scale.set(1,1+Math.sin(elapsed*8)*0.035,1);
+  } else if(enemy.attackCooldown<=0 && invulnerability<=0) {
+    enemy.attackCooldown=1.18; invulnerability=0.72;
+    setHealth(health-17); hitFlash=0.22;
+    const shove=new THREE.Vector3(-dx,0,-dz).normalize();
+    physics.velocity.addScaledVector(shove,3.0);
+    impactSound(); toast('OLENTO OSUI · SUOJAPUKU VAURIOITUI',1.2);
   }
 }
 
-function onInteractKey(event) {
-  if (event.code === 'KeyE' && !event.repeat) interact();
-  if (event.code === 'KeyR' && !event.repeat) reload();
-  if (event.code === 'KeyF' && !event.repeat) shoot();
-  if (event.code === 'Escape' && running) pauseGame();
+function setHealth(value) {
+  health=Math.max(0,Math.min(100,value));
+  ui.health.textContent=Math.round(health)+'%'; ui.healthFill.style.width=health+'%';
+  if(health<=0 && running) finishGame(false);
 }
 
-function inputState() {
-  return {
-    forward: Number(keyboard.has('KeyW') || keyboard.has('ArrowUp')) - Number(keyboard.has('KeyS') || keyboard.has('ArrowDown')),
-    right: Number(keyboard.has('KeyD')) - Number(keyboard.has('KeyA'))
-  };
+function finishGame(won) {
+  running=false; finished=true; controls.unlock();
+  ui.hud.classList.remove('active'); ui.weaponLabel.classList.remove('active');
+  ui.end.classList.remove('hidden');
+  $('endTitle').textContent=won?'HUOLTOHISSI · YHTEYS KATKESI':'SUOJAPUKU PETTI';
+  $('endDescription').textContent=won
+    ? 'Hissi nousee tyhjää kuilua. Radiosta kuuluu vielä yksi viesti, mutta sen aikaleima on huomisaamulta. LUKU 01 PÄÄTTYI.'
+    : 'Resonanssikaiku täyttää käytävän. Et ehtinyt hissille. Kokeile uudelleen ja pidä vauhtisi yllä.';
+  $('endTime').textContent='AIKA '+Math.floor(elapsed/60)+':'+String(Math.floor(elapsed%60)).padStart(2,'0');
 }
-
-const keyboard = new Set();
-document.addEventListener('keydown', event => {
-  if (!running) return;
-  if (['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight','KeyE','KeyF','KeyR'].includes(event.code)) event.preventDefault();
-  keyboard.add(event.code);
-  onInteractKey(event);
-});
-document.addEventListener('keyup', event => keyboard.delete(event.code));
-document.addEventListener('contextmenu', event => event.preventDefault());
-
-renderer.domElement.addEventListener('mousedown', event => {
-  if (!running || !controls.isLocked) return;
-  if (event.button === 0) shoot();
-  if (event.button === 2) interact();
-});
-controls.addEventListener('unlock', () => {
-  keyboard.clear();
-  if (running) pauseGame();
-});
-
-ui.startButton.addEventListener('click', startGame);
-ui.resume.addEventListener('click', resumeGame);
-ui.pauseButton.addEventListener('click', pauseGame);
-ui.restart.addEventListener('click', () => {
-  window.location.reload();
-});
-ui.mute.addEventListener('click', () => {
-  muted = !muted;
-  ui.mute.textContent = muted ? 'ÄÄNET POIS' : 'ÄÄNET PÄÄLLÄ';
-  if (muted && 'speechSynthesis' in window) speechSynthesis.cancel();
-});
-ui.sound.addEventListener('change', () => { voiceEnabled = ui.sound.value === 'on'; });
-ui.quality.addEventListener('change', () => {
-  const scale = Number(ui.quality.value);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, scale));
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-ui.jump.addEventListener('pointerdown', event => { event.preventDefault(); ui.jump.setPointerCapture(event.pointerId); keyboard.add('Space'); });
-for (const name of ['pointerup','pointercancel','lostpointercapture']) ui.jump.addEventListener(name, () => keyboard.delete('Space'));
-ui.fire.addEventListener('pointerdown', event => { event.preventDefault(); shoot(); });
-ui.use.addEventListener('pointerdown', event => { event.preventDefault(); interact(); });
-
-for (const button of document.querySelectorAll('[data-key]')) {
-  const code = button.dataset.key;
-  button.addEventListener('pointerdown', event => { event.preventDefault(); button.setPointerCapture(event.pointerId); keyboard.add(code); button.classList.add('pressed'); });
-  for (const name of ['pointerup','pointercancel','lostpointercapture']) button.addEventListener(name, () => { keyboard.delete(code); button.classList.remove('pressed'); });
+function openPause() {
+  if(!running) return;
+  running=false; controls.unlock(); movementKeys.clear(); ui.pause.classList.remove('hidden');
 }
-
-const mobileLookArea = $('lookArea');
-mobileLookArea.addEventListener('pointerdown', event => {
-  if (!running || controls.isLocked) return;
-  mobileLook = { id: event.pointerId, x: event.clientX, y: event.clientY };
-  mobileLookArea.setPointerCapture(event.pointerId);
-});
-mobileLookArea.addEventListener('pointermove', event => {
-  if (!mobileLook || event.pointerId !== mobileLook.id) return;
-  const dx = event.clientX - mobileLook.x;
-  const dy = event.clientY - mobileLook.y;
-  camera.rotation.y -= dx * 0.0045;
-  camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dy * 0.0038, -1.35, 1.35);
-  mobileLook.x = event.clientX;
-  mobileLook.y = event.clientY;
-});
-mobileLookArea.addEventListener('pointerup', () => { mobileLook = null; });
-mobileLookArea.addEventListener('pointercancel', () => { mobileLook = null; });
+function resumeGame() {
+  if(!started || finished || health<=0) return;
+  ui.pause.classList.add('hidden'); running=true; previousTime=performance.now(); controls.lock();
+}
+function startGame() {
+  if(started) return;
+  ensureAudio(); started=true; running=true; finished=false;
+  ui.start.classList.add('hidden'); ui.pause.classList.add('hidden'); ui.end.classList.add('hidden');
+  ui.hud.classList.add('active'); ui.weaponLabel.classList.add('active');
+  previousTime=performance.now(); say(STORY.intro,6.3); controls.lock();
+}
 
 function update(dt) {
-  elapsed += dt;
-  shotCooldown = Math.max(0, shotCooldown - dt);
-  hurtCooldown = Math.max(0, hurtCooldown - dt);
-  hitTimer = Math.max(0, hitTimer - dt);
-  toastTimer -= dt;
-  subtitleTimer -= dt;
-  if (toastTimer <= 0) ui.toast.classList.remove('visible');
-  if (subtitleTimer <= 0) ui.subtitles.classList.remove('visible');
-
-  const currentInput = inputState();
-  const viewDirection = camera.getWorldDirection(direction);
-  const movement = physics.update(dt, viewDirection, currentInput, currentColliders(), keyboard.has('Space'), keyboard.has('ShiftLeft') || keyboard.has('ShiftRight'));
-  if (movement.grounded && movement.speed > 1.8 && Math.random() < dt * 2.2) beep(42 + Math.random() * 12, 0.035, 'triangle', 0.014);
-
-  if (weapon.kick > 0) {
-    weapon.kick = Math.max(0, weapon.kick - dt * 7);
-    weapon.group.position.z = weapon.base.z + weapon.kick * 0.055;
-    weapon.group.rotation.x = -0.04 + weapon.kick * 0.06;
-    weapon.light.intensity = 0.8 + weapon.kick * 1.6;
-  }
-  weapon.group.position.x = weapon.base.x + Math.sin(elapsed * 8) * Math.min(0.018, movement.speed * 0.0015);
-  weapon.group.position.y = weapon.base.y + (movement.grounded ? Math.sin(elapsed * 13) * Math.min(0.012, movement.speed * 0.001) : 0);
-
-  if (objectiveStep === 'gate' && sceneBundle.openProgress >= 1) {
-    objectiveStep = 'yard';
-    updateObjective();
-    showSubtitle('yard', 5);
-  }
-  if (objectiveStep === 'yard' && physics.feet.z < -58 && wave === 0) spawnWave();
-  if (objectiveStep === 'exit' && physics.feet.z < -106) finishGame(true);
-
-  for (const enemy of enemies) {
-    if (!running) break;
-    if (!enemy.dead) enemyAttack(enemy, dt);
-    if (enemy.flash > 0) enemy.flash -= dt;
-  }
-  for (let i = tracers.length - 1; i >= 0; i--) {
-    const t = tracers[i];
-    t.life -= dt;
-    t.line.material.opacity = Math.max(0, t.life / t.max);
-    if (t.life <= 0) { scene.remove(t.line); t.line.geometry.dispose(); t.line.material.dispose(); tracers.splice(i, 1); }
-  }
-  for (let i = enemyBolts.length - 1; i >= 0; i--) {
-    enemyBolts[i].life -= dt;
-    if (enemyBolts[i].life <= 0) { scene.remove(enemyBolts[i].mesh); enemyBolts.splice(i, 1); }
+  elapsed+=dt;
+  attackCooldown=Math.max(0,attackCooldown-dt);
+  invulnerability=Math.max(0,invulnerability-dt);
+  hitFlash=Math.max(0,hitFlash-dt);
+  subtitleClock=Math.max(0,subtitleClock-dt);
+  toastClock=Math.max(0,toastClock-dt);
+  if(subtitleClock<=0) ui.subtitles.classList.remove('visible');
+  if(toastClock<=0) ui.toast.classList.remove('visible');
+  if(subtitleClock>0 && subtitleIndex<subtitleFullText.length) {
+    subtitleIndex=Math.min(subtitleFullText.length,subtitleIndex+dt*44);
+    ui.subtitleText.textContent=subtitleFullText.slice(0,Math.floor(subtitleIndex));
   }
 
-  if (objectiveStep === 'cells' && cellsInstalled + cellsCarried === 2) setPrompt('[ E ]  ASETA VIRTOKENNO RELEESEEN');
-  else if (cellsCarried) setPrompt('[ E ]  ASETA VIRTOKENNO');
-  else setPrompt(nearInteractable() ? '[ E ]  POIMI / KÄYTÄ' : '');
+  const input={
+    forward:Number(movementKeys.has('KeyW')||movementKeys.has('ArrowUp'))-Number(movementKeys.has('KeyS')||movementKeys.has('ArrowDown')),
+    right:Number(movementKeys.has('KeyD'))-Number(movementKeys.has('KeyA'))
+  };
+  const direction=camera.getWorldDirection(viewDirection);
+  const result=physics.update(dt,direction,input,movementKeys.has('Space'),movementKeys.has('ShiftLeft')||movementKeys.has('ShiftRight'));
 
-  ui.speed.textContent = movement.speed.toFixed(1);
-  ui.state.textContent = movement.grounded ? 'GROUND' : 'AIR';
-  ui.hit.classList.toggle('visible', hitTimer > 0);
-  animateWorld(sceneBundle, dt, elapsed);
+  weapon.swing=Math.max(0,weapon.swing-dt*4.4);
+  const swing=Math.sin((1-weapon.swing)*Math.PI)*weapon.swing;
+  weapon.root.position.copy(weapon.basePosition); weapon.root.rotation.copy(weapon.baseRotation);
+  weapon.root.rotation.x-=swing*0.96; weapon.root.rotation.z-=swing*1.45;
+  weapon.root.position.y-=swing*0.18;
+  weapon.root.position.x+=Math.sin(elapsed*10)*(result.grounded?0.012:0.004);
+
+  updateEnemy(dt);
+  updatePrompt();
+  animateSector(world,dt,elapsed);
+  if(liftEndingClock>0){liftEndingClock-=dt;if(liftEndingClock<=0 && running)finishGame(true)}
+
+  ui.speed.textContent=result.speed.toFixed(1);
+  ui.state.textContent=result.grounded?(result.speed>7?'GROUND / FAST':'GROUND'):'AIR / BHOP';
+  ui.hit.classList.toggle('visible',hitFlash>0);
+  ui.hud.classList.toggle('lowHealth',health<=35);
 }
 
-function nearInteractable() {
-  raycaster.setFromCamera(center, camera);
-  return raycaster.intersectObjects(sceneBundle.interactables.filter(item => item.visible), true).some(hit => hit.distance < 3.8);
+function updatePrompt() {
+  if(!running){ui.prompt.classList.remove('visible');return}
+  const target=getLookedAtInteractable();
+  if(!target){ui.prompt.classList.remove('visible');return}
+  let label=target.node.userData.label||'KÄYTÄ';
+  if(target.node.userData.kind==='badge') label=hasBadge?'KULKUKORTTI OTETTU':'POIMI KULKUKORTTI';
+  if(target.node.userData.kind==='scanner') label=hasBadge?'SKANNAA KULKUKORTTI':'LUKIJA · VAATII KORTIN';
+  if(target.node.userData.kind==='coil') label='OTA JÄÄHDYTYSKELA';
+  if(target.node.userData.kind==='power') label=hasCoil?'KÄYNNISTÄ VARAVOIMA':'VARAVOIMA · KELA PUUTTUU';
+  if(target.node.userData.kind==='lift') label=world.powerOn?'KÄYNNISTÄ HUOLTOHISSI':'HISSI · EI VIRTOJA';
+  ui.prompt.textContent='[ E ]  '+label; ui.prompt.classList.add('visible');
 }
 
-function renderFrame(time) {
-  const dt = Math.min(0.05, Math.max(0, (time - previousTime) / 1000));
-  previousTime = time;
-  if (running) update(dt);
-  renderer.render(scene, camera);
-  requestAnimationFrame(renderFrame);
+function startLoop() {
+  function frame(time) {
+    requestAnimationFrame(frame);
+    const dt=Math.min(0.04,Math.max(0,(time-previousTime)/1000));
+    previousTime=time;
+    if(running) update(dt);
+    renderer.render(scene,camera);
+  }
+  requestAnimationFrame(frame);
 }
-requestAnimationFrame(renderFrame);
+function pauseToMenu() { window.location.reload(); }
+
+function onKeyDown(event) {
+  if(event.code==='Escape'){if(running)openPause();return}
+  if(!running) return;
+  if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','ShiftLeft','ShiftRight','KeyE','KeyF'].includes(event.code)) event.preventDefault();
+  movementKeys.add(event.code);
+  if(event.code==='KeyE' && !event.repeat) interact();
+  if(event.code==='KeyF' && !event.repeat) attack();
+}
+document.addEventListener('keydown',onKeyDown);
+document.addEventListener('keyup',event=>movementKeys.delete(event.code));
+document.addEventListener('contextmenu',event=>event.preventDefault());
+
+renderer.domElement.addEventListener('mousedown',event=>{
+  if(!running) return;
+  if(!controls.isLocked){controls.lock();return}
+  if(event.button===0) attack();
+  if(event.button===2) interact();
+});
+controls.addEventListener('unlock',()=>{movementKeys.clear();if(running)openPause()});
+
+ui.startButton.addEventListener('click',startGame);
+ui.resume.addEventListener('click',resumeGame);
+ui.retry.addEventListener('click',pauseToMenu);
+$('pauseQuitButton').addEventListener('click',pauseToMenu);
 
 function resize() {
-  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.aspect=window.innerWidth/Math.max(1,window.innerHeight);
   camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(window.innerWidth,window.innerHeight);
 }
-window.addEventListener('resize', resize);
+window.addEventListener('resize',resize);
 
-updateObjective();
-ui.mobile.classList.toggle('visible', matchMedia('(pointer: coarse)').matches);
+setObjective();
+ui.health.textContent='100%'; ui.healthFill.style.width='100%'; ui.speed.textContent='0.0';
+startLoop();

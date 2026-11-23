@@ -1,104 +1,80 @@
 import * as THREE from 'three';
 
-function standard(color, roughness = 0.84, metalness = 0) {
-  return new THREE.MeshStandardMaterial({ color, roughness, metalness });
+function material(color, roughness = 0.82, metalness = 0.04, emissive = 0x000000) {
+  return new THREE.MeshStandardMaterial({ color, roughness, metalness, emissive, emissiveIntensity: emissive ? 0.8 : 0 });
 }
 
-export function makeCombine(scene, x, z, index = 0) {
+function rod(parent, a, b, radius, mat, sides = 6) {
+  const start = new THREE.Vector3(...a);
+  const end = new THREE.Vector3(...b);
+  const delta = new THREE.Vector3().subVectors(end, start);
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, delta.length(), sides), mat);
+  mesh.position.copy(start).add(end).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
+  mesh.castShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
+export function makeCrowbar(camera) {
+  const root = new THREE.Group();
+  root.position.set(0.42, -0.37, -0.64);
+  root.rotation.set(-0.1, -0.1, -0.12);
+  camera.add(root);
+  const steel = material(0x596267, 0.36, 0.82);
+  const worn = material(0x8b8a7a, 0.54, 0.64);
+  const grip = material(0x6f3426, 0.88);
+  rod(root, [0, -0.16, 0.12], [0.02, 0.24, -0.28], 0.032, steel, 7);
+  rod(root, [0.02, 0.24, -0.28], [-0.14, 0.39, -0.4], 0.032, steel, 7);
+  rod(root, [-0.14, 0.39, -0.4], [-0.31, 0.32, -0.4], 0.032, worn, 7);
+  rod(root, [-0.02, -0.12, 0.08], [0, 0.04, -0.03], 0.045, grip, 7);
+  const hand = new THREE.Mesh(new THREE.IcosahedronGeometry(0.105, 1), material(0x7c5947, 0.96));
+  hand.position.set(0.015, -0.19, 0.15);
+  hand.scale.set(1.0, 0.75, 1.1);
+  root.add(hand);
+  return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), swing: 0 };
+}
+
+export function makeEchoStalker(scene, x, z) {
   const root = new THREE.Group();
   root.position.set(x, 0, z);
   scene.add(root);
+  const hide = material(0x34332f, 0.94, 0.02);
+  const hideLight = material(0x554b3d, 0.9, 0.02);
+  const bone = material(0x9b8969, 0.9, 0.0);
+  const eye = new THREE.MeshStandardMaterial({ color: 0xe88c45, emissive: 0xff5117, emissiveIntensity: 2.1, roughness: 0.4 });
+  const wet = material(0x20272a, 0.3, 0.3);
 
-  const armor = standard(0x293a40, 0.68, 0.45);
-  const armorLight = standard(0x52646a, 0.55, 0.55);
-  const black = standard(0x11191d, 0.48, 0.32);
-  const visorMat = new THREE.MeshStandardMaterial({
-    color: 0xff8056, emissive: 0xa72f18, emissiveIntensity: 1.55
-  });
-
-  const body = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.92, 0.38), armor);
-  body.position.y = 1.22; body.castShadow = true; root.add(body);
-
-  const chest = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.33, 0.43), armorLight);
-  chest.position.set(0, 1.35, -0.03); root.add(chest);
-
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.25, 10, 8), black);
-  head.position.y = 1.92; head.castShadow = true; root.add(head);
-
-  const visor = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.09, 0.08), visorMat);
-  visor.position.set(0, 1.95, -0.225); root.add(visor);
+  const torso = new THREE.Mesh(new THREE.IcosahedronGeometry(0.57, 1), hide);
+  torso.position.set(0, 1.05, 0.08); torso.scale.set(0.82, 1.28, 0.72); torso.castShadow = true; root.add(torso);
+  const head = new THREE.Mesh(new THREE.IcosahedronGeometry(0.39, 1), hideLight);
+  head.position.set(0, 1.9, -0.19); head.scale.set(0.8, 0.77, 1.1); head.castShadow = true; root.add(head);
 
   for (const side of [-1, 1]) {
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.77, 0.25), armor);
-    arm.position.set(side * 0.47, 1.18, 0); root.add(arm);
-
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.78, 0.3), black);
-    leg.position.set(side * 0.2, 0.4, 0.01); root.add(leg);
-
-    const knee = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.2, 0.31), armorLight);
-    knee.position.set(side * 0.2, 0.53, -0.06); root.add(knee);
+    const socket = new THREE.Mesh(new THREE.SphereGeometry(0.105, 7, 5), wet);
+    socket.position.set(side * 0.19, 1.94, -0.5); root.add(socket);
+    const iris = new THREE.Mesh(new THREE.SphereGeometry(0.055, 6, 5), eye);
+    iris.position.set(side * 0.19, 1.94, -0.575); root.add(iris);
+    rod(root, [side * 0.32, 1.35, -0.01], [side * 0.67, 0.72, -0.33], 0.13, hideLight, 6);
+    rod(root, [side * 0.67, 0.72, -0.33], [side * 0.76, 0.17, -0.58], 0.085, hide, 6);
+    rod(root, [side * 0.22, 0.7, 0.03], [side * 0.34, 0.14, 0.27], 0.13, hide, 6);
+    rod(root, [side * 0.34, 0.14, 0.27], [side * 0.48, 0.08, -0.04], 0.075, hideLight, 6);
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.13, 0.58, 5), bone);
+    horn.position.set(side * 0.27, 2.24, 0.06); horn.rotation.z = side * -0.42; horn.castShadow = true; root.add(horn);
   }
+  const jaw = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.48, 6), bone);
+  jaw.position.set(0, 1.56, -0.45); jaw.rotation.x = -Math.PI / 2; root.add(jaw);
+  for (let i = 0; i < 4; i++) {
+    const spike = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.42, 5), hideLight);
+    spike.position.set(-0.23 + i * 0.15, 1.25 + Math.sin(i) * 0.08, 0.55);
+    spike.rotation.x = Math.PI / 2.5; root.add(spike);
+  }
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), eye);
+  core.position.set(0, 1.12, 0.58); root.add(core);
+  const halo = new THREE.PointLight(0xff7135, 1.4, 5);
+  halo.position.set(0, 1.6, 0.5); root.add(halo);
 
-  const enemy = {
-    root,
-    health: 3,
-    speed: 1.25 + index * 0.05,
-    attackTimer: 1 + index * 0.42,
-    dead: false,
-    flash: 0,
-    materials: [armor, armorLight, black, visorMat]
-  };
-  root.traverse(object => {
-    if (object.isMesh) object.userData.enemy = enemy;
-  });
+  const enemy = { root, health: 5, alive: true, attackCooldown: 0.8, speed: 2.65, halo, phase: 0 };
+  root.traverse(object => { if (object.isMesh) object.userData.enemy = enemy; });
   return enemy;
-}
-
-export function makeWeapon(camera) {
-  const group = new THREE.Group();
-  group.position.set(0.36, -0.31, -0.58);
-  group.rotation.set(-0.04, -0.08, -0.015);
-  camera.add(group);
-
-  const dark = standard(0x222f35, 0.42, 0.72);
-  const steel = standard(0x586a6e, 0.36, 0.82);
-  const orange = standard(0xc66b3b, 0.5, 0.48);
-  const glow = new THREE.MeshStandardMaterial({
-    color: 0x8de7dc, emissive: 0x31d6cf, emissiveIntensity: 1.75
-  });
-
-  function part(w, h, d, x, y, z, material) {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
-    mesh.position.set(x, y, z);
-    group.add(mesh);
-    return mesh;
-  }
-
-  part(0.23, 0.18, 0.58, 0, 0, 0, dark);
-  part(0.16, 0.12, 0.46, 0, 0.1, -0.12, steel);
-  part(0.12, 0.3, 0.18, 0, -0.19, 0.12, dark).rotation.x = -0.15;
-  part(0.08, 0.08, 0.34, 0, 0.01, -0.39, steel);
-  part(0.09, 0.05, 0.11, 0, 0.04, -0.56, glow);
-  part(0.28, 0.07, 0.16, 0, 0.12, 0.08, orange);
-
-  for (const side of [-1, 1]) {
-    part(0.055, 0.055, 0.42, side * 0.15, -0.01, -0.08, steel);
-  }
-
-  const light = new THREE.PointLight(0x5cdbd3, 0.8, 2.4);
-  light.position.set(0, 0.08, -0.5);
-  group.add(light);
-
-  return { group, light, kick: 0, base: group.position.clone() };
-}
-
-export function makeEnemyBolt(scene, from, to) {
-  const direction = new THREE.Vector3().subVectors(to, from);
-  const length = direction.length();
-  const material = new THREE.MeshBasicMaterial({ color: 0xff704d });
-  const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, length, 6), material);
-  bolt.position.copy(from).add(to).multiplyScalar(0.5);
-  bolt.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.normalize());
-  scene.add(bolt);
-  return bolt;
 }

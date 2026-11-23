@@ -1,76 +1,77 @@
 import * as THREE from 'three';
 
-// Source-inspired first-person movement, expressed in metres rather than Source units.
-// Ground acceleration/friction and air acceleration are intentionally separate.
+// Source-inspired movement in metres. Ground friction, ground acceleration and
+// air acceleration are separate. Holding jump queues the next landing-frame jump.
 export class SourceMovement {
-  constructor(camera, spawn = new THREE.Vector3(0, 0, 28)) {
+  constructor(camera, colliders, spawn = new THREE.Vector3(0, 0, 24)) {
     this.camera = camera;
+    this.colliders = colliders;
     this.feet = spawn.clone();
     this.velocity = new THREE.Vector3();
-    this.radius = 0.36;
-    this.eyeHeight = 1.68;
+    this.radius = 0.34;
+    this.height = 1.82;
+    this.eyeHeight = 1.66;
+    this.gravity = 19.6;
+    this.jumpSpeed = 7.35;
+    this.groundAcceleration = 10.8;
+    this.airAcceleration = 12.0;
+    this.groundFriction = 4.15;
+    this.stopSpeed = 3.4;
+    this.groundSpeed = 6.8;
+    this.sprintSpeed = 7.7;
+    this.airWishSpeed = 6.8;
+    this.maxSpeed = 15.8;
     this.grounded = true;
-    this.jumpVelocity = 8.55;
-    this.gravity = 22.0;
-    this.groundAcceleration = 12.0;
-    this.airAcceleration = 12.5;
-    this.groundFriction = 5.25;
-    this.stopSpeed = 4.0;
-    this.baseSpeed = 7.2;
-    this.sprintSpeed = 8.4;
-    this.airWishSpeed = 8.4;
-    this.maxSpeed = 22.0;
-    this.jumpHeight = 0;
     this.bobTime = 0;
-    this.landImpulse = 0;
-    this.lastVerticalSpeed = 0;
-    this.wish = new THREE.Vector3();
+    this.viewBob = 0;
+    this.landPunch = 0;
     this.forward = new THREE.Vector3();
     this.right = new THREE.Vector3();
+    this.wish = new THREE.Vector3();
     this.up = new THREE.Vector3(0, 1, 0);
-    this._velocityLength = 0;
     this.syncCamera();
   }
 
-  reset(spawn = new THREE.Vector3(0, 0, 28)) {
+  reset(spawn = new THREE.Vector3(0, 0, 24)) {
     this.feet.copy(spawn);
     this.velocity.set(0, 0, 0);
     this.grounded = true;
-    this.jumpHeight = 0;
     this.bobTime = 0;
-    this.landImpulse = 0;
-    this.lastVerticalSpeed = 0;
+    this.viewBob = 0;
+    this.landPunch = 0;
     this.syncCamera();
   }
 
   applyFriction(dt) {
     const speed = Math.hypot(this.velocity.x, this.velocity.z);
-    if (speed < 0.001) {
+    if (speed < 0.0001) {
       this.velocity.x = 0;
       this.velocity.z = 0;
       return;
     }
     const control = Math.max(speed, this.stopSpeed);
-    const drop = control * this.groundFriction * dt;
-    const next = Math.max(0, speed - drop);
+    const next = Math.max(0, speed - control * this.groundFriction * dt);
     const scale = next / speed;
     this.velocity.x *= scale;
     this.velocity.z *= scale;
   }
 
-  accelerate(wishDirection, wishSpeed, acceleration, dt) {
+  accelerate(direction, wishSpeed, acceleration, dt) {
     if (wishSpeed <= 0.0001) return;
-    const currentSpeed = this.velocity.x * wishDirection.x + this.velocity.z * wishDirection.z;
-    const addSpeed = wishSpeed - currentSpeed;
-    if (addSpeed <= 0) return;
-    const accelSpeed = Math.min(addSpeed, acceleration * wishSpeed * dt);
-    this.velocity.x += wishDirection.x * accelSpeed;
-    this.velocity.z += wishDirection.z * accelSpeed;
+    const current = this.velocity.x * direction.x + this.velocity.z * direction.z;
+    const add = wishSpeed - current;
+    if (add <= 0) return;
+    const amount = Math.min(add, acceleration * wishSpeed * dt);
+    this.velocity.x += direction.x * amount;
+    this.velocity.z += direction.z * amount;
   }
 
-  blocked(x, z, colliders) {
-    if (x < -28.5 || x > 28.5 || z < -112 || z > 43) return true;
-    for (const c of colliders) {
+  blocked(x, z) {
+    if (x < -18.2 || x > 18.2 || z < -116 || z > 39) return true;
+    for (const c of this.colliders) {
+      const minY = c.minY ?? 0;
+      const maxY = c.maxY ?? 4.8;
+      if (this.feet.y + this.height <= minY || this.feet.y >= maxY) continue;
       const nearX = THREE.MathUtils.clamp(x, c.minX, c.maxX);
       const nearZ = THREE.MathUtils.clamp(z, c.minZ, c.maxZ);
       const dx = x - nearX;
@@ -80,30 +81,25 @@ export class SourceMovement {
     return false;
   }
 
-  moveAndSlide(dt, colliders) {
+  moveAndSlide(dt) {
     const dx = this.velocity.x * dt;
     const dz = this.velocity.z * dt;
-    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.12));
+    const steps = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dz)) / 0.09));
     const sx = dx / steps;
     const sz = dz / steps;
     for (let i = 0; i < steps; i++) {
-      if (!this.blocked(this.feet.x + sx, this.feet.z, colliders)) {
-        this.feet.x += sx;
-      } else {
-        this.velocity.x = 0;
-      }
-      if (!this.blocked(this.feet.x, this.feet.z + sz, colliders)) {
-        this.feet.z += sz;
-      } else {
-        this.velocity.z = 0;
-      }
+      if (!this.blocked(this.feet.x + sx, this.feet.z)) this.feet.x += sx;
+      else this.velocity.x = 0;
+      if (!this.blocked(this.feet.x, this.feet.z + sz)) this.feet.z += sz;
+      else this.velocity.z = 0;
     }
   }
 
-  update(dt, cameraDirection, input, colliders, jumpHeld, sprintHeld) {
-    dt = Math.min(dt, 0.04);
-    this.forward.set(cameraDirection.x, 0, cameraDirection.z).normalize();
-    if (this.forward.lengthSq() < 0.001) this.forward.set(0, 0, -1);
+  update(dt, cameraDirection, input, jumpHeld, sprintHeld) {
+    dt = Math.min(dt, 1 / 30);
+    this.forward.set(cameraDirection.x, 0, cameraDirection.z);
+    if (this.forward.lengthSq() < 0.0001) this.forward.set(0, 0, -1);
+    this.forward.normalize();
     this.right.crossVectors(this.forward, this.up).normalize();
 
     this.wish.set(0, 0, 0);
@@ -111,25 +107,22 @@ export class SourceMovement {
     this.wish.addScaledVector(this.right, input.right);
     const inputLength = Math.min(1, this.wish.length());
     if (this.wish.lengthSq() > 0.0001) this.wish.normalize();
+    const wishSpeed = (sprintHeld ? this.sprintSpeed : this.groundSpeed) * inputLength;
 
-    const wishSpeed = (sprintHeld ? this.sprintSpeed : this.baseSpeed) * inputLength;
-
-    // Auto-bhop: holding Space queues the next jump for the first grounded frame.
-    // Crucially, no ground friction is applied on that landing frame.
-    if (this.grounded && jumpHeld) {
-      this.grounded = false;
-      this.velocity.y = this.jumpVelocity;
-      this.landImpulse = 0;
-    } else if (this.grounded) {
-      this.applyFriction(dt);
+    // No landing-frame friction while jump is held: this preserves bhop speed.
+    if (this.grounded) {
+      if (jumpHeld) {
+        this.grounded = false;
+        this.velocity.y = this.jumpSpeed;
+        this.landPunch = 0;
+      } else {
+        this.applyFriction(dt);
+      }
     }
 
     if (inputLength > 0.001) {
-      if (this.grounded) {
-        this.accelerate(this.wish, wishSpeed, this.groundAcceleration, dt);
-      } else {
-        this.accelerate(this.wish, Math.min(wishSpeed, this.airWishSpeed), this.airAcceleration, dt);
-      }
+      if (this.grounded) this.accelerate(this.wish, wishSpeed, this.groundAcceleration, dt);
+      else this.accelerate(this.wish, Math.min(wishSpeed, this.airWishSpeed), this.airAcceleration, dt);
     }
 
     const horizontalSpeed = Math.hypot(this.velocity.x, this.velocity.z);
@@ -140,29 +133,45 @@ export class SourceMovement {
     }
 
     if (!this.grounded) {
+      const previousY = this.feet.y;
       this.velocity.y -= this.gravity * dt;
-      this.feet.y += this.velocity.y * dt;
-      if (this.feet.y <= 0) {
+      const nextY = this.feet.y + this.velocity.y * dt;
+      let ceiling = Infinity;
+      if (this.velocity.y > 0) {
+        for (const c of this.colliders) {
+          if (this.feet.x + this.radius <= c.minX || this.feet.x - this.radius >= c.maxX) continue;
+          if (this.feet.z + this.radius <= c.minZ || this.feet.z - this.radius >= c.maxZ) continue;
+          if (c.minY > previousY + this.height && c.minY < nextY + this.height) ceiling = Math.min(ceiling, c.minY);
+        }
+      }
+      if (ceiling < Infinity) {
+        this.feet.y = ceiling - this.height;
+        this.velocity.y = 0;
+      } else if (nextY <= 0) {
         this.feet.y = 0;
         this.grounded = true;
-        this.landImpulse = Math.min(1, Math.abs(this.velocity.y) / this.jumpVelocity);
+        this.landPunch = Math.min(1, Math.abs(this.velocity.y) / this.jumpSpeed);
         this.velocity.y = 0;
+      } else {
+        this.feet.y = nextY;
       }
     }
 
-    this.moveAndSlide(dt, colliders);
-    if (this.grounded && inputLength > 0.04) this.bobTime += dt * (horizontalSpeed > 7.5 ? 15 : 11);
+    this.moveAndSlide(dt);
+    const speed = Math.hypot(this.velocity.x, this.velocity.z);
+    if (this.grounded && speed > 0.4) this.bobTime += dt * (speed > 7.5 ? 15 : 11);
+    this.landPunch = Math.max(0, this.landPunch - dt * 3.8);
+    this.viewBob = this.grounded ? Math.sin(this.bobTime) * Math.min(0.035, speed * 0.0032) : 0;
     this.syncCamera();
-    return {
-      speed: Math.hypot(this.velocity.x, this.velocity.z),
-      grounded: this.grounded,
-      verticalSpeed: this.velocity.y,
-      jumpHeight: this.feet.y
-    };
+
+    return { speed, grounded: this.grounded, verticalSpeed: this.velocity.y, jumpHeight: this.feet.y };
   }
 
   syncCamera() {
-    const bob = this.grounded ? Math.sin(this.bobTime) * Math.min(0.035, Math.hypot(this.velocity.x, this.velocity.z) * 0.0038) : 0;
-    this.camera.position.set(this.feet.x, this.eyeHeight + this.feet.y + bob, this.feet.z);
+    this.camera.position.set(
+      this.feet.x,
+      this.eyeHeight + this.feet.y + this.viewBob - this.landPunch * 0.075,
+      this.feet.z
+    );
   }
 }

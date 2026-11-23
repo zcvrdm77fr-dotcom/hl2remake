@@ -225,6 +225,38 @@ export function buildCity(THREERef) {
   const fill = new THREERef.DirectionalLight(0x8ab4cb, 0.85);
   fill.position.set(20, 18, -62); scene.add(fill);
 
+  // A real sky dome gives the street a readable horizon instead of a flat clear colour.
+  const skyCanvas = document.createElement('canvas');
+  skyCanvas.width = 1024; skyCanvas.height = 512;
+  const skyCtx = skyCanvas.getContext('2d');
+  const skyGradient = skyCtx.createLinearGradient(0, 0, 0, 512);
+  skyGradient.addColorStop(0, '#283845');
+  skyGradient.addColorStop(0.42, '#62767d');
+  skyGradient.addColorStop(0.78, '#a1a49a');
+  skyGradient.addColorStop(1, '#c0b69d');
+  skyCtx.fillStyle = skyGradient; skyCtx.fillRect(0, 0, 1024, 512);
+  let skySeed = 7331;
+  const skyRandom = () => {
+    skySeed = (Math.imul(skySeed, 1664525) + 1013904223) >>> 0;
+    return skySeed / 4294967296;
+  };
+  for (let i = 0; i < 170; i++) {
+    const x = skyRandom() * 1024, y = 40 + skyRandom() * 330;
+    const radius = 25 + skyRandom() * 105;
+    const cloud = skyCtx.createRadialGradient(x, y, 0, x, y, radius);
+    cloud.addColorStop(0, 'rgba(217,213,197,0.14)');
+    cloud.addColorStop(1, 'rgba(217,213,197,0)');
+    skyCtx.fillStyle = cloud; skyCtx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+  }
+  const skyTexture = new THREERef.CanvasTexture(skyCanvas);
+  skyTexture.colorSpace = THREERef.SRGBColorSpace;
+  const skyDome = new THREERef.Mesh(
+    new THREERef.SphereGeometry(155, 48, 24),
+    new THREERef.MeshBasicMaterial({ map: skyTexture, side: THREERef.BackSide, depthWrite: false, fog: false })
+  );
+  skyDome.position.set(0, 0, -25);
+  scene.add(skyDome);
+
   const ground = new THREERef.Mesh(new THREERef.PlaneGeometry(180, 220), mats.tile);
   ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.08, -29); ground.receiveShadow = true; scene.add(ground);
   const roadway = new THREERef.Mesh(new THREERef.PlaneGeometry(30, 170), mats.asphalt);

@@ -26,13 +26,15 @@ class CityGame {
     this.sprites={};for(const type of ['cell','station','exit','exitOpen'])this.sprites[type]=this.makeSprite(type);
     this.keys=new Set();this.joy={x:0,y:0};this.running=false;this.frameId=0;
     this.held=-1;this.beam=0;this.bob=0;this.messageEnd=0;this.cameraPitch=0;
-    this.pixelBudget=310000;this.frameSample=0;this.sampleFrames=0;
+    this.vx=0;this.vy=0;this.verticalVelocity=0;this.jumpHeight=0;this.grounded=true;
+    this.pixelBudget=460000;this.frameSample=0;this.sampleFrames=0;
     this.reset();
     gameArt(this);railArt(this);
   }
   reset() {
     this.map=this.streetMap;this.encounter=null;this.yard=null;this.storyStarted=false;this.ui.radio.clear();this.dashTime=0;this.dashCooldown=0;
     this.dashX=0;this.dashY=0;this.walkForward=0;this.walkSide=0;this.footstep=0;
+    this.vx=0;this.vy=0;this.verticalVelocity=0;this.jumpHeight=0;this.grounded=true;
     this.x=3.3;this.y=8.5;this.angle=-.08;this.cameraPitch=0;this.held=-1;this.done=0;this.elapsed=0;
     this.cells=[{x:6.6,y:8.1,type:'cell',inPlace:false},{x:16.8,y:10.3,type:'cell',inPlace:false}];
     this.completed=false;this.beam=0;this.bob=0;
@@ -46,7 +48,7 @@ class CityGame {
   get nearSpirit(){return this.distance(this.spirit)<3.8&&this.visible(this.spirit)&&Math.cos(Math.atan2(this.spirit.y-this.y,this.spirit.x-this.x)-this.angle)>.82}
   openYard(checkpoint={}){
     this.ui.notice.textContent='';this.encounter=null;this.yard=new RailYard(this,checkpoint);
-    this.beam=0;this.dashTime=0;this.dashCooldown=0;this.ui.radio.clear();
+    this.beam=0;this.dashTime=0;this.dashCooldown=0;this.vx=0;this.vy=0;this.verticalVelocity=0;this.jumpHeight=0;this.grounded=true;this.ui.radio.clear();
     if(this.yard.clear)this.ui.radio.say('clear','gate');
     else if(!this.yard.armed)this.ui.radio.say('greeting');
     this.updateUI();this.ui.save();
@@ -54,17 +56,22 @@ class CityGame {
   openTerminal(checkpoint=0){
     this.yard=null;this.ui.radio.clear();
     this.ui.radio.say(checkpoint===4?'decoy':checkpoint===2?'fracture':'boss');
+    this.vx=0;this.vy=0;this.verticalVelocity=0;this.jumpHeight=0;this.grounded=true;
     this.encounter=new GManEncounter(this,checkpoint);this.dashTime=0;this.dashCooldown=0;
     this.beam=0;this.ui.tone(95);this.updateUI();
     this.tell('Sieppaa sininen pallo painovoima-aseella.');this.ui.save();
   }
   dash(){
     if(!this.running||this.dashCooldown>0||this.encounter?.result)return;
-    let forward=this.walkForward,side=this.walkSide;
-    if(Math.hypot(forward,side)<.1)forward=1;
-    const length=Math.hypot(forward,side),co=Math.cos(this.angle),si=Math.sin(this.angle);
-    this.dashX=(co*forward-si*side)/length;this.dashY=(si*forward+co*side)/length;
-    this.dashTime=.2;this.dashCooldown=2.25;this.ui.tone(135);
+    let dx=this.vx,dy=this.vy,length=Math.hypot(dx,dy);
+    if(length<.65){
+      let forward=this.walkForward,side=this.walkSide;
+      if(Math.hypot(forward,side)<.1)forward=1;
+      const inputLength=Math.hypot(forward,side),co=Math.cos(this.angle),si=Math.sin(this.angle);
+      dx=(co*forward-si*side)/inputLength;dy=(si*forward+co*side)/inputLength;
+    }else{dx/=length;dy/=length}
+    this.vx+=dx*4.4;this.vy+=dy*4.4;
+    this.dashTime=.18;this.dashCooldown=1.35;this.ui.tone(135);
   }
   serialize(){
     if(this.encounter)return {stage:'terminal',checkpoint:this.encounter.checkpoint,elapsed:this.elapsed};
@@ -118,10 +125,30 @@ class CityGame {
   }
   makeSky(){
     const c=this.makeCanvas(2048,350),g=c.getContext('2d'),r=this.random(48);
-    const grad=g.createLinearGradient(0,0,0,350);grad.addColorStop(0,'#455563');grad.addColorStop(.58,'#8b999a');grad.addColorStop(1,'#b7b6a7');g.fillStyle=grad;g.fillRect(0,0,2048,350);
-    for(let i=0;i<170;i++){let x=r()*2048,y=r()*170;const cloud=g.createRadialGradient(x,y,0,x,y,90);cloud.addColorStop(0,'#d2d1bf16');cloud.addColorStop(1,'#d2d1bf00');g.fillStyle=cloud;g.fillRect(x-90,y-90,180,180)}
-    for(let i=0;i<90;i++){let x=r()*2048,w=12+r()*40,h=20+r()*65;g.fillStyle='#737f7d';g.fillRect(x,275-h,w,h+75);g.fillRect(x+w*.4,266-h,w*.15,10)}
-    g.fillStyle='#55656c';g.beginPath();g.moveTo(923,300);g.lineTo(941,138);g.lineTo(950,127);g.lineTo(953,44);g.lineTo(960,9);g.lineTo(965,116);g.lineTo(975,130);g.lineTo(980,54);g.lineTo(988,151);g.lineTo(1001,302);g.fill();g.fillStyle='#414f56';g.fillRect(963,103,6,170);
+    const grad=g.createLinearGradient(0,0,0,350);grad.addColorStop(0,'#273744');grad.addColorStop(.43,'#5a6b73');grad.addColorStop(.76,'#89918e');grad.addColorStop(1,'#a5a391');g.fillStyle=grad;g.fillRect(0,0,2048,350);
+    const haze=g.createRadialGradient(1020,245,10,1020,245,430);haze.addColorStop(0,'#d0b99435');haze.addColorStop(1,'#c7c1ae00');g.fillStyle=haze;g.fillRect(480,0,1080,350);
+    for(let i=0;i<210;i++){const x=r()*2048,y=r()*180,rad=24+r()*105;const cloud=g.createRadialGradient(x,y,0,x,y,rad);cloud.addColorStop(0,'#c2c8c11c');cloud.addColorStop(1,'#c2c8c100');g.fillStyle=cloud;g.fillRect(x-rad,y-rad,rad*2,rad*2)}
+    // Far industrial blocks, pipes and water towers.
+    for(let i=0;i<118;i++){
+      const x=r()*2048,w=12+r()*42,h=28+r()*94,base=286+r()*20,shade=42+Math.floor(r()*28);
+      g.fillStyle='rgb('+shade+','+(shade+9)+','+(shade+11)+')';g.fillRect(x,base-h,w,h+80);
+      g.fillStyle='#9a9a8950';g.fillRect(x+2,base-h+4,2,h-4);
+      if(i%3===0){g.fillStyle='#303e43';g.fillRect(x+w*.48,base-h-13,3,13);g.fillRect(x+w*.18,base-h-4,w*.64,3)}
+      for(let wy=base-h+10;wy<base-5;wy+=12)for(let wx=x+4;wx<x+w-3;wx+=8){if(r()>.63){g.fillStyle=r()>.4?'#e2bd8050':'#8fb4b34a';g.fillRect(wx,wy,3,4)}}
+    }
+    // A distant Combine-style tower, deliberately narrow and hazy.
+    g.fillStyle='#35464e';g.beginPath();g.moveTo(890,310);g.lineTo(922,206);g.lineTo(934,154);g.lineTo(946,111);g.lineTo(952,58);g.lineTo(963,14);g.lineTo(973,78);g.lineTo(981,119);g.lineTo(998,157);g.lineTo(1011,220);g.lineTo(1040,310);g.closePath();g.fill();
+    g.fillStyle='#263941';g.fillRect(960,72,8,210);g.fillRect(949,153,31,4);
+    g.fillStyle='#80b5b34f';g.fillRect(961,94,3,168);g.fillRect(971,112,2,149);
+    g.fillStyle='#46565c';g.fillRect(945,178,40,9);g.fillRect(932,230,69,7);
+    // Crane silhouettes and hanging cables add recognisable industrial scale.
+    g.strokeStyle='#303f45';g.lineWidth=4;g.beginPath();g.moveTo(210,286);g.lineTo(210,110);g.lineTo(420,110);g.lineTo(420,286);g.moveTo(210,130);g.lineTo(420,110);g.stroke();
+    g.lineWidth=2;g.beginPath();g.moveTo(375,112);g.lineTo(375,214);g.moveTo(1480,290);g.lineTo(1480,95);g.lineTo(1705,95);g.lineTo(1705,290);g.moveTo(1480,118);g.lineTo(1705,95);g.stroke();
+    for(const [x,y] of [[375,214],[1642,202]]){g.beginPath();g.moveTo(x,y-30);g.lineTo(x,y+8);g.stroke()}
+    // Foreground rooftop silhouettes and a band of dirty industrial fog.
+    g.fillStyle='#313f43';g.fillRect(0,286,2048,64);
+    for(let i=0;i<45;i++){const x=r()*2048,w=18+r()*62,h=10+r()*48;g.fillStyle=i%2?'#27363b':'#3b494b';g.fillRect(x,286-h,w,h+65);if(i%4===0){g.fillRect(x+w*.22,286-h-14,4,14);g.fillRect(x+w*.72,286-h-7,3,7)}}
+    const fog=g.createLinearGradient(0,255,0,350);fog.addColorStop(0,'#a5a38e00');fog.addColorStop(1,'#c0b9a58a');g.fillStyle=fog;g.fillRect(0,255,2048,95);
     return c;
   }
   makeSprite(type){
@@ -208,6 +235,60 @@ class CityGame {
       this.setObjectiveProgress(this.done/2*100,this.done===2?'RATAPIHA AUKI':'ENERGIAKENNOT '+this.done+'/2');
     }
   }
+  applyFriction(dt){
+    const speed=Math.hypot(this.vx,this.vy);
+    if(speed<.0001){this.vx=0;this.vy=0;return}
+    const control=Math.max(speed,1.15),drop=control*5.4*dt;
+    const next=Math.max(0,speed-drop),scale=next/speed;
+    this.vx*=scale;this.vy*=scale;
+  }
+  accelerate(wishX,wishY,wishSpeed,amount,dt){
+    if(wishSpeed<=0)return;
+    const current=this.vx*wishX+this.vy*wishY,needed=wishSpeed-current;
+    if(needed<=0)return;
+    const push=Math.min(needed,amount*dt*wishSpeed);
+    this.vx+=wishX*push;this.vy+=wishY*push;
+  }
+  movePlayer(dt,forward,side){
+    const input=Math.min(1,Math.hypot(forward,side));
+    const length=Math.hypot(forward,side)||1,co=Math.cos(this.angle),si=Math.sin(this.angle);
+    const wishX=input?(co*forward-si*side)/length:0;
+    const wishY=input?(si*forward+co*side)/length:0;
+    const sprint=this.keys.has('ShiftLeft')||this.keys.has('ShiftRight');
+    const wishSpeed=(sprint?5.8:4.65)*input;
+    const jumpHeld=this.keys.has('Space');
+
+    // Holding jump performs an auto-bhop: landing does not apply ground friction
+    // before the next jump, so clean timing keeps the player's momentum.
+    if(this.grounded){
+      if(jumpHeld){this.grounded=false;this.verticalVelocity=6.25}
+      else this.applyFriction(dt);
+    }
+    if(input>.001){
+      if(this.grounded)this.accelerate(wishX,wishY,wishSpeed,13.5,dt);
+      else this.accelerate(wishX,wishY,Math.min(wishSpeed,4.5),18,dt);
+    }
+    if(!this.grounded){
+      this.verticalVelocity-=17.5*dt;this.jumpHeight+=this.verticalVelocity*dt;
+      if(this.jumpHeight<=0){this.jumpHeight=0;this.verticalVelocity=0;this.grounded=true}
+    }
+
+    // Keep air-strafing useful without letting a single bunny-hop launch the player
+    // across the entire map. This is a game-scale cap, not Source's unit system.
+    const speed=Math.hypot(this.vx,this.vy),cap=9.4;
+    if(speed>cap){this.vx*=cap/speed;this.vy*=cap/speed}
+    const dx=this.vx*dt,dy=this.vy*dt;
+    const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/.12));
+    for(let i=0;i<steps;i++){
+      if(this.clear(this.x+dx/steps,this.y))this.x+=dx/steps;else this.vx=0;
+      if(this.clear(this.x,this.y+dy/steps))this.y+=dy/steps;else this.vy=0;
+    }
+    this.walkForward=forward;this.walkSide=side;
+    this.dashTime=Math.max(0,this.dashTime-dt);
+    this.dashCooldown=Math.max(0,this.dashCooldown-dt);
+    this.bob+=Math.min(1,speed/5)*dt*9;
+    return speed;
+  }
   frame(time){
     if(!this.running)return;
     const interval=Math.max(0,(time-this.last)/1000),dt=Math.min(interval,.12);this.last=time;this.elapsed+=dt;
@@ -215,30 +296,20 @@ class CityGame {
     if(this.sampleFrames>=12){
       const average=this.frameSample/this.sampleFrames;
       if(average>.040)this.pixelBudget=Math.max(76000,Math.floor(this.pixelBudget*.72));
-      else if(average<.021)this.pixelBudget=Math.min(310000,Math.ceil(this.pixelBudget*1.12));
+      else if(average<.021)this.pixelBudget=Math.min(460000,Math.ceil(this.pixelBudget*1.12));
       this.frameSample=0;this.sampleFrames=0;
     }
     const key=(a,b)=>Number(this.keys.has(a)||this.keys.has(b));
     this.angle+=(key('ArrowRight')-key('ArrowLeft'))*dt*1.9;
     let f=key('KeyW','ArrowUp')-key('KeyS','ArrowDown')-this.joy.y,s=key('KeyD')-key('KeyA')+this.joy.x;
-    const norm=Math.max(1,Math.hypot(f,s)),speed=(this.keys.has('ShiftLeft')||this.keys.has('ShiftRight')?3.9:2.45)*dt/norm;
-    let co=Math.cos(this.angle),si=Math.sin(this.angle),dx=(co*f-si*s)*speed,dy=(si*f+co*s)*speed;
-    this.walkForward=f;this.walkSide=s;this.dashCooldown=Math.max(0,this.dashCooldown-dt);
-    if(this.dashTime>0){
-      const step=Math.min(dt,this.dashTime)*9.3;dx=this.dashX*step;dy=this.dashY*step;this.dashTime-=Math.min(dt,this.dashTime);
-    }
-    const steps=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/.16));
-    for(let i=0;i<steps;i++){
-      if(this.clear(this.x+dx/steps,this.y))this.x+=dx/steps;
-      if(this.clear(this.x,this.y+dy/steps))this.y+=dy/steps;
-    }
-    this.bob+=Math.min(1,Math.hypot(f,s))*dt*8;this.beam=Math.max(0,this.beam-dt*2.5);
+    const speed=this.movePlayer(dt,f,s);
+    this.beam=Math.max(0,this.beam-dt*2.5);
     if(time>this.messageEnd&&this.ui.notice.textContent)this.ui.notice.textContent='';
     this.ui.radio.update(Math.min(.5,interval));
     if(this.encounter)this.encounter.update(dt);else if(this.yard)this.yard.update(dt);
     if(!this.running)return;
     this.footstep-=dt;
-    if(Math.hypot(f,s)>.3&&this.footstep<=0){this.ui.footstep?.();this.footstep=speed/dt>3?.29:.45}
+    if(this.grounded&&speed>1.25&&this.footstep<=0){this.ui.footstep?.();this.footstep=speed>5.2?.29:.43}
     this.render(time);
     const dashLabel=this.dashCooldown>0?this.dashCooldown.toFixed(1)+' s':'VALMIS';
     if(this.ui.dash.textContent!==dashLabel)this.ui.dash.textContent=dashLabel;
@@ -257,10 +328,11 @@ class CityGame {
   }
   render(time){
     const cv=this.canvas,g=this.ctx,ratio=cv.clientWidth/Math.max(1,cv.clientHeight);
-    const W=Math.max(2,Math.floor(Math.min(830,cv.clientWidth,Math.sqrt(this.pixelBudget*ratio))/2)*2),H=Math.max(2,Math.round(W/ratio));
+    const W=Math.max(2,Math.floor(Math.min(1040,cv.clientWidth,Math.sqrt(this.pixelBudget*ratio))/2)*2),H=Math.max(2,Math.round(W/ratio));
     if(cv.width!==W||cv.height!==H||!this.buf){cv.width=W;cv.height=H;this.buf=g.createImageData(W,H);this.z=new Float32Array(W)}
+    g.imageSmoothingEnabled=false;
     const co=Math.cos(this.angle),si=Math.sin(this.angle),plane=Math.min(1.1,Math.max(.48,ratio*.44)),focal=W/(2*plane);
-    const mid=Math.round(H*.5+this.cameraPitch*H+Math.sin(this.bob)*1.1),data=this.buf.data;
+    const mid=Math.round(H*.5+this.cameraPitch*H+this.jumpHeight*H*.19+Math.sin(this.bob)*1.1),data=this.buf.data;
     const skyW=W*4.1,offset=((this.angle/(Math.PI*2)*skyW+skyW*.43)%skyW+skyW)%skyW;
     g.fillStyle=this.encounter?'#13252f':'#859497';g.fillRect(0,0,W,H);
     g.drawImage(this.sky,-offset,mid-H*.71,skyW,H*.76);g.drawImage(this.sky,skyW-offset,mid-H*.71,skyW,H*.76);
@@ -333,6 +405,18 @@ class CityGame {
       g.beginPath();g.moveTo(W*.76,H*.8);g.quadraticCurveTo(W*.66,H*.61,W*.5,H*.5);g.stroke();g.restore();
     }
     if(fight?.result==='won'){g.fillStyle='rgba(165,224,211,'+(1-clamp(fight.outro/fight.endingLength,0,1))*.45+')';g.fillRect(0,0,W,H)}
+    this.drawRetroOverlay(g,W,H,time);
+  }
+  drawRetroOverlay(g,W,H,time){
+    // restrained late-90s PC look: warm phosphor tint, scan lines and lens falloff
+    g.save();
+    g.fillStyle='rgba(161,139,102,.035)';g.fillRect(0,0,W,H);
+    g.fillStyle='rgba(5,10,12,.12)';
+    for(let y=1;y<H;y+=3)g.fillRect(0,y,W,1);
+    const vignette=g.createRadialGradient(W*.5,H*.48,H*.12,W*.5,H*.5,Math.max(W,H)*.72);
+    vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(.72,'rgba(0,0,0,.06)');vignette.addColorStop(1,'rgba(0,0,0,.38)');
+    g.fillStyle=vignette;g.fillRect(0,0,W,H);
+    g.restore();
   }
   drawTraps(g,e,W,mid,focal,co,si,eye){
     for(const t of e.traps){

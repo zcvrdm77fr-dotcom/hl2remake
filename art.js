@@ -87,8 +87,10 @@ function gameArt(game) {
   image('masonry.webp',atlas=>{
     const halfW=atlas.width/2,halfH=atlas.height/2;
     const sample=(x,y,w,h)=>drawing(w,h,g=>g.drawImage(atlas,x*halfW+2,y*halfH+2,halfW-4,halfH-4,0,0,w,h)).getContext('2d').getImageData(0,0,w,h).data;
-    game.textures[1]=sample(0,0,128,384);game.textures[2]=sample(1,0,128,384);
-    game.textures[3]=game.textures[1];game.textures[4]=sample(0,1,128,384);
+    game.textures[1]=sample(0,0,128,384); // weathered plaster and stone facade
+    game.textures[2]=sample(1,0,128,384); // red industrial brick
+    game.textures[3]=sample(0,1,128,384); // reinforced Combine steel gate
+    game.textures[4]=sample(1,1,128,384); // rough foundation stone
     const src=sample(1,1,128,128);
     for(let j=0;j<128*128;j++)for(let c=0;c<3;c++)game.floor[j*3+c]=src[j*4+c];
   });

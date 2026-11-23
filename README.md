@@ -23,7 +23,9 @@
 - A station section built around finding and delivering two energy cells.
 - A Resistance rail-yard encounter with Combine soldiers and Manhacks.
 - A three-stage G-Man encounter, plus a practice mode.
-- Synthesized ambience, sound effects and timed radio audio.
+- Synthesized ambience and sound effects, plus optional Finnish system speech when the browser has a Finnish voice installed.
+- Source/Quake-inspired acceleration, ground friction, air control, momentum-preserving jumps and bunnyhopping.
+- A retro low-resolution renderer with four distinct wall materials, a more detailed City 17 skyline and subtle CRT-style grading.
 - A responsive interface with keyboard, mouse and touch controls.
 - A minimap that can be toggled during play.
 - A mission-progress indicator for the current section.
@@ -73,7 +75,8 @@ Open the local URL printed by the command.
 | Interact / use the gravity gun | `E` or left mouse button |
 | Fire the pulse rifle in the rail yard | Left mouse button or `F` |
 | Reload the pulse rifle | `R` |
-| Dash / evade | `Space` |
+| Jump / bunnyhop (hold to auto-bhop) | `Space` |
+| Dash / evade | `V` |
 | Toggle the minimap | `M` |
 | Pause / resume | `Esc` |
 | Navigate the main menu | `↑` / `↓`, then `Enter` |
@@ -82,7 +85,9 @@ Open the local URL printed by the command.
 
 ### Touch screens
 
-On touch devices, use the on-screen pad to move, swipe over the game view to look around, and use the action and dash buttons. The layout adapts to smaller screens.
+On touch devices, use the on-screen pad to move, swipe over the game view to look around, and use the jump, dash and action buttons. Hold jump to bunnyhop. In the air, use A/D and turn the mouse to build speed. The layout adapts to smaller screens.
+
+The Settings menu can use the device's Finnish speech voice when one is installed. Otherwise the dialogue remains subtitled; the old mismatched radio recording is no longer played.
 
 ## Campaign and game modes
 

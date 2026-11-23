@@ -180,3 +180,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 .ammo-readout small{font:400 9px Arial,Helvetica,sans-serif;color:var(--hud-muted)}
 .weapon-label strong{font:500 13px/1 Arial,Helvetica,sans-serif}
 @media(max-width:760px){.weapon-stack{gap:8px}.ammo-readout strong{font-size:16px}}
+
+.level-fade{
+  position:absolute;inset:0;z-index:8;background:#030403;opacity:0;
+  pointer-events:none;transition:opacity .24s ease
+}
+.level-fade.active{opacity:1}
+@media(prefers-reduced-motion:reduce){.level-fade{transition:none}}

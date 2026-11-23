@@ -9,7 +9,7 @@ import { STORY, OBJECTIVES } from './story.js?v=campaign-3';
 const $ = (id) => document.getElementById(id);
 const ui = {
   start: $('startScreen'), pause: $('pauseScreen'), end: $('endScreen'), hud: $('hud'),
-  startButton: $('startButton'), resume: $('resumeButton'), retry: $('retryButton'),
+  startButton: $('startButton'), resume: $('resumeButton'), retry: $('retryButton'), fade: $('levelFade'),
   objective: $('objectiveTitle'), detail: $('objectiveDetail'), progress: $('progressFill'),
   health: $('healthValue'), healthFill: $('healthFill'),
   ammo: $('ammoValue'), ammoReadout: $('ammoReadout'), weaponName: $('weaponName'),
@@ -49,7 +49,7 @@ const movementKeys = new Set();
 let started = false, running = false, finished = false;
 let stage = 0, hasBadge = false, hasCoil = false, hasFuse = false, hasPistol = false;
 let enemy = null, activeWeapon = 'crowbar', pistolAmmo = 18, pistolShotClock = 0;
-let lowerChapterStarted = false;
+let lowerChapterStarted = false, tramRide = false, tramLastZ = 0;
 let health = 100, elapsed = 0, previousTime = performance.now();
 let attackCooldown = 0, invulnerability = 0, hitFlash = 0, footstepClock = 0;
 let subtitleClock = 0, subtitleFullText = '', subtitleIndex = 0, toastClock = 0;
@@ -157,13 +157,16 @@ function updateAmmo(){
   ui.ammo.textContent=String(pistolAmmo);
 }
 function enterLowerChapter(){
-  liftEndingClock=0;
-  lowerChapterStarted=true;
-  movementKeys.clear();
-  camera.rotation.set(0,0,0);
-  physics.reset(new THREE.Vector3(0,0,-119));
-  stage=5;setObjective();
-  toast('Huoltohissi pysähtyi rahtitasolle.',3.5);
+  liftEndingClock=0;lowerChapterStarted=true;running=false;
+  ui.fade.classList.add('active');
+  window.setTimeout(()=>{
+    movementKeys.clear();camera.rotation.set(0,0,0);
+    physics.reset(new THREE.Vector3(0,0,-119));
+    stage=5;setObjective();
+    toast('Huoltohissi pysähtyi rahtitasolle.',3.5);
+    running=true;previousTime=performance.now();
+    window.setTimeout(()=>ui.fade.classList.remove('active'),90);
+  },270);
 }
 
 function interact() {
@@ -243,6 +246,8 @@ function interact() {
   if(kind==='tram') {
     if(!world.lower.valveClosed||stage<9){toast('Huoltoraitiovaunu ei saa vielä virtaa.');return}
     stage=10;setObjective();startTram(world.lower,world);
+    tramRide=true;tramLastZ=world.lower.tram.position.z;movementKeys.clear();
+    camera.rotation.set(0,0,0);physics.reset(new THREE.Vector3(0,0,-273));
     toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=5.2;outroSpoken=false;
   }
 }
@@ -308,7 +313,7 @@ function firePistol(){
   }
 }
 function attack() {
-  if(!running||attackCooldown>0)return;
+  if(!running||tramRide||attackCooldown>0)return;
   if(activeWeapon==='pistol'){firePistol();return}
   attackCooldown=.48;weapon.swing=1;radioBlip();
   raycaster.setFromCamera(screenCenter,camera);
@@ -331,7 +336,7 @@ function blockedEnemy(x,z) {
 }
 
 function updateEnemies(dt){
-  if(!running)return;
+  if(!running||tramRide)return;
   for(const creature of enemies){
     if(!creature.alive)continue;
     creature.attackCooldown=Math.max(0,creature.attackCooldown-dt);
@@ -367,7 +372,7 @@ function setHealth(value) {
 }
 
 function finishGame(won) {
-  running=false; finished=true; controls.unlock();
+  running=false;finished=true;tramRide=false;controls.unlock();
   ui.hud.classList.remove('active'); ui.weaponLabel.classList.remove('active');
   ui.end.classList.remove('hidden');
   $('endTitle').textContent=won?'Pääsit pois Kallion asemalta':'Suojapuku petti';
@@ -483,7 +488,10 @@ function update(dt) {
     right:Number(movementKeys.has('KeyD'))-Number(movementKeys.has('KeyA'))
   };
   const direction=camera.getWorldDirection(viewDirection);
-  const result=physics.update(dt,direction,input,movementKeys.has('Space'),movementKeys.has('ShiftLeft')||movementKeys.has('ShiftRight'));
+  const result=tramRide
+    ? {speed:0,grounded:true,verticalSpeed:0,jumpHeight:physics.feet.y}
+    : physics.update(dt,direction,input,movementKeys.has('Space'),movementKeys.has('ShiftLeft')||movementKeys.has('ShiftRight'));
+  if(tramRide){movementKeys.clear();physics.velocity.set(0,0,0)}
   pushPropsFromPlayer(dt);
   if(result.grounded&&result.speed>1.3){
     footstepClock-=dt;
@@ -508,6 +516,10 @@ function update(dt) {
   enterFreightHall();
   animateSector(world,dt,elapsed);
   animateChapterTwo(world.lower,dt,elapsed);
+  if(tramRide){
+    const z=world.lower.tram.position.z;
+    physics.feet.z+=z-tramLastZ;tramLastZ=z;physics.syncCamera();
+  }
   if(world.lower.pumpOn){
     steamDamageClock=Math.max(0,steamDamageClock-dt);
     const hot=world.lower.steamZones.some(zone=>Math.hypot(physics.feet.x-zone.x,physics.feet.z-zone.z)<zone.radius);

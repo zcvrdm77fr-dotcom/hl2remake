@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#111719">
-  <meta name="description" content="HELIX PROTOCOL — Chapter 01: Sector 09. An unofficial low-poly first-person fan campaign.">
-  <title>HELIX PROTOCOL · SECTOR 09</title>
+  <meta name="description" content="HALF-LIFE² — A low-poly first-person fan campaign. A low-poly first-person fan campaign.">
+  <title>HALF-LIFE²</title>
   <link rel="icon" href="assets/lambda.svg" type="image/svg+xml">
   <link rel="stylesheet" href="style.css">
   <script type="importmap">
@@ -20,26 +20,11 @@
 <body>
   <main id="gameRoot">
     <section id="startScreen" class="screen start-screen">
-      <div class="topline">
-        <div class="brand-mark">KRA<span>/</span>09</div>
-        <div class="top-meta">KALLIO RESEARCH ANNEX <i></i> INTERNAL BUILD 0.9.4</div>
+      <div class="menu-brand">
+        <img class="lambda-logo" src="assets/lambda.svg" alt="Lambda">
+        <h1 class="menu-title">HALF-LIFE<sup>2</sup></h1>
       </div>
-      <div class="title-block">
-        <div class="eyebrow"><span class="status-dot"></span> INCIDENT REPORT · 06:42:17</div>
-        <h1>HELIX <span>PROTOCOL</span></h1>
-        <div class="chapter">CHAPTER 01 <b>/</b> SECTOR 09</div>
-        <p class="intro">A routine maintenance shift. An experiment that started before its operators arrived. And a radio message carrying tomorrow's timestamp.</p>
-        <div class="start-actions">
-          <button id="startButton" class="primary-button"><span>ALOITA VUORO</span><b>↗</b></button>
-          <div class="press-enter">KLIKKAUS ALOITTAA · HIIRI LUKITTUU PELIIN</div>
-        </div>
-      </div>
-      <div class="briefing">
-        <div class="brief-card"><span class="card-label">TEHTÄVÄ</span><strong>Palauta hissin varavoima</strong><p>Etsi sektorin 09 kulkukortti, hae jäähdytyskela ja pääse huoltohissiin.</p></div>
-        <div class="brief-card"><span class="card-label">OHJAUS</span><strong>WASD · HIIRI · SPACE</strong><p>Space = hyppy / bunnyhop. Shift = juoksu. E = käytä. Vasen hiiri = crowbar. ESC = tauko.</p></div>
-        <div class="brief-card warning-card"><span class="card-label">TURVALLISUUS</span><strong>Älä pysähdy käytävään.</strong><p>Resonanssipoikkeama reagoi liikkeeseen. Ilmaliike auttaa pitämään vauhdin yllä.</p></div>
-      </div>
-      <div class="bottomline"><span>UNOFFICIAL FAN CAMPAIGN <b>·</b> NOT AFFILIATED WITH VALVE</span><span>WEBGL 3D <b>·</b> GOLD-SRC ERA VISUALS <b>·</b> SOURCE-INSPIRED MOVEMENT</span></div>
+      <button id="startButton" class="menu-start-button" type="button">START GAME</button>
     </section>
 
     <section id="hud" class="hud">

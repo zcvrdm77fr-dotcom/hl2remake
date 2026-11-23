@@ -237,11 +237,28 @@ function resumeGame() {
   ui.pause.classList.add('hidden'); running=true; previousTime=performance.now(); controls.lock();
 }
 function startGame() {
-  if(started) return;
-  ensureAudio(); started=true; running=true; finished=false;
-  ui.start.classList.add('hidden'); ui.pause.classList.add('hidden'); ui.end.classList.add('hidden');
-  ui.hud.classList.add('active'); ui.weaponLabel.classList.add('active');
-  previousTime=performance.now(); say(STORY.intro,6.3); controls.lock();
+  if (started) return;
+
+  // The level starts even if the browser rejects pointer lock.
+  started = true;
+  running = true;
+  finished = false;
+  elapsed = 0;
+  ui.start.classList.add('hidden');
+  ui.pause.classList.add('hidden');
+  ui.end.classList.add('hidden');
+  ui.hud.classList.add('active');
+  ui.weaponLabel.classList.add('active');
+  previousTime = performance.now();
+
+  ensureAudio();
+  say(STORY.intro, 6.3);
+  try {
+    controls.lock();
+  } catch (error) {
+    console.warn('Pointer lock unavailable; game continues without mouse capture.', error);
+    toast('PELI KÄYNNISSÄ — KLIKKAA PELINÄKYMÄÄ LUKITAKSESI HIIRI', 5);
+  }
 }
 
 function update(dt) {
@@ -326,7 +343,15 @@ renderer.domElement.addEventListener('mousedown',event=>{
   if(event.button===0) attack();
   if(event.button===2) interact();
 });
-controls.addEventListener('unlock',()=>{movementKeys.clear();if(running)openPause()});
+let pointerLockHasWorked = false;
+controls.addEventListener('lock', () => { pointerLockHasWorked = true; });
+controls.addEventListener('unlock', () => {
+  movementKeys.clear();
+  if (pointerLockHasWorked && running) openPause();
+});
+document.addEventListener('pointerlockerror', () => {
+  if (running) toast('HIIRTÄ EI SAATU LUKITTUA — PELI JATKUU SILTI', 4);
+});
 
 ui.startButton.addEventListener('click',startGame);
 ui.resume.addEventListener('click',resumeGame);

@@ -25,3 +25,58 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
 .modal-screen{display:grid;place-items:center;background:rgba(4,8,9,.72);backdrop-filter:blur(5px)}.modal-panel{width:min(440px,calc(100vw - 38px));padding:34px;border:1px solid #d4c5a333;background:linear-gradient(140deg,#20292b,#101719);box-shadow:0 30px 90px #000b}.modal-panel h2{font-family:var(--serif);font-size:32px;font-weight:400;letter-spacing:-.03em;margin:18px 0 8px;color:var(--paper)}.modal-panel p{font-size:11px;line-height:1.8;color:#a8b1aa;margin:0 0 24px}.modal-panel .primary-button{width:100%;margin-top:18px}.secondary-button{width:100%;margin-top:10px;padding:12px;border:1px solid var(--line);background:#111719;color:#b5b9ad;font-size:9px;letter-spacing:.14em}.secondary-button:hover{border-color:var(--orange);color:#f0d9bd}.modal-foot{margin-top:22px;font-size:8px;letter-spacing:.14em;color:#78837c}.end-time{display:block;font-size:10px;color:var(--cyan);letter-spacing:.14em;margin:12px 0}.hidden{display:none!important}
 @media(max-width:760px){.start-screen{padding:20px 18px 14px}.top-meta{font-size:7px;letter-spacing:.08em}.title-block{width:100%;margin:15vh 0 auto}h1{font-size:clamp(52px,14vw,86px)}.intro{font-size:11px;max-width:440px}.briefing{grid-template-columns:1fr;gap:7px;margin-top:22px}.brief-card{min-height:0;padding:9px 11px}.brief-card p{margin-top:4px}.bottomline{font-size:6px;letter-spacing:.04em}.bottomline span:last-child{display:none}.hud-top{top:12px;left:12px;right:12px}.objective-card{width:min(67vw,380px);padding:9px 10px}.objective-card h2{font-size:11px}.objective-card p{font-size:9px}.health-card{width:102px;padding:9px}.health-card strong{font-size:17px}.hud-bottom{left:12px;right:12px;bottom:12px;gap:7px}.weapon-label{display:none}.movement-card{padding:7px}.control-hint{font-size:0}kbd{font-size:7px;margin-left:3px}.subtitles{width:calc(100% - 24px);bottom:75px;padding:10px}.subtitle-copy p{font-size:10px}.interaction-prompt{bottom:24%;font-size:9px}}
 @media(max-height:650px){.title-block{margin-bottom:20px}.brief-card{min-height:84px}.briefing{margin-top:14px}}
+
+
+/* Minimal Xen-style title screen */
+.start-screen {
+  display:block; padding:0; overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(10,5,18,.18),transparent 36%,transparent 68%,rgba(9,5,16,.12)),
+    url("assets/xen-menu.jpg") center center / cover no-repeat;
+}
+.start-screen:before { display:none; }
+.menu-brand {
+  position:absolute; z-index:2;
+  top:clamp(22px,4.5vh,58px); left:clamp(22px,4vw,64px);
+  display:flex; align-items:center; gap:clamp(12px,1.8vw,28px);
+  padding:10px 22px 10px 10px;
+  background:linear-gradient(90deg,rgba(12,9,17,.82),rgba(12,9,17,.14));
+  border-left:3px solid #e88a2d; box-shadow:0 12px 38px rgba(0,0,0,.24);
+}
+.lambda-logo {
+  display:block; width:clamp(54px,7.2vw,94px); height:clamp(54px,7.2vw,94px);
+  object-fit:contain; filter:drop-shadow(0 3px 12px rgba(0,0,0,.7));
+}
+.menu-title {
+  margin:0; color:#f28b25; font-family:var(--mono);
+  font-size:clamp(27px,4.7vw,68px); font-weight:800;
+  line-height:1; letter-spacing:.055em;
+  text-shadow:0 3px 0 #6c3217,0 7px 24px rgba(0,0,0,.9);
+  white-space:nowrap;
+}
+.menu-title sup { position:relative; top:-.18em; margin-left:.08em; font-size:.48em; letter-spacing:0; }
+.menu-start-button {
+  position:absolute; z-index:3; left:50%; top:74.5%;
+  transform:translate(-50%,-50%);
+  width:clamp(220px,20.2vw,410px); height:clamp(48px,7.2vh,82px);
+  border:2px solid #b97832; border-radius:0;
+  background:rgba(16,10,21,.94); color:#ff982e;
+  font-family:var(--mono); font-size:clamp(16px,1.65vw,28px);
+  font-weight:800; letter-spacing:.12em;
+  text-shadow:0 2px 0 #713713,0 0 14px rgba(238,119,30,.4);
+  box-shadow:0 7px 28px rgba(0,0,0,.42),inset 0 0 0 2px rgba(255,170,65,.08);
+  cursor:pointer; touch-action:manipulation;
+  transition:background .14s,border-color .14s,transform .14s,filter .14s;
+}
+.menu-start-button:hover {
+  background:rgba(36,18,24,.98); border-color:#ffc06a;
+  filter:brightness(1.12); transform:translate(-50%,-50%) scale(1.025);
+}
+.menu-start-button:active { transform:translate(-50%,-50%) scale(.99); }
+.menu-start-button:focus-visible { outline:3px solid #fff0c5; outline-offset:5px; }
+@media(max-width:760px) {
+  .menu-brand { top:20px; left:16px; gap:10px; padding:8px 14px 8px 8px; }
+  .lambda-logo { width:48px; height:48px; }
+  .menu-title { font-size:clamp(24px,7vw,38px); }
+  .menu-start-button { top:74.5%; width:min(68vw,290px); height:52px; font-size:17px; }
+}

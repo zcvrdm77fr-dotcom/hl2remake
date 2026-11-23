@@ -49,7 +49,7 @@ function rod(parent, a, b, radius, mat, sides = 7, endRadius = radius) {
 function lightViewmodel(camera, root) {
   camera.layers.enable(1);
   root.traverse(object => { if (object.isMesh) object.layers.enable(1); });
-  const light = new THREE.PointLight(0xf1e2c3, 2.5, 3.4, 2);
+  const light = new THREE.PointLight(0xd8d2b8, 1.65, 3.1, 2);
   light.position.set(.12, .34, -1.05);
   light.layers.set(1);
   camera.add(light);
@@ -89,20 +89,20 @@ export function makeCrowbar(camera) {
 
   // A visible HEV sleeve, wrist cuff and wrapped glove keep the weapon grounded.
   const forearm = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .32, 3, 8), sleeve);
-  forearm.position.set(.055, -.36, .32);
+  forearm.position.set(.055, -.14, .32);
   forearm.rotation.set(-.36, -.08, -.08);
   forearm.castShadow = true;
   root.add(forearm);
-  sphere(root, [.02, -.19, .05], [.16, .12, .16], glove, 8, 6);
+  sphere(root, [.02, -.09, .05], [.16, .12, .16], glove, 8, 6);
   for (let i = 0; i < 4; i++) {
     const x = -.09 + i * .072;
     const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.027, .105, 2, 6), glove);
-    finger.position.set(x, -.13, -.015 + Math.abs(i - 1.5) * .02);
+    finger.position.set(x, -.035, -.015 + Math.abs(i - 1.5) * .02);
     finger.rotation.x = -.46;
     finger.rotation.z = (i - 1.5) * .13;
     root.add(finger);
   }
-  sphere(root, [-.11, -.22, .09], [.055, .09, .09], glove, 7, 5);
+  sphere(root, [-.11, -.12, .09], [.055, .09, .09], glove, 7, 5);
   lightViewmodel(camera, root);
   return { root, basePosition: root.position.clone(), baseRotation: root.rotation.clone(), swing: 0 };
 }
@@ -144,13 +144,13 @@ export function makePistol(camera) {
   for (let y = -.18; y < -.04; y += .045) addMesh(root, new THREE.BoxGeometry(.115, .012, .012), blackMetal, [0, y, -.025]);
 
   const sleeveMesh = new THREE.Mesh(new THREE.CapsuleGeometry(.105, .27, 3, 8), sleeve);
-  sleeveMesh.position.set(.015, -.34, .23);
+  sleeveMesh.position.set(.015, -.15, .23);
   sleeveMesh.rotation.set(-.38, 0, -.03);
   root.add(sleeveMesh);
-  sphere(root, [.015, -.19, .015], [.145, .12, .16], glove, 8, 6);
+  sphere(root, [.015, -.075, .015], [.145, .12, .16], glove, 8, 6);
   for (let i = 0; i < 4; i++) {
     const finger = new THREE.Mesh(new THREE.CapsuleGeometry(.025, .11, 2, 6), glove);
-    finger.position.set(-.09 + i * .06, -.13, -.075 + Math.abs(i - 1.5) * .022);
+    finger.position.set(-.09 + i * .06, -.02, -.075 + Math.abs(i - 1.5) * .022);
     finger.rotation.x = -.62;
     root.add(finger);
   }

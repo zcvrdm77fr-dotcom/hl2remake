@@ -169,11 +169,12 @@ export function buildSector(scene) {
     cyanGlow:new THREE.MeshLambertMaterial({color:0x8af3d0,emissive:0x248c72,emissiveIntensity:1.3}),
     lightGlow:new THREE.MeshLambertMaterial({color:0xffefc9,emissive:0xa97843,emissiveIntensity:1.8}),
     lightSteel:new THREE.MeshLambertMaterial({map:tex.steel,color:0xb7b7a4}),
+    ceiling:new THREE.MeshLambertMaterial({map:tex.concrete,color:0xb5b29f,emissive:0x36392f,emissiveMap:tex.concrete,emissiveIntensity:0.48,side:THREE.DoubleSide}),
     hazard:new THREE.MeshLambertMaterial({map:tex.hazard})
   };
   const worldGroup=new THREE.Group(); scene.add(worldGroup);
   const colliders=[],interactables=[],lights=[],doors=[];
-  scene.add(new THREE.HemisphereLight(0xc2c7b3,0x353126,0.98));
+  scene.add(new THREE.HemisphereLight(0xcbd0bc,0x454031,1.28));
   const keyLight=new THREE.DirectionalLight(0xe4d5b2,1.32);
   keyLight.position.set(-12,28,18); keyLight.castShadow=true;
   keyLight.shadow.mapSize.set(2048,2048); keyLight.shadow.camera.left=-28; keyLight.shadow.camera.right=28;
@@ -188,7 +189,7 @@ export function buildSector(scene) {
   }
   function shell(x,z,w,d){
     plane(worldGroup,x,-0.08,z,w,d,mats.tile,true);
-    plane(worldGroup,x,4.72,z,w,d,mats.concrete,false);
+    plane(worldGroup,x,4.72,z,w,d,mats.ceiling,false);
   }
   function trim(x,y,z,w,d,mat=mats.dark){box(worldGroup,x,y,z,w,0.12,d,mat,false,true);}
 
@@ -201,6 +202,11 @@ export function buildSector(scene) {
   wall(-15.7,16,0.6,36); wall(15.7,16,0.6,36); wall(0,34,31,0.6);
   wall(-10,-2,11.4,0.6); wall(10,-2,11.4,0.6);
   for(const z of [6,18,30]){trim(-15.35,0.42,z,0.16,10);trim(15.35,0.42,z,0.16,10);}
+  for(const z of [7,18,29]) addCeilingLamp(worldGroup,scene,0,z,mats,lights,z*.2);
+  for(const z of [7,18,29]){
+    box(worldGroup,-10,4.45,z,.16,.18,30,mats.dark,false);
+    box(worldGroup,10,4.45,z,.16,.18,30,mats.dark,false);
+  }
   addDesk(worldGroup,10.8,14.5,mats);
   colliders.push(collider(10.8,14.5,3.2,1.45,0,1.1));
   const securityMonitor=box(worldGroup,10.8,1.74,14.1,0.86,0.72,0.12,mats.screen,false);

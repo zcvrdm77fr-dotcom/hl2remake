@@ -30,7 +30,7 @@
 
     <section id="hud" class="hud">
       <div class="mission-readout">
-        <div class="readout-tag"><i></i> TEHTÄVÄ</div>
+        <div class="readout-tag">SEKTORI 09 <span>—</span> TAVOITE</div>
         <h2 id="objectiveTitle">HAE KULKUKORTTI</h2>
         <p id="objectiveDetail">Etsi vartijan pöydältä kulkukortti.</p>
         <div class="progress-track"><span id="progressFill"></span></div>
@@ -38,25 +38,23 @@
       <div id="crosshair" class="crosshair"><i></i><i></i><i></i><i></i></div>
       <div id="interactionPrompt" class="interaction-prompt"><kbd>E</kbd><span id="promptLabel"></span></div>
       <div id="subtitles" class="subtitles">
-        <div class="radio-mark"><i></i><b>RADIO</b></div>
         <div class="subtitle-copy"><strong id="subtitleName">VALVOMO</strong><p id="subtitleText"></p></div>
       </div>
       <div class="hud-bottom">
         <div class="health-card">
           <div class="health-symbol">+</div>
-          <div class="health-readout"><span>TERVEYS</span><div><strong id="healthValue">100</strong><small>%</small></div></div>
+          <div class="health-readout"><strong id="healthValue">100</strong><small>%</small></div>
           <div class="health-track"><span id="healthFill"></span></div>
         </div>
-        <div id="weaponLabel" class="weapon-label"><span>ASE</span><strong>SORKKARAUTA</strong></div>
+        <div id="weaponLabel" class="weapon-label"><strong>SORKKARAUTA</strong></div>
       </div>
       <div id="toast" class="toast"></div><div id="hitFlash" class="hit-flash"></div>
     </section>
 
     <section id="pauseScreen" class="screen modal-screen hidden">
       <div class="modal-panel">
-        <div class="menu-cap">HELIX PROTOCOL <span>/</span> SEKTORI 09</div>
+        <div class="menu-cap">KALLIO RESEARCH ANNEX</div>
         <h2>KESKEYTETTY</h2>
-        <div class="menu-rule"></div>
         <button id="resumeButton" class="primary-button">JATKA</button>
         <button id="pauseQuitButton" class="secondary-button">ALOITA ALUSTA</button>
         <div class="modal-foot">ESC — JATKA</div>
@@ -65,13 +63,11 @@
 
     <section id="endScreen" class="screen modal-screen hidden">
       <div class="modal-panel">
-        <div class="menu-cap">HELIX PROTOCOL <span>/</span> LUKU 01</div>
+        <div class="menu-cap">KALLIO RESEARCH ANNEX</div>
         <h2 id="endTitle">SEKTORI 09</h2>
-        <div class="menu-rule"></div>
         <p id="endDescription"></p>
         <strong id="endTime" class="end-time"></strong>
         <button id="retryButton" class="primary-button">PELAA UUDELLEEN</button>
-        <div class="modal-foot">KALLIO RESEARCH ANNEX</div>
       </div>
     </section>
   </main>

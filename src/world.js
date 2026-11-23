@@ -120,6 +120,30 @@ function makeCoil(parent,x,z,mats,interactables) {
 }
 
 
+function addSupplyDrum(parent,x,z,mats,colliders) {
+  const root=new THREE.Group(); root.position.set(x,0,z); parent.add(root);
+  cylinder(root,0,0.52,0,0.43,0.43,1.04,mats.brick,8);
+  cylinder(root,0,1.06,0,0.38,0.38,0.07,mats.dark,8);
+  for(const y of [0.2,0.82]) {
+    const band=new THREE.Mesh(new THREE.TorusGeometry(0.435,0.035,4,12),mats.lightSteel);
+    band.rotation.x=Math.PI/2; band.position.y=y; root.add(band);
+  }
+  box(root,0,0.08,0,0.78,0.1,0.78,mats.dark,false);
+  colliders.push(collider(x,z,0.92,0.92,0,1.08));
+  return root;
+}
+function addSupplyCrate(parent,x,z,mats,colliders) {
+  const root=new THREE.Group(); root.position.set(x,0,z); parent.add(root);
+  box(root,0,0.55,0,1.12,1.1,1.12,mats.wood);
+  for(const y of [0.08,1.02]) box(root,0,y,0,1.18,0.09,1.18,mats.lightSteel);
+  for(const side of [-1,1]) {
+    box(root,side*0.43,0.55,0,0.08,0.88,1.17,mats.dark,false);
+    box(root,0,0.55,side*0.43,1.17,0.88,0.08,mats.dark,false);
+  }
+  box(root,0,0.57,0.565,0.76,0.19,0.035,mats.hazard,false,false);
+  colliders.push(collider(x,z,1.2,1.2,0,1.12));
+  return root;
+}
 function makeRetroSignMaterial(title, subtitle, accent = "#d69a4d") {
   const canvas=document.createElement("canvas");
   canvas.width=128; canvas.height=64;
@@ -291,6 +315,15 @@ export function buildSector(scene) {
     box(worldGroup,0,4.58,z,12.2,0.12,0.32,mats.lightSteel,false);
   }
   for(let i=0;i<12;i++) box(worldGroup,-5.3+i*0.96,0.015,-36,0.38,0.025,0.32,mats.hazard,false,false);
+
+  // Reusable late-90s industrial props: battered drums and shipping crates.
+  // Kept against the room edges so they enrich the spaces without blocking routes.
+  addSupplyCrate(worldGroup,-12.7,25.2,mats,colliders);
+  addSupplyDrum(worldGroup,4.9,-28.2,mats,colliders);
+  addSupplyCrate(worldGroup,-4.8,-34.2,mats,colliders);
+  addSupplyDrum(worldGroup,14.15,-70.3,mats,colliders);
+  addSupplyCrate(worldGroup,-14.1,-72.7,mats,colliders);
+  addSupplyDrum(worldGroup,-5.8,-100.4,mats,colliders);
 
   for(const x of [-13.8,13.8]){
     box(worldGroup,x,1.25,-45.8,1.2,2.5,2.2,mats.dark);

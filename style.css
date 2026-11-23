@@ -116,3 +116,10 @@ h1{font-family:var(--serif);font-weight:400;font-size:clamp(56px,8.6vw,126px);li
 .secondary-button{border:1px solid #65715a;border-radius:0;background:#141a12}
 .menu-brand{border-radius:0;backdrop-filter:none}.menu-title{font-family:var(--mono);text-transform:uppercase}.menu-start-button{border-radius:0;box-shadow:3px 3px 0 #080b07}
 @media(max-width:760px){.objective-card,.health-card{backdrop-filter:none}.modal-panel{padding:24px}}
+
+/* Subtle CRT-era raster texture over the 3D viewport (never blocks input). */
+#gameRoot:after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.12;background:repeating-linear-gradient(to bottom,transparent 0,transparent 2px,rgba(0,0,0,.24) 3px)}
+.hud{font-family:var(--mono)}
+.objective-card h2,.health-card strong,.weapon-label strong,.movement-card strong{font-family:var(--mono);text-shadow:1px 1px #070907}
+.objective-card p{letter-spacing:.01em}
+.modal-panel .eyebrow{font-family:var(--mono);color:#a7b68c}

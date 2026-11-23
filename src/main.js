@@ -18,7 +18,7 @@ const ui = {
 };
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, Number(ui.quality.value)));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -82,7 +82,7 @@ const subtitleLines = {
 };
 
 function ensureAudio() {
-  if (muted || !voiceEnabled) return;
+  if (muted) return;
   if (!audioContext) {
     const AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
@@ -226,7 +226,7 @@ function updateObjective() {
 }
 
 function currentColliders() {
-  return sceneBundle.unlocked
+  return sceneBundle.unlocked && sceneBundle.openProgress >= 1
     ? sceneBundle.colliders
     : sceneBundle.colliders.concat(sceneBundle.gateCollider);
 }
@@ -491,6 +491,7 @@ function update(dt) {
   if (objectiveStep === 'exit' && physics.feet.z < -106) finishGame(true);
 
   for (const enemy of enemies) {
+    if (!running) break;
     if (!enemy.dead) enemyAttack(enemy, dt);
     if (enemy.flash > 0) enemy.flash -= dt;
   }

@@ -218,7 +218,7 @@ export function buildChapterTwo(world,scene){
   // Freight receiving hall: overhead gantry, cargo stacks and a shallow coolant spill.
   room(world,scene,0,-174,34,44);
   wall(world,-17.25,-174,.6,44);wall(world,17.25,-174,.6,44);
-  wall(world,0,-196,34,.6);
+  room(world,scene,0,-197,34,2.2);
   sign(g,-16.9,3.35,-160,3.0,1.05,Math.PI/2,"FREIGHT BAY","RECEIVING / B-02");
   sign(g,16.9,3.35,-188,3.0,1.05,-Math.PI/2,"MATERIALS","KEEP CLEAR","#bd7e4c");
   // Gantry beam and triangular bracing.
@@ -292,9 +292,9 @@ export function buildChapterTwo(world,scene){
   box(g,-2.25,1.95,-224,.65,.12,.65,m.dark);
   for(const z of [-206,-218,-230])lamp(world,scene,0,z,0xd0d6a4);
   // A coolant sluice divides the pump chamber from the tram approach.
-  const sluice=box(g,0,2.25,-241,10.4,4.5,.4,m.steel);
+  const sluice=box(g,0,2.25,-241,23.6,4.5,.4,m.steel);
   for(let i=0;i<9;i++)box(g,-4.6+i*1.15,2.25,-240.75,.045,4.0,.05,m.dark,false);
-  const sluiceCollider=boundsCollider(0,-241,10.5,.55,0,4.6);world.colliders.push(sluiceCollider);
+  const sluiceCollider=boundsCollider(0,-241,23.7,.55,0,4.6);world.colliders.push(sluiceCollider);
 
   // Tram hall and a battered electric service car.
   room(world,scene,0,-268,30,52);
@@ -302,10 +302,11 @@ export function buildChapterTwo(world,scene){
   sign(g,-14.9,3.35,-254,3.0,1.05,Math.PI/2,"SERVICE TRAM","OUTBOUND / PLATFORM 1");
   sign(g,14.9,3.35,-283,3.0,1.05,-Math.PI/2,"NO RETURN","EMERGENCY ROUTE","#bd7e4c");
   const tram=buildTram(world);
+  const tramCollider=boundsCollider(0,-273,9.1,15.2,0,3.35);world.colliders.push(tramCollider);
   for(const z of [-249,-266,-284])lamp(world,scene,0,z,0xd5c08f);
   const tramConsole=terminal(world,0,-255,"tram","Käynnistä huoltoraitiovaunu");
-  const exitGate=box(g,0,2.25,-290,10.5,4.5,.35,m.steel);
-  const exitCollider=boundsCollider(0,-290,10.5,.6,0,4.7);world.colliders.push(exitCollider);
+  const exitGate=box(g,0,2.25,-290,29.6,4.5,.35,m.steel);
+  const exitCollider=boundsCollider(0,-290,29.7,.6,0,4.7);world.colliders.push(exitCollider);
   for(let x=-5;x<=5;x+=1.25)box(g,x,4.45,-289.7,.05,4.0,.05,m.amber,false);
   // Side emergency beacon and a dim maintenance sign.
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);

@@ -75,7 +75,7 @@ export class SourceMovement {
   }
 
   blocked(x, z) {
-    if (x < -18.2 || x > 18.2 || z < -296 || z > 39) return true;
+    if (x < -18.2 || x > 18.2 || z < -340 || z > 39) return true;
     for (const c of this.colliders) {
       const minY = c.minY ?? 0;
       const maxY = c.maxY ?? 4.8;

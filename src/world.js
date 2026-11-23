@@ -210,7 +210,9 @@ export function buildSector(scene) {
   const keyLight=new THREE.DirectionalLight(0xdcc9a0,0.92);
   keyLight.position.set(-12,28,18); keyLight.castShadow=true;
   keyLight.shadow.mapSize.set(2048,2048); keyLight.shadow.camera.left=-28; keyLight.shadow.camera.right=28;
-  keyLight.shadow.camera.top=36; keyLight.shadow.camera.bottom=-110; keyLight.shadow.bias=-0.00025; scene.add(keyLight);
+  keyLight.shadow.camera.top=36; keyLight.shadow.camera.bottom=-335; keyLight.shadow.bias=-0.00025;
+  keyLight.shadow.camera.updateProjectionMatrix();
+  scene.add(keyLight);
   const coolFill=new THREE.DirectionalLight(0x718c78,0.2); coolFill.position.set(18,12,-58); scene.add(coolFill);
 
   function wall(x,z,w,d,height=4.8,mat=mats.concrete){

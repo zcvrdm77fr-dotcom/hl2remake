@@ -248,7 +248,7 @@ function interact() {
     stage=10;setObjective();startTram(world.lower,world);
     tramRide=true;tramLastZ=world.lower.tram.position.z;movementKeys.clear();
     camera.rotation.set(0,0,0);physics.reset(new THREE.Vector3(0,0,-273));
-    toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=5.2;outroSpoken=false;
+    toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=8.5;outroSpoken=false;
   }
 }
 
@@ -528,7 +528,7 @@ function update(dt) {
   if(liftEndingClock>0){liftEndingClock-=dt;if(liftEndingClock<=0&&running)enterLowerChapter()}
   if(tramEndingClock>0){
     tramEndingClock-=dt;
-    if(tramEndingClock<2.3&&!outroSpoken){outroSpoken=true;say(STORY.ending,5.8)}
+    if(tramEndingClock<5.6&&!outroSpoken){outroSpoken=true;say(STORY.ending,5.8)}
     if(tramEndingClock<=0&&running)finishGame(true);
   }
 

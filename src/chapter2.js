@@ -298,12 +298,28 @@ export function buildChapterTwo(world,scene){
 
   // Tram hall and a battered electric service car.
   room(world,scene,0,-268,30,52);
-  wall(world,-15.25,-268,.6,52);wall(world,15.25,-268,.6,52);wall(world,0,-294,30,.6);
+  wall(world,-15.25,-268,.6,52);wall(world,15.25,-268,.6,52);
   sign(g,-14.9,3.35,-254,3.0,1.05,Math.PI/2,"SERVICE TRAM","OUTBOUND / PLATFORM 1");
   sign(g,14.9,3.35,-283,3.0,1.05,-Math.PI/2,"NO RETURN","EMERGENCY ROUTE","#bd7e4c");
   const tram=buildTram(world);
   const tramCollider=boundsCollider(0,-273,9.1,15.2,0,3.35);world.colliders.push(tramCollider);
   for(const z of [-249,-266,-284])lamp(world,scene,0,z,0xd5c08f);
+  // Tram escape tunnel: the platform continues into an unfinished rock-cut
+  // service tunnel rather than ending at a flat wall.
+  room(world,scene,0,-310,30,32);
+  wall(world,-15.25,-310,.6,32);wall(world,15.25,-310,.6,32);wall(world,0,-326,30,.6);
+  sign(g,-14.9,3.3,-302,3.0,1.0,Math.PI/2,"TUNNEL 04","MAINTENANCE ONLY");
+  sign(g,14.9,3.3,-319,3.0,1.0,-Math.PI/2,"SURFACE ROUTE","SEALED","#bd7e4c");
+  for(const x of [-2.7,2.7]){
+    const rail=cylinder(g,x,.08,-310,.07,.07,31,m.lightSteel,8,Math.PI/2);
+    rail.rotation.set(Math.PI/2,0,0);
+  }
+  for(let z=-295;z>=-324;z-=2.2)box(g,0,.035,z,6.8,.08,.18,m.dark,false);
+  for(const z of [-300,-311,-322])lamp(world,scene,0,z,0xd2b887);
+  for(const z of [-299,-309,-319]){
+    for(const x of [-14.5,14.5])box(g,x,2.25,z,.18,4.2,.5,m.dark);
+    box(g,0,4.55,z,28.8,.16,.35,m.lightSteel,false);
+  }
   const tramConsole=terminal(world,0,-255,"tram","Käynnistä huoltoraitiovaunu");
   const exitGate=box(g,0,2.25,-290,29.6,4.5,.35,m.steel);
   const exitCollider=boundsCollider(0,-290,29.7,.6,0,4.7);world.colliders.push(exitCollider);

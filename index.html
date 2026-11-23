@@ -20,7 +20,7 @@
 <body>
   <main id="gameRoot">
     <section id="startScreen" class="screen start-screen" style="position:absolute;inset:0;z-index:20;display:block;overflow:hidden;background:#21142a">
-      <img class="menu-backdrop" src="assets/xen-menu.webp" alt="" aria-hidden="true" draggable="false" onload="if(this.getAttribute('src').endsWith('.webp'))document.getElementById('startButton').classList.add('image-hit-area')" onerror="this.onerror=null;this.src='assets/xen-menu.svg'" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
+      <img class="menu-backdrop" src="assets/xen-menu.webp" alt="" aria-hidden="true" draggable="false" onload="if(this.getAttribute('src').endsWith('.webp')){const b=document.getElementById('startButton');b.classList.add('image-hit-area');b.style.left='39.5%';b.style.top='71.2%';b.style.transform='none';b.style.width='21%';b.style.height='8.8%';b.style.padding='0';b.style.border='0';b.style.background='transparent';b.style.boxShadow='none';b.style.color='transparent';b.style.opacity='0'}" onerror="this.onerror=null;this.src='assets/xen-menu.svg'" style="position:absolute;inset:0;z-index:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none">
       <div class="menu-brand">
         <img class="lambda-logo" src="assets/lambda.svg" alt="Lambda">
         <h1 class="menu-title">HALF-LIFE<sup>2</sup></h1>

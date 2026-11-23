@@ -54,7 +54,7 @@ let health = 100, elapsed = 0, previousTime = performance.now();
 let attackCooldown = 0, invulnerability = 0, hitFlash = 0, footstepClock = 0;
 let subtitleClock = 0, subtitleFullText = '', subtitleIndex = 0, toastClock = 0;
 let audioContext = null, ambientOsc = null, ambientGain = null, muted = false;
-let liftEndingClock = 0, tramEndingClock = 0;
+let liftEndingClock = 0, tramEndingClock = 0, steamDamageClock = 0, outroSpoken = false;
 
 function setObjective() {
   const item = OBJECTIVES[Math.max(0, Math.min(OBJECTIVES.length - 1, stage))];
@@ -243,7 +243,7 @@ function interact() {
   if(kind==='tram') {
     if(!world.lower.valveClosed||stage<9){toast('Huoltoraitiovaunu ei saa vielä virtaa.');return}
     stage=10;setObjective();startTram(world.lower,world);
-    toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=5.2;
+    toast('Huoltoraitiovaunu käynnistyy.');say(STORY.tramStarted,8.0);tramEndingClock=5.2;outroSpoken=false;
   }
 }
 
@@ -508,8 +508,17 @@ function update(dt) {
   enterFreightHall();
   animateSector(world,dt,elapsed);
   animateChapterTwo(world.lower,dt,elapsed);
+  if(world.lower.pumpOn){
+    steamDamageClock=Math.max(0,steamDamageClock-dt);
+    const hot=world.lower.steamZones.some(zone=>Math.hypot(physics.feet.x-zone.x,physics.feet.z-zone.z)<zone.radius);
+    if(hot&&steamDamageClock<=0){steamDamageClock=1.45;setHealth(health-5);hitFlash=.12;toast('Kuuma höyry polttaa.',.8)}
+  }
   if(liftEndingClock>0){liftEndingClock-=dt;if(liftEndingClock<=0&&running)enterLowerChapter()}
-  if(tramEndingClock>0){tramEndingClock-=dt;if(tramEndingClock<=0&&running)finishGame(true)}
+  if(tramEndingClock>0){
+    tramEndingClock-=dt;
+    if(tramEndingClock<2.3&&!outroSpoken){outroSpoken=true;say(STORY.ending,5.8)}
+    if(tramEndingClock<=0&&running)finishGame(true);
+  }
 
   ui.hit.classList.toggle('visible',hitFlash>0);
   ui.hud.classList.toggle('lowHealth',health<=35);

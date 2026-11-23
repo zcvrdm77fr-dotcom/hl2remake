@@ -137,6 +137,35 @@ function movableDrum(world,x,z){
   root.userData.physicsProp=prop;
   world.physicsProps.push(prop);return prop;
 }
+function workerCorpse(world,x,z){
+  const g=world.worldGroup,m=world.mats,root=new THREE.Group();root.position.set(x,0,z);root.rotation.y=-.72;g.add(root);
+  const coat=new THREE.MeshLambertMaterial({color:0x77796b});
+  const dark=new THREE.MeshLambertMaterial({color:0x252c27});
+  const skin=new THREE.MeshLambertMaterial({color:0x9b8064});
+  const torso=new THREE.Mesh(new THREE.BoxGeometry(.62,.34,1.0),coat);
+  torso.position.set(0,.34,0);torso.rotation.x=.12;root.add(torso);
+  const head=new THREE.Mesh(new THREE.IcosahedronGeometry(.22,1),skin);
+  head.position.set(0,.32,-.68);head.scale.set(1,.7,.85);root.add(head);
+  rod(root,[-.2,.3,-.27],[-.48,.13,-.82],.12,coat,6);
+  rod(root,[.2,.3,-.27],[.55,.12,.35],.12,coat,6);
+  rod(root,[-.18,.3,.3],[-.24,.12,1.0],.13,dark,6);
+  rod(root,[.18,.3,.3],[.42,.12,.86],.13,dark,6);
+  box(root,0,.51,.12,.35,.13,.4,m.amber,false,false);
+  const stain=new THREE.Mesh(new THREE.CircleGeometry(.92,12),new THREE.MeshBasicMaterial({color:0x381a18,transparent:true,opacity:.48,depthWrite:false}));
+  stain.rotation.x=-Math.PI/2;stain.position.set(0,.014,.08);g.add(stain);
+  return root;
+}
+function steamCloud(world,x,z,phase){
+  const root=new THREE.Group();root.position.set(x,0,z);world.worldGroup.add(root);
+  for(let i=0;i<8;i++){
+    const material=new THREE.MeshBasicMaterial({color:0xb7b9a6,transparent:true,opacity:.0,depthWrite:false});
+    const puff=new THREE.Mesh(new THREE.IcosahedronGeometry(.18+(i%3)*.05,1),material);
+    puff.position.set(Math.sin(i*2.4)*.28,.5+i*.31,Math.cos(i*1.7)*.22);
+    puff.scale.set(1.1,.8,1.1);root.add(puff);
+  }
+  root.visible=false;
+  return {root,phase};
+}
 function buildTram(world){
   const m=world.mats,g=world.worldGroup,root=new THREE.Group();root.position.set(0,0,-273);g.add(root);
   box(root,0,1.65,0,8.8,3.25,15,m.dark);
@@ -218,6 +247,7 @@ export function buildChapterTwo(world,scene){
     }
   }
   for(const z of [-158,-173,-189])lamp(world,scene,0,z,0xe0bc7d);
+  workerCorpse(world,-7.4,-163.2);
   const fuse=fusePickup(world,12.6,-178.5);
   const pistolPickup=pickupToken(world,-12.6,-174.2,"pistol","Ota 9 mm pistooli",0x87908a);
   const ammoPickups=[
@@ -226,6 +256,8 @@ export function buildChapterTwo(world,scene){
   ];
   const medkit=medkitPickup(world,5.3,-190.8);
   const recorder=terminal(world,-14.8,-162.2,"recording","Toista huoltopäiväkirja");
+  const steamClouds=[steamCloud(world,1.5,-210.2,0),steamCloud(world,-2.8,-230.0,1)];
+  const steamZones=[{x:1.5,z:-210.2,radius:1.8},{x:-2.8,z:-230.0,radius:1.7}];
   recorder.userData.label="Kuuntele tallenne";
   // A half-open tool locker tells the player where the replacement fuse came from.
   box(g,13.5,.95,-179.5,1.15,1.9,.82,m.steel);
@@ -279,7 +311,7 @@ export function buildChapterTwo(world,scene){
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);
   const green=new THREE.PointLight(0x80c6a2,.2,8);green.position.set(0,2.6,-276);scene.add(green);
   const tramCollider=boundsCollider(0,-273,9.1,15.2,0,3.35);world.colliders.push(tramCollider);
-  const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
+  const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,steamClouds,steamZones,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
     pumpOn:false,valveClosed:false,tramRunning:false,red,green,elapsed:0};
   return lower;
 }
@@ -287,6 +319,7 @@ export function buildChapterTwo(world,scene){
 export function activatePumps(lower,world){
   lower.pumpOn=true;
   lower.pumpConsole.userData.statusLight.material=world.mats.cyanGlow;
+  for(const cloud of lower.steamClouds)cloud.root.visible=true;
   lower.red.intensity=1.1;
   for(const prop of world.physicsProps) prop.velocity.multiplyScalar(.25);
 }
@@ -308,6 +341,15 @@ export function animateChapterTwo(lower,dt,elapsed){
   lower.elapsed+=dt;
   lower.red.intensity=lower.pumpOn?(0.3+Math.max(0,Math.sin(elapsed*6))*.7):0.05;
   lower.green.intensity=.22+Math.sin(elapsed*2.1)*.08;
+  for(const cloud of lower.steamClouds){
+    cloud.root.children.forEach((puff,i)=>{
+      const t=(elapsed*.72+cloud.phase+i*.19)%2.8;
+      puff.position.y=.45+t;
+      puff.position.x=Math.sin(elapsed*1.4+cloud.phase+i)*.34;
+      puff.material.opacity=lower.pumpOn?Math.max(0,.18*(1-t/2.8)):0;
+      puff.scale.setScalar(.85+t*.42);
+    });
+  }
   if(lower.tramRunning){
     lower.tram.position.z-=dt*3.8;
     lower.tram.rotation.y=Math.sin(elapsed*1.2)*.012;

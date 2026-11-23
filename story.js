@@ -36,6 +36,10 @@ class CampaignRadio {
     this.queue=[];
     this.current=null;
     this.paused=true;
+    try {
+      const saved=JSON.parse(localStorage.getItem('lambda.radioLog')||'[]');
+      this.history=Array.isArray(saved)?saved.filter(item=>item&&typeof item.name==='string'&&typeof item.channel==='string'&&typeof item.line==='string').slice(-40):[];
+    } catch { this.history=[]; }
   }
   connect(ctx, output) {
     if(!ctx||!output)return;
@@ -83,6 +87,9 @@ class CampaignRadio {
     this.box.style.setProperty('--voice',person.color);
     this.box.dataset.person=who;this.channel.textContent=person.channel;
     this.name.textContent=person.name;this.words.textContent=line;this.box.hidden=false;
+    this.history.push({name:person.name,channel:person.channel,line});
+    if(this.history.length>40)this.history.shift();
+    try{localStorage.setItem('lambda.radioLog',JSON.stringify(this.history))}catch{}
     this.playClip();
   }
   update(dt) {

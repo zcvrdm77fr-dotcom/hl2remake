@@ -22,6 +22,7 @@
 <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
 <symbol id="target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/><path d="M12 2v6m0 8v6M2 12h6m8 0h6"/></symbol>
 <symbol id="pause" viewBox="0 0 24 24"><path d="M8 5v14m8-14v14" stroke-width="3"/></symbol>
+<symbol id="log" viewBox="0 0 24 24"><path d="M9 5h11M9 12h11M9 19h11"/><circle cx="4" cy="5" r=".8"/><circle cx="4" cy="12" r=".8"/><circle cx="4" cy="19" r=".8"/></symbol>
 </defs></svg>
 <main id="home">
 <div class="backdrop"></div><div class="shade"></div><div class="film"></div>
@@ -40,7 +41,7 @@
 </main>
 <section id="arena" hidden aria-label="City 17:n fanitehtävä">
 <canvas id="world" tabindex="0" aria-label="Pelikenttä. Liiku WASD-näppäimillä ja käänny nuolilla."></canvas>
-<div class="game-header"><div class="objective"><b id="sectionName">ASEMA-AUKIO</b><span id="mission"></span></div><button id="pauseBtn" class="iconButton" aria-label="Tauko"><svg class="icon"><use href="#pause"/></svg></button></div>
+<div class="game-header"><div class="objective"><b id="sectionName">ASEMA-AUKIO</b><span id="mission"></span><div id="objectiveProgress" class="objective-progress" role="progressbar" aria-label="Tehtävän eteneminen" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="objectiveFill"></span></div><small id="objectiveDetail">ENERGIAKENNOT 0/2</small></div><div class="game-actions"><button id="logBtn" aria-label="Tehtäväpäiväkirja" title="Tehtäväpäiväkirja"><svg class="icon"><use href="#log"/></svg><span>LOKI</span></button><button id="pauseBtn" class="iconButton" aria-label="Tauko" title="Tauko"><svg class="icon"><use href="#pause"/></svg></button></div></div>
 <div id="bossHud" hidden><div><b>G-MAN</b><span id="bossStage"></span></div><progress id="bossBar" value="6" max="6" aria-label="G-Manin jäljellä oleva voima"></progress></div>
 <div id="bearing"></div><div id="phaseSplash" hidden></div><div id="hazardWarning" role="status" hidden>AIKAREPEÄMÄ · VÄISTÄ</div><div id="crosshair"></div><div id="notice" role="status"></div><div class="hud"><span class="hudLabel" id="weaponKind">PAINOVOIMA-ASE</span><b id="weaponState">VALMIS</b><span class="dash-line">SYÖKSY <span id="dashState">VALMIS</span></span></div>
 <div id="vitals" hidden><div><span>HEV · KUNTO</span><b id="health">100 %</b></div><progress id="healthBar" max="100" value="100" aria-label="Pelaajan kunto"></progress></div>

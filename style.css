@@ -66,3 +66,24 @@ progress::-webkit-progress-bar{background:#414b50}#bossBar::-webkit-progress-val
 @media(pointer:coarse){#radio{bottom:16px;width:calc(100% - 225px);min-width:0;padding:8px}#radio small,#radio i{display:none}#radio p{font-size:12px}}
 @media(pointer:coarse) and (max-width:540px){#radio{width:92vw;bottom:auto;top:23%;padding:6px 9px}.terminal #radio{top:13%}.terminal #notice{top:25%}.yard #notice{top:15%}}
 @media(max-height:550px) and (min-width:541px){#radio{bottom:7px;width:52vw}#radio p{font-size:12px}#radio i{display:none}.terminal #radio{bottom:4px}}
+
+/* Mission progress and the optional transmission journal. */
+.objective{min-width:min(340px,68vw)}
+.objective-progress{height:4px;margin-top:9px;background:#dce8df2b;overflow:hidden}
+.objective-progress span{display:block;width:0;height:100%;margin-top:0;font-size:initial;background:linear-gradient(90deg,#df874d,#a7e0c7);transition:width .28s ease}
+#objectiveDetail{display:block;margin-top:5px;color:#aebcb8;font:9px var(--mono);letter-spacing:.11em}
+.game-actions{display:flex;gap:8px;align-items:center;pointer-events:auto}
+#logBtn{min-height:38px;display:flex;align-items:center;gap:7px;padding:0 11px;border:1px solid #d9e3dd55;background:#0c1418bd;color:#d6dfda;font:600 10px var(--mono);letter-spacing:.1em}
+#logBtn:hover,#logBtn:focus-visible{color:var(--orange);border-color:#ffad7499}
+#logBtn .icon{width:16px;height:16px}
+#logBtn span{padding-top:1px}
+.log-list{display:grid;gap:0;max-height:min(58vh,540px);overflow:auto;padding-right:5px}
+.log-entry{padding:13px 0;border-bottom:1px solid var(--line)}
+.log-entry:first-child{padding-top:0}
+.log-entry:last-child{border-bottom:0}
+.log-meta{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.log-meta span{font:600 9px var(--mono);letter-spacing:.12em;color:#a4b4b1}
+.log-meta b{font:600 11px var(--mono);letter-spacing:.08em;color:var(--orange);text-align:right}
+.log-entry p{margin:7px 0 0;color:#d5ddda;font-size:14px;line-height:1.5}
+.map-option input{width:18px;height:18px;accent-color:var(--orange)}
+@media(max-width:650px){.objective{min-width:0;max-width:calc(100vw - 145px);padding:8px 10px}.objective > span{font-size:12px}.objective-progress{margin-top:7px}.game-actions{gap:6px}#logBtn{width:38px;min-width:38px;padding:0;justify-content:center}#logBtn span{display:none}.game-header{left:3vw;right:3vw;top:2.5vh}}

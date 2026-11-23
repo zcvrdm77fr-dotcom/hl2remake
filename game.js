@@ -172,6 +172,15 @@ class CityGame {
     } else {let i=this.nearbyCell();if(i<0){if(this.nearSpirit){if(!this.ui.radio.current)this.ui.radio.say(['station','firstCell','secondCell'][this.done]);return}this.tell(this.done===2?'Kulje vihreälle uloskäynnille.':'Tähtää läheiseen oranssiin kennoon.');return}this.held=i;this.ui.tone(205);this.tell('Kenno kiinni. Vie se siniselle releelle.')}
     this.beam=1;this.updateUI();this.ui.save();
   }
+  setObjectiveProgress(value,label){
+    const progress=Math.max(0,Math.min(100,Math.round(value)));
+    if(this.ui.objectiveProgress){
+      this.ui.objectiveProgress.setAttribute('aria-valuenow',String(progress));
+      this.ui.objectiveProgress.setAttribute('aria-valuetext',label);
+    }
+    if(this.ui.objectiveFill)this.ui.objectiveFill.style.width=progress+'%';
+    if(this.ui.objectiveDetail)this.ui.objectiveDetail.textContent=label;
+  }
   updateUI(){
     const e=this.encounter;
     this.ui.section.textContent=e?'TERMINAALI 00':this.yard?'RATAPIHA 09':'ASEMA-AUKIO';
@@ -186,14 +195,17 @@ class CityGame {
       this.ui.health.textContent=e.health+' %';this.ui.healthBar.value=e.health;
       this.ui.bossBar.value=6-e.hits;
       this.ui.bossStage.textContent='VAIHE '+(e.phase+1)+'/3 · '+phaseTitles[e.phase].toLocaleUpperCase('fi');
+      this.setObjectiveProgress(e.hits/6*100,'OSUMAT '+e.hits+'/6');
     }else if(this.yard){
       const y=this.yard;
       this.ui.mission.textContent=y.objective;
       this.ui.weapon.textContent=y.armed?(y.reloadTime>0?'LATAUTUU':String(y.ammo).padStart(2,'0')+' / 12'):'VALMIS';
       this.ui.health.textContent=y.health+' %';this.ui.healthBar.value=y.health;
+      this.setObjectiveProgress(y.clear?100:y.armed?y.wave/3*100:0,y.clear?'PORTTI AUKI':y.armed?'PARTIO '+Math.min(y.wave+1,3)+'/3':'HAE PULSSIKIVÄÄRI');
     }else{
       this.ui.mission.textContent=this.done===2?'Avaa portti ratapihalle.':'Vie energiakennot siniselle releelle · '+this.done+'/2';
       this.ui.weapon.textContent=this.held<0?'VALMIS':'KENNO KIINNI';
+      this.setObjectiveProgress(this.done/2*100,this.done===2?'RATAPIHA AUKI':'ENERGIAKENNOT '+this.done+'/2');
     }
   }
   frame(time){
@@ -374,6 +386,7 @@ class CityGame {
     g.strokeStyle='#1b211e';g.lineWidth=9;g.beginPath();g.moveTo(129,96);g.bezierCurveTo(136,148,198,106,215,172);g.stroke();g.strokeStyle='#ac7548';g.lineWidth=3;g.stroke();g.restore();
   }
   mapOverlay(W,H){
+    if(this.ui.minimap&&this.ui.minimap()===false)return;
     const g=this.ctx,scale=Math.min(W/155,H/105,4.3),width=22*scale,height=16*scale,pad=9;
     const left=W-width-14,top=H-height-14;g.save();g.translate(left,top);g.fillStyle='#101a1ed9';g.fillRect(-pad,-pad,width+2*pad,height+2*pad);
     this.map.forEach((row,y)=>[...row].forEach((v,x)=>{if(v!=='0'){g.fillStyle='#65706f';g.fillRect(x*scale,y*scale,scale+.1,scale+.1)}}));

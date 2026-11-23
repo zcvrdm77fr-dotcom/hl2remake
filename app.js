@@ -1,9 +1,10 @@
 'use strict';
 const $=id=>document.getElementById(id), home=$('home'), arena=$('arena'), panel=$('panel'), content=$('panelContent');
 const icons=name=>'<svg class="icon" aria-hidden="true"><use href="#'+name+'"/></svg>';
+const escapeHTML=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}};
 const write=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value))}catch{}};
-const prefs=Object.assign({sound:true,volume:65,sensitivity:50},read('lambda.settings',{}));
+const prefs=Object.assign({sound:true,volume:65,sensitivity:50,minimap:true},read('lambda.settings',{}));
 const radio=new CampaignRadio($('radio'),prefs);
 let game=null,view='',parentView='',previousFocus=null,inGame=false,audioCtx,master,drone,toastTimer,practice=false,footBuffer;
 let progress=read('lambda.progress',null),drag=null,padPointer=null;
@@ -43,18 +44,23 @@ function openPanel(name){
   if(!panel.open){previousFocus=document.activeElement;panel.showModal()}view=name;renderPanel();
 }
 function closePanel(){if(panel.open)panel.close();view='';parentView='';if(!inGame&&previousFocus?.isConnected)previousFocus.focus({preventScroll:true})}
-function back(){if(view==='restartStory'){openPanel('pause');return}if(view==='pause'){resume();return}if(view==='winner'||view==='defeat'){mainMenu();return}if(view==='controls'||view==='settings'){if(parentView==='pause'){openPanel('pause');return}}closePanel()}
+function back(){if(view==='restartStory'){openPanel('pause');return}if(view==='pause'){resume();return}if(view==='winner'||view==='defeat'){mainMenu();return}if(view==='log'){if(parentView==='pause'){openPanel('pause');return}if(inGame){resume();return}}if(view==='controls'||view==='settings'){if(parentView==='pause'){openPanel('pause');return}}closePanel()}
 function row(label,keys){return '<div class="row"><span>'+label+'</span><span>'+keys.map(k=>'<kbd>'+k+'</kbd>').join(' ')+'</span></div>'}
 function renderPanel(){
   const name=view;let html='',heading='';
   if(name==='original'){
     heading='Half-Life 2';html='<p class="helper">Pelaa alkuperäistä kampanjaa selaimella. Avaa GeForce NOW, kirjaudu sisään ja hae peli nimellä Half-Life 2. Tarvitset pelin Steam-kirjastoosi.</p><a class="choice primary" href="https://play.geforcenow.com/" target="_blank" rel="noopener"><span><strong>Avaa GeForce NOW</strong><small>Pilvipeli · Avautuu uuteen välilehteen</small></span>'+icons('play')+'</a><a class="choice" href="steam://rungameid/220"><span><strong>Käynnistä Steamissa</strong><small>Avaa tietokoneelle asennettu peli</small></span>'+icons('play')+'</a><a class="textlink" href="https://store.steampowered.com/app/220/HalfLife_2/" target="_blank" rel="noopener">Half-Life 2 Steam-kaupassa</a>';
   }else if(name==='controls'){
-    heading='Ohjaimet';html='<p class="fieldlabel">CITY 17 · FANITEHTÄVÄ</p>'+row('Liiku',['W','A','S','D'])+row('Katso ympärillesi',['Hiiri'])+row('Käänny',['←','→'])+row('Juokse',['Shift'])+row('Tartu, vapauta tai käytä',['E','Hiiren 1'])+row('Ammu pulssikiväärillä',['Hiiren 1','F'])+row('Lataa kivääri',['R'])+row('Syöksy ja väistä',['Välilyönti'])+row('Tauko',['Esc'])+'<p class="helpfooter">Kosketusnäytöllä liikut vasemmalla ohjaimella ja katsot ympärillesi pyyhkäisemällä. λ-painikkeella voit käyttää esineitä ja siepata tai palauttaa energiapallon. Ratapihalla pidä ampumapainiketta pohjassa. Tyhjä lipas latautuu automaattisesti. Syöksy liikesuuntaan omalla painikkeellaan.</p>';
+    heading='Ohjaimet';html='<p class="fieldlabel">CITY 17 · FANITEHTÄVÄ</p>'+row('Liiku',['W','A','S','D'])+row('Katso ympärillesi',['Hiiri'])+row('Käänny',['←','→'])+row('Juokse',['Shift'])+row('Tartu, vapauta tai käytä',['E','Hiiren 1'])+row('Ammu pulssikiväärillä',['Hiiren 1','F'])+row('Lataa kivääri',['R'])+row('Syöksy ja väistä',['Välilyönti'])+row('Minikartta päälle/pois',['M'])+row('Tauko',['Esc'])+'<p class="helpfooter">Kosketusnäytöllä liikut vasemmalla ohjaimella ja katsot ympärillesi pyyhkäisemällä. λ-painikkeella voit käyttää esineitä ja siepata tai palauttaa energiapallon. Ratapihalla pidä ampumapainiketta pohjassa. Tyhjä lipas latautuu automaattisesti. Syöksy liikesuuntaan omalla painikkeellaan.</p>';
   }else if(name==='settings'){
-    heading='Asetukset';html='<div class="row"><span>Äänet</span><button id="soundToggle" class="toggle"></button></div><div class="row"><label for="volume">Äänenvoimakkuus<small id="volumeValue"></small></label><input id="volume" type="range" min="0" max="100" value="'+Number(prefs.volume)+'"></div><div class="row"><label for="sensitivity">Hiiren herkkyys<small id="sensValue"></small></label><input id="sensitivity" type="range" min="1" max="100" value="'+Number(prefs.sensitivity)+'"></div><p class="helpfooter">Asetukset tallentuvat tähän selaimeen.</p>';
+    heading='Asetukset';html='<div class="row"><span>Äänet</span><button id="soundToggle" class="toggle"></button></div><div class="row"><label for="volume">Äänenvoimakkuus<small id="volumeValue"></small></label><input id="volume" type="range" min="0" max="100" value="'+Number(prefs.volume)+'"></div><div class="row"><label for="sensitivity">Hiiren herkkyys<small id="sensValue"></small></label><input id="sensitivity" type="range" min="1" max="100" value="'+Number(prefs.sensitivity)+'"></div><div class="row map-option"><label for="minimap">Minikartta<small>Näppäin M pelin aikana</small></label><input id="minimap" type="checkbox" '+(prefs.minimap!==false?'checked':'')+'></div><p class="helpfooter">Asetukset tallentuvat tähän selaimeen.</p>';
+  }else if(name==='log'){
+    heading='Tehtäväpäiväkirja';
+    const entries=[...radio.history].reverse();
+    html=entries.length?'<div class="log-list">'+entries.map(entry=>'<article class="log-entry"><div class="log-meta"><span>'+escapeHTML(entry.channel)+'</span><b>'+escapeHTML(entry.name)+'</b></div><p>'+escapeHTML(entry.line)+'</p></article>').join('')+'</div>':'<p class="helper">Radioliikenteeseen ei ole vielä tallentunut viestejä. Etene asemalta, niin löydät täältä kuullut keskustelut ja vihjeet.</p>';
+    html+=choice('continue','Jatka peliä','Sulje päiväkirja ja palaa kentälle',true,'play');
   }else if(name==='pause'){
-    heading='Peli tauolla';html='<p class="fieldlabel">'+(game?.encounter?'TERMINAALI 00 · G-MAN':game?.yard?'RATAPIHA 09 · VASTARINTA':'CITY 17 · ASEMA-AUKIO')+'</p>'+choice('continue','Jatka peliä','Palaa käynnissä olevaan peliin',true)+choice('pauseControls','Ohjaimet','Liikkuminen, aseet ja vuorovaikutus',false,'keys')+choice('pauseSettings','Asetukset','Äänet ja hiiren herkkyys',false,'gear')+'<button id="toMenu" class="closealt">'+(practice?'Lopeta harjoittelu':'Tallenna ja palaa päävalikkoon')+'</button>';
+    heading='Peli tauolla';html='<p class="fieldlabel">'+(game?.encounter?'TERMINAALI 00 · G-MAN':game?.yard?'RATAPIHA 09 · VASTARINTA':'CITY 17 · ASEMA-AUKIO')+'</p>'+choice('continue','Jatka peliä','Palaa käynnissä olevaan peliin',true)+choice('pauseLog','Tehtäväpäiväkirja','Kuullut radioviestit ja tarinan vihjeet',false,'log')+choice('pauseControls','Ohjaimet','Liikkuminen, aseet ja vuorovaikutus',false,'keys')+choice('pauseSettings','Asetukset','Äänet, herkkyys ja minikartta',false,'gear')+'<button id="toMenu" class="closealt">'+(practice?'Lopeta harjoittelu':'Tallenna ja palaa päävalikkoon')+'</button>';
     if(!practice)html+='<button id="restartStory" class="closealt">Aloita kampanja alusta</button>';
   }else if(name==='restartStory'){
     heading='Palataanko asemalle?';
@@ -78,10 +84,12 @@ function renderPanel(){
   bind('soundToggle',toggleSound);bind('restartStory',()=>openPanel('restartStory'));bind('newGame',()=>begin('fresh'));bind('cancelRestart',()=>openPanel('pause'));
   bind('replay',()=>begin(practice?'practice':'fresh'));bind('retry',retry);bind('continue',resume);bind('toMenu',mainMenu);
   bind('pauseControls',()=>{parentView='pause';openPanel('controls')});bind('pauseSettings',()=>{parentView='pause';openPanel('settings')});
+  bind('pauseLog',()=>{parentView='pause';openPanel('log')});
   if(name==='settings'){
     reflectSound();const update=()=>{$('volumeValue').textContent=prefs.volume+' %';$('sensValue').textContent=prefs.sensitivity+' %'};update();
     $('volume').oninput=e=>{prefs.volume=Number(e.target.value);if(prefs.sound)soundInit();update();write('lambda.settings',prefs)};$('volume').onchange=()=>tone(220);
     $('sensitivity').oninput=e=>{prefs.sensitivity=Number(e.target.value);update();write('lambda.settings',prefs)};
+    $('minimap').onchange=e=>{prefs.minimap=e.target.checked;write('lambda.settings',prefs)};
   }
   $('panelTitle').focus({preventScroll:true});
 }
@@ -92,7 +100,9 @@ function getGame(){
     section:$('sectionName'),bossHud:$('bossHud'),bossBar:$('bossBar'),bossStage:$('bossStage'),
     vitals:$('vitals'),health:$('health'),healthBar:$('healthBar'),bearing:$('bearing'),dash:$('dashState'),
     phaseSplash:$('phaseSplash'),warning:$('hazardWarning'),aim:$('crosshair'),arena,
-    tone,footstep,save:checkpoint,finish:win,lose:defeat
+    tone,footstep,save:checkpoint,finish:win,lose:defeat,
+    minimap:()=>prefs.minimap!==false,
+    objectiveProgress:$('objectiveProgress'),objectiveFill:$('objectiveFill'),objectiveDetail:$('objectiveDetail')
   });
   return game;
 }
@@ -102,6 +112,7 @@ function lock(){
 }
 function unlock(){if(document.pointerLockElement&&document.exitPointerLock)document.exitPointerLock()}
 function begin(mode='continue'){
+  if(mode==='fresh'){radio.history=[];try{localStorage.removeItem('lambda.radioLog')}catch{}}
   practice=mode==='practice'||mode==='yardPractice';
   const g=getGame();g.reset();inGame=true;closePanel();home.hidden=true;arena.hidden=false;soundInit();
   if(mode==='yardPractice')g.openYard();
@@ -122,7 +133,7 @@ function pause(){if(!game?.running)return;game.stop();drag=null;releasePad();che
 function resume(){closePanel();game.start();$('world').focus();soundInit();lock()}
 function mainMenu(){radio.clear();if(game?.running)game.stop();if(inGame&&!game.completed)checkpoint();inGame=false;unlock();arena.hidden=true;home.hidden=false;closePanel();practice=false;updatePlayLabel();$('playBtn').focus()}
 function win(){if(!practice){progress=null;write('lambda.progress',null)}tone(540);unlock();openPanel('winner')}
-$('playBtn').onclick=()=>begin();$('yardBtn').onclick=()=>begin('yardPractice');$('practiceBtn').onclick=()=>begin('practice');$('originalBtn').onclick=()=>openPanel('original');$('settingsBtn').onclick=()=>{parentView='home';openPanel('settings')};$('controlsBtn').onclick=()=>{parentView='home';openPanel('controls')};$('soundBtn').onclick=toggleSound;$('closePanel').onclick=back;$('pauseBtn').onclick=pause;
+$('playBtn').onclick=()=>begin();$('yardBtn').onclick=()=>begin('yardPractice');$('logBtn').onclick=()=>{if(game?.running){game.stop();checkpoint();unlock()}parentView='game';openPanel('log')};$('practiceBtn').onclick=()=>begin('practice');$('originalBtn').onclick=()=>openPanel('original');$('settingsBtn').onclick=()=>{parentView='home';openPanel('settings')};$('controlsBtn').onclick=()=>{parentView='home';openPanel('controls')};$('soundBtn').onclick=toggleSound;$('closePanel').onclick=back;$('pauseBtn').onclick=pause;
 panel.addEventListener('cancel',e=>{e.preventDefault();back()});
 panel.addEventListener('click',e=>{if(e.target!==panel)return;const r=panel.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)back()});
 $('fullBtn').onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else toast('Selain ei tue koko näytön tilaa.')}catch{toast('Koko näytön tila ei ole käytettävissä tässä näkymässä.')}};
@@ -130,8 +141,8 @@ document.addEventListener('fullscreenchange',()=>{let label=document.fullscreenE
 document.addEventListener('keydown',e=>{
   if(panel.open)return;
   if(game?.running){
-    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Escape','KeyE','KeyF','KeyR','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(e.code))e.preventDefault();
-    if(e.code==='Escape'){pause();return}if(e.code==='Space'&&!e.repeat){game.dash();return}if(e.code==='KeyR'&&!e.repeat){game.yard?.reload();return}if(e.code==='KeyF'&&!e.repeat){game.yard?.fire()}if(e.code==='KeyE'&&!e.repeat){game.action();return}game.keys.add(e.code);return;
+    if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','Escape','KeyE','KeyF','KeyR','KeyM','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(e.code))e.preventDefault();
+    if(e.code==='Escape'){pause();return}if(e.code==='KeyM'&&!e.repeat){prefs.minimap=prefs.minimap===false;write('lambda.settings',prefs);toast(prefs.minimap?'Minikartta näkyvissä':'Minikartta piilotettu');return}if(e.code==='Space'&&!e.repeat){game.dash();return}if(e.code==='KeyR'&&!e.repeat){game.yard?.reload();return}if(e.code==='KeyF'&&!e.repeat){game.yard?.fire()}if(e.code==='KeyE'&&!e.repeat){game.action();return}game.keys.add(e.code);return;
   }
   const nav=[...document.querySelectorAll('.navitem,#yardBtn,#practiceBtn')],i=nav.indexOf(document.activeElement);
   if(e.code==='ArrowDown'||e.code==='ArrowUp'){e.preventDefault();nav[(i<0?(e.code==='ArrowDown'?0:nav.length-1):(i+(e.code==='ArrowDown'?1:-1)+nav.length)%nav.length)].focus()}

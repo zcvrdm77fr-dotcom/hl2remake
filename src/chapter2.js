@@ -123,6 +123,7 @@ function movableDrum(world,x,z){
   box(root,0,.03,0,.78,.05,.78,m.dark,false,false);
   const c=boundsCollider(x,z,.92,.92,0,1.16);world.colliders.push(c);
   const prop={root,velocity:new THREE.Vector3(),radius:.48,collider:c,mass:1.1,kind:"drum"};
+  root.userData.physicsProp=prop;
   world.physicsProps.push(prop);return prop;
 }
 function buildTram(world){

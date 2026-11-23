@@ -109,7 +109,7 @@ export function makeResonanceCrawler(scene,x,z){
   const core=new THREE.Mesh(new THREE.IcosahedronGeometry(.16,0),eyeMat);
   core.position.set(0,.73,.5);root.add(core);
   const halo=new THREE.PointLight(0xa8ce6d,.8,3.5);halo.position.set(0,.9,.42);root.add(halo);
-  const enemy={root,health:4,alive:true,attackCooldown:1.1,speed:3.35,damage:12,halo,phase:0};
+  const enemy={root,health:4,alive:true,attackCooldown:1.1,speed:3.35,damage:12,kind:'crawler',halo,phase:0};
   root.traverse(o=>{if(o.isMesh)o.userData.enemy=enemy});
   return enemy;
 }

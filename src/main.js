@@ -421,7 +421,7 @@ function enterFreightHall(){
   stage=6;setObjective();
   toast('Rahtihalli. Etsi varasulake.',3.4);
   say(STORY.freightArrival,8.5);
-  spawnEnemy(makeEchoStalker,-13.2,-184.2);
+  spawnEnemy(makeEchoStalker,-3.5,-188.2);
 }
 function startGame() {
   if (started) return;

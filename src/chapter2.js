@@ -311,7 +311,6 @@ export function buildChapterTwo(world,scene){
   // Side emergency beacon and a dim maintenance sign.
   const red=new THREE.PointLight(0xff4937,0,13);red.position.set(0,3.8,-258);scene.add(red);
   const green=new THREE.PointLight(0x80c6a2,.2,8);green.position.set(0,2.6,-276);scene.add(green);
-  const tramCollider=boundsCollider(0,-273,9.1,15.2,0,3.35);world.colliders.push(tramCollider);
   const lower={fuse,pistolPickup,ammoPickups,medkit,recorder,steamClouds,steamZones,pumpConsole,valve,tramConsole,tram,tramCollider,sluice,sluiceCollider,exitGate,exitCollider,
     pumpOn:false,valveClosed:false,tramRunning:false,red,green,elapsed:0};
   return lower;

@@ -33,7 +33,7 @@ try {
 
   const response = await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle', timeout: 30000 });
   if (!response || !response.ok()) throw new Error('Index did not load successfully');
-  await page.waitForFunction(() => typeof window.__startGame === 'function', { timeout: 15000 });
+  await page.waitForFunction(() => typeof window.__startGame === 'function', null, { timeout: 15000 });
   const boot = await page.evaluate(() => ({
     startType: typeof window.__startGame,
     canvasCount: document.querySelectorAll('canvas').length,

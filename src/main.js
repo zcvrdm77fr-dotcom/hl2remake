@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PointerLockControls } from './vendor/three/addons/controls/PointerLockControls.js?v=campaign-5';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 import { SourceMovement } from './physics.js?v=campaign-5';
 import { buildSector, openDoor, openLiftCar, animateSector } from './world.js?v=campaign-5';
 import { buildChapterTwo, activatePumps, closePressureValve, startTram, animateChapterTwo } from './chapter2.js?v=campaign-5';
